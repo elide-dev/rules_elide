@@ -1,0 +1,12 @@
+{
+  "homepage": "https://github.com/elide-dev/rules_elide",
+  "maintainers": [
+    {
+      "email": "oss@elide.dev",
+      "name": "The Elide Authors"
+    }
+  ],
+  "repository": ["github:elide-dev/rules_elide"],
+  "versions": [],
+  "yanked_versions": {}
+}

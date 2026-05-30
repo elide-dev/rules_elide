@@ -1,0 +1,5 @@
+{
+  "integrity": "**leave this empty**",
+  "strip_prefix": "rules_elide-{VERSION}",
+  "url": "https://github.com/elide-dev/rules_elide/releases/download/v{VERSION}/rules_elide-v{VERSION}.tar.gz"
+}
