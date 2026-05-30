@@ -1,0 +1,21 @@
+# Bzlmod is the only supported external-dep mode.
+common --enable_bzlmod
+
+# Stricter sandboxing defaults.
+build --incompatible_strict_action_env
+build --sandbox_default_allow_network=false
+
+# Reproducibility helpers.
+build --remote_download_outputs=toplevel
+test --test_output=errors
+
+# CI fragment; activate with `--config=ci`.
+common:ci --color=yes
+common:ci --terminal_columns=120
+build:ci --noshow_progress
+build:ci --show_timestamps
+test:ci --test_output=errors
+test:ci --test_summary=detailed
+
+# Local user overrides.
+try-import %workspace%/user.bazelrc

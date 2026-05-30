@@ -1,0 +1,15 @@
+# Bazel
+bazel-*
+.bazel/
+
+# Editors / IDEs
+.idea/
+*.iml
+.vscode/
+.fleet/
+*.swp
+*~
+
+# OS
+.DS_Store
+Thumbs.db
