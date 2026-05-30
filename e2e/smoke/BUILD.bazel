@@ -13,12 +13,18 @@ load(
 
 package(default_visibility = ["//visibility:public"])
 
-# --- toolchain (stub binary; analysis-only smoke) ---------------------------
+# --- toolchain (env-aware wrapper) ------------------------------------------
+# Defaults to a no-op (analysis-only smoke). When invoked with
+# `--config=dev` and the ELIDE_BIN env var set to a locally-built elide
+# binary, the wrapper execs into it for real action execution.
 write_file(
-    name = "_stub_src",
-    out = "stub_elide.sh",
+    name = "_wrapper_src",
+    out = "elide_wrapper.sh",
     content = [
         "#!/bin/sh",
+        "if [ -n \"${ELIDE_BIN-}\" ] && [ -x \"${ELIDE_BIN}\" ]; then",
+        "  exec \"${ELIDE_BIN}\" \"$@\"",
+        "fi",
         "exit 0",
         "",
     ],
@@ -27,8 +33,8 @@ write_file(
 
 native_binary(
     name = "_stub_elide",
-    src = ":_stub_src",
-    out = "stub_elide_bin",
+    src = ":_wrapper_src",
+    out = "elide_wrapper_bin",
 )
 
 elide_toolchain(

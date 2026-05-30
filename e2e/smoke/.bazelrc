@@ -1,2 +1,7 @@
 common --enable_bzlmod
 build --incompatible_strict_action_env
+
+# --config=dev: pipe a locally-built elide binary into compile actions.
+# Usage: ELIDE_BIN=/abs/path/to/elide bazel build //... --config=dev
+build:dev --action_env=ELIDE_BIN
+test:dev --action_env=ELIDE_BIN
