@@ -1,0 +1,47 @@
+# Run: pre-commit install --hook-type pre-commit --hook-type commit-msg
+default_stages: [pre-commit]
+
+repos:
+  - repo: meta
+    hooks:
+      - id: check-hooks-apply
+      - id: check-useless-excludes
+
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+      - id: check-merge-conflict
+      - id: check-yaml
+      - id: check-toml
+      - id: check-shebang-scripts-are-executable
+      - id: destroyed-symlinks
+      - id: detect-private-key
+      - id: end-of-file-fixer
+        exclude: ^LICENSE$
+      - id: trailing-whitespace
+        exclude: ^LICENSE$
+
+  - repo: https://github.com/keith/pre-commit-buildifier
+    rev: 8.0.3
+    hooks:
+      - id: buildifier
+        args: &bzlargs
+          - --warnings=all
+      - id: buildifier-lint
+        args: *bzlargs
+
+  - repo: https://github.com/commitizen-tools/commitizen
+    rev: v4.1.0
+    hooks:
+      - id: commitizen
+        stages: [commit-msg]
+
+  - repo: https://github.com/crate-ci/typos
+    rev: v1.28.4
+    hooks:
+      - id: typos
+
+  - repo: https://github.com/gitleaks/gitleaks
+    rev: v8.21.2
+    hooks:
+      - id: gitleaks

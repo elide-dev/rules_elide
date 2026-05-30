@@ -1,0 +1,8 @@
+# Spell-check config for `typos` pre-commit hook.
+
+[files]
+extend-exclude = [
+  "LICENSE",
+  "MODULE.bazel.lock",
+  "bazel-*",
+]

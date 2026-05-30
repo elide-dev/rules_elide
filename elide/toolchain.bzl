@@ -25,13 +25,13 @@ elide_toolchain = rule(
             cfg = "exec",
             allow_files = True,
         ),
-        "version": attr.string(
-            doc = "Semantic version of the elide binary.",
-            mandatory = True,
-        ),
         "tool_files": attr.label_list(
             doc = "Additional runfiles required by the elide binary at action time.",
             allow_files = True,
+        ),
+        "version": attr.string(
+            doc = "Semantic version of the elide binary.",
+            mandatory = True,
         ),
     },
     provides = [platform_common.ToolchainInfo],
