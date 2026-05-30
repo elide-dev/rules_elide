@@ -11,6 +11,6 @@ Contributions are welcome.
    - `buildifier --lint=warn .`
 4. Open a PR against `main`.
 
-## DCO
+## License
 
-By contributing, you certify that you have the right to submit your contribution under the project's [LICENSE](LICENSE) (Apache 2.0). Sign off your commits with `git commit -s`.
+By contributing, you certify that you have the right to submit your contribution under the project's [LICENSE](LICENSE) (Apache 2.0).
