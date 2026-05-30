@@ -5,6 +5,7 @@ package(default_visibility = ["//visibility:public"])
 exports_files([
     "java.bzl",
     "kotlin.bzl",
+    "native_image.bzl",
 ])
 
 bzl_library(
@@ -22,5 +23,14 @@ bzl_library(
     deps = [
         "//elide:providers",
         "//elide/private:compile_common",
+    ],
+)
+
+bzl_library(
+    name = "native_image",
+    srcs = ["native_image.bzl"],
+    deps = [
+        "//elide/private:compile_common",
+        "@rules_java//java/common",
     ],
 )

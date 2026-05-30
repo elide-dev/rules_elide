@@ -17,6 +17,10 @@ load(
     _elide_kotlin_test = "elide_kotlin_test",
 )
 load(
+    "//elide/rules:native_image.bzl",
+    _elide_native_image = "elide_native_image",
+)
+load(
     ":providers.bzl",
     _ElideInfo = "ElideInfo",
     _ElideToolchainInfo = "ElideToolchainInfo",
@@ -31,4 +35,5 @@ elide_java_test = _elide_java_test
 elide_kotlin_binary = _elide_kotlin_binary
 elide_kotlin_library = _elide_kotlin_library
 elide_kotlin_test = _elide_kotlin_test
+elide_native_image = _elide_native_image
 elide_toolchain = _elide_toolchain

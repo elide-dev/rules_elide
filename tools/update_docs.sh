@@ -8,7 +8,10 @@ bazelisk build //docs:all_docs >/dev/null
 
 for f in bazel-bin/docs/*.md; do
   out="docs/$(basename "$f")"
-  cp "$f" "$out"
+  # Pre-commit invariants: strip trailing whitespace per line,
+  # collapse trailing newlines to exactly one (POSIX $() trims them).
+  content=$(sed -e 's/[[:space:]]\+$//' "$f")
+  printf '%s\n' "$content" > "$out"
   chmod 644 "$out"
 done
 

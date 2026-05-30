@@ -187,6 +187,29 @@ elide_kotlin_test(<a href="#elide_kotlin_test-name">name</a>, <a href="#elide_ko
 | <a id="elide_kotlin_test-test_class"></a>test_class |  Single JUnit Platform test class to select. When unset, the runner scans the classpath.   | String | optional |  `""`  |
 
 
+<a id="elide_native_image"></a>
+
+## elide_native_image
+
+<pre>
+load("@rules_elide//elide:defs.bzl", "elide_native_image")
+
+elide_native_image(<a href="#elide_native_image-name">name</a>, <a href="#elide_native_image-deps">deps</a>, <a href="#elide_native_image-main_class">main_class</a>, <a href="#elide_native_image-native_image_opts">native_image_opts</a>)
+</pre>
+
+
+
+**ATTRIBUTES**
+
+
+| Name  | Description | Type | Mandatory | Default |
+| :------------- | :------------- | :------------- | :------------- | :------------- |
+| <a id="elide_native_image-name"></a>name |  A unique name for this target.   | <a href="https://bazel.build/concepts/labels#target-names">Name</a> | required |  |
+| <a id="elide_native_image-deps"></a>deps |  JVM dependencies whose runtime classpath enters the native image.   | <a href="https://bazel.build/concepts/labels">List of labels</a> | optional |  `[]`  |
+| <a id="elide_native_image-main_class"></a>main_class |  Fully qualified main class.   | String | required |  |
+| <a id="elide_native_image-native_image_opts"></a>native_image_opts |  Extra flags appended to the elide native-image invocation.   | List of strings | optional |  `[]`  |
+
+
 <a id="elide_toolchain"></a>
 
 ## elide_toolchain

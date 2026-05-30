@@ -44,6 +44,13 @@ stardoc(
     deps = ["//elide/rules:kotlin"],
 )
 
+stardoc(
+    name = "native_image_doc",
+    out = "native_image.md",
+    input = "//elide/rules:native_image.bzl",
+    deps = ["//elide/rules:native_image"],
+)
+
 filegroup(
     name = "all_docs",
     srcs = [
@@ -51,6 +58,7 @@ filegroup(
         ":extensions_doc",
         ":java_doc",
         ":kotlin_doc",
+        ":native_image_doc",
         ":providers_doc",
         ":toolchain_doc",
     ],

@@ -42,5 +42,6 @@ bzl_library(
         ":toolchain",
         "//elide/rules:java",
         "//elide/rules:kotlin",
+        "//elide/rules:native_image",
     ],
 )
