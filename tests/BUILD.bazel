@@ -1,4 +1,8 @@
+load("@bazel_skylib//rules:native_binary.bzl", "native_binary")
+load("@bazel_skylib//rules:write_file.bzl", "write_file")
+load("//elide:toolchain.bzl", "elide_toolchain")
 load(":common_test.bzl", "common_test_suite")
+load(":java_rule_test.bzl", "java_rule_test_suite")
 load(":toolchain_test.bzl", "elide_toolchain_test_suite")
 load(":versions_test.bzl", "versions_test_suite")
 
@@ -7,3 +11,35 @@ common_test_suite(name = "common_tests")
 elide_toolchain_test_suite(name = "toolchain_tests")
 
 versions_test_suite(name = "versions_tests")
+
+java_rule_test_suite(name = "java_rule_tests")
+
+# Test-only toolchain registered from MODULE.bazel for analysistest resolution.
+write_file(
+    name = "_test_stub_src",
+    out = "_test_stub_elide.sh",
+    content = [
+        "#!/bin/sh",
+        "exit 0",
+        "",
+    ],
+    is_executable = True,
+)
+
+native_binary(
+    name = "_test_stub_elide",
+    src = ":_test_stub_src",
+    out = "_test_stub_elide_bin",
+)
+
+elide_toolchain(
+    name = "_test_elide_impl",
+    binary = ":_test_stub_elide",
+    version = "0.0.0-test",
+)
+
+toolchain(
+    name = "_test_elide_toolchain",
+    toolchain = ":_test_elide_impl",
+    toolchain_type = "//elide:toolchain_type",
+)
