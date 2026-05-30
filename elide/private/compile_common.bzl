@@ -44,6 +44,11 @@ def runtime_classpath(deps, runtime_deps):
 def run_compile(ctx, output_jar, subcommand, mnemonic, extra_args = None):
     """Invokes the elide CLI to compile sources into output_jar.
 
+    Args are routed through a Bazel param file ("--flagfile=<path>", multiline
+    format) and the action declares persistent + multiplex worker support, so
+    the elide CLI can re-use a warm JVM when it implements the worker
+    protocol; otherwise Bazel transparently falls back to standalone.
+
     Args:
         ctx: rule context.
         output_jar: File. Declared output classes jar.
@@ -54,6 +59,8 @@ def run_compile(ctx, output_jar, subcommand, mnemonic, extra_args = None):
     elide = ctx.toolchains[TOOLCHAIN_TYPE].elide_info
     classpath = compile_classpath(ctx.attr.deps)
     args = ctx.actions.args()
+    args.set_param_file_format("multiline")
+    args.use_param_file("--flagfile=%s", use_always = True)
     args.add(subcommand)
     args.add("--output-jar", output_jar)
     args.add_joined("--classpath", classpath, join_with = ctx.configuration.host_path_separator)
@@ -68,6 +75,11 @@ def run_compile(ctx, output_jar, subcommand, mnemonic, extra_args = None):
         inputs = depset(direct = ctx.files.srcs, transitive = [classpath, elide.tool_files]),
         outputs = [output_jar],
         progress_message = "Compiling %{label}",
+        execution_requirements = {
+            "supports-multiplex-workers": "1",
+            "supports-workers": "1",
+            "worker-key-mnemonic": mnemonic,
+        },
     )
 
 def make_java_info(ctx, output_jar):
