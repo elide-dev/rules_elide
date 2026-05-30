@@ -170,3 +170,53 @@ COMMON_BINARY_EXTRA_ATTRS = {
     "jvm_flags": attr.string_list(),
     "main_class": attr.string(mandatory = True),
 }
+
+COMMON_TEST_EXTRA_ATTRS = {
+    "jvm_flags": attr.string_list(),
+    "test_class": attr.string(
+        doc = "Single JUnit Platform test class to select. " +
+              "When unset, the runner scans the classpath.",
+    ),
+}
+
+_TEST_LAUNCHER_TEMPLATE = """\
+#!/bin/sh
+exec "{elide}" run-test --junit-platform {jvm_flags}--classpath="{classpath}" {selector} "$@"
+"""
+
+def build_test_launcher(ctx, output_jar):
+    """Writes a JUnit Platform launcher for a test target.
+
+    Args:
+        ctx: rule context.
+        output_jar: File. Compiled classes jar going on the classpath.
+
+    Returns:
+        (launcher_file, runfiles) tuple.
+    """
+    elide = ctx.toolchains[TOOLCHAIN_TYPE].elide_info
+    classpath = depset(
+        direct = [output_jar],
+        transitive = [runtime_classpath(ctx.attr.deps, ctx.attr.runtime_deps)],
+    )
+    classpath_str = ctx.configuration.host_path_separator.join(
+        [f.short_path for f in classpath.to_list()],
+    )
+    jvm_flags = "".join([f + " " for f in ctx.attr.jvm_flags])
+    selector = "--test-class=" + ctx.attr.test_class if ctx.attr.test_class else "--scan-classpath"
+    launcher = ctx.actions.declare_file(ctx.label.name)
+    ctx.actions.write(
+        output = launcher,
+        content = _TEST_LAUNCHER_TEMPLATE.format(
+            elide = elide.binary.short_path,
+            jvm_flags = jvm_flags,
+            classpath = classpath_str,
+            selector = selector,
+        ),
+        is_executable = True,
+    )
+    runfiles = ctx.runfiles(
+        files = [output_jar, launcher] + ctx.files.runtime_deps,
+        transitive_files = depset(transitive = [elide.tool_files, classpath]),
+    )
+    return launcher, runfiles

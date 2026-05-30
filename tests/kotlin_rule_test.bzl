@@ -4,7 +4,7 @@ load("@bazel_skylib//lib:unittest.bzl", "analysistest", "asserts")
 load("@bazel_skylib//rules:write_file.bzl", "write_file")
 load("@rules_java//java/common:java_info.bzl", "JavaInfo")
 load("//elide:providers.bzl", "ElideInfo")
-load("//elide/rules:kotlin.bzl", "elide_kotlin_binary", "elide_kotlin_library")
+load("//elide/rules:kotlin.bzl", "elide_kotlin_binary", "elide_kotlin_library", "elide_kotlin_test")
 
 def _library_providers_test_impl(ctx):
     env = analysistest.begin(ctx)
@@ -38,6 +38,17 @@ def _binary_executable_test_impl(ctx):
 
 _binary_executable_test = analysistest.make(_binary_executable_test_impl)
 
+def _test_rule_executable_test_impl(ctx):
+    env = analysistest.begin(ctx)
+    target = analysistest.target_under_test(env)
+    asserts.true(env, JavaInfo in target, "elide_kotlin_test must emit JavaInfo")
+    asserts.true(env, ElideInfo in target, "elide_kotlin_test must emit ElideInfo")
+    info = target[DefaultInfo]
+    asserts.true(env, info.files_to_run.executable != None, "test must be executable")
+    return analysistest.end(env)
+
+_test_rule_executable_test = analysistest.make(_test_rule_executable_test_impl)
+
 def kotlin_rule_test_suite(name):
     """Wires fixtures and analysis tests for the Kotlin compile rules.
 
@@ -68,6 +79,12 @@ def kotlin_rule_test_suite(name):
         testonly = True,
         tags = ["manual"],
     )
+    elide_kotlin_test(
+        name = "_kt_test_fixture",
+        srcs = [":_kt_hello_src"],
+        test_class = "HelloKt",
+        tags = ["manual"],
+    )
     _library_providers_test(
         name = "kt_library_providers_test",
         target_under_test = ":_kt_lib_fixture",
@@ -80,11 +97,16 @@ def kotlin_rule_test_suite(name):
         name = "kt_binary_executable_test",
         target_under_test = ":_kt_bin_fixture",
     )
+    _test_rule_executable_test(
+        name = "kt_test_rule_executable_test",
+        target_under_test = ":_kt_test_fixture",
+    )
     native.test_suite(
         name = name,
         tests = [
             ":kt_library_providers_test",
             ":kt_library_action_test",
             ":kt_binary_executable_test",
+            ":kt_test_rule_executable_test",
         ],
     )

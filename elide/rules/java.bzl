@@ -12,8 +12,10 @@ load(
     "//elide/private:compile_common.bzl",
     "COMMON_BINARY_EXTRA_ATTRS",
     "COMMON_LIBRARY_ATTRS",
+    "COMMON_TEST_EXTRA_ATTRS",
     "TOOLCHAIN_TYPE",
     "build_launcher",
+    "build_test_launcher",
     "make_elide_info",
     "make_java_info",
     "run_compile",
@@ -75,4 +77,31 @@ elide_java_binary = rule(
     toolchains = [TOOLCHAIN_TYPE],
     provides = [JavaInfo, ElideInfo],
     executable = True,
+)
+
+def _elide_java_test_impl(ctx):
+    output_jar = ctx.actions.declare_file(ctx.label.name + ".jar")
+    run_compile(
+        ctx,
+        output_jar = output_jar,
+        subcommand = "compile-java",
+        mnemonic = "ElideJavaCompile",
+        extra_args = _javac_extra_args(ctx),
+    )
+    launcher, runfiles = build_test_launcher(ctx, output_jar)
+    return [
+        make_java_info(ctx, output_jar),
+        make_elide_info(ctx),
+        DefaultInfo(executable = launcher, runfiles = runfiles, files = depset([launcher])),
+    ]
+
+_TEST_ATTRS = dict(_LIBRARY_ATTRS)
+_TEST_ATTRS.update(COMMON_TEST_EXTRA_ATTRS)
+
+elide_java_test = rule(
+    implementation = _elide_java_test_impl,
+    attrs = _TEST_ATTRS,
+    toolchains = [TOOLCHAIN_TYPE],
+    provides = [JavaInfo, ElideInfo],
+    test = True,
 )

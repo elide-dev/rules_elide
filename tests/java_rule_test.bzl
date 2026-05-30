@@ -4,7 +4,7 @@ load("@bazel_skylib//lib:unittest.bzl", "analysistest", "asserts")
 load("@bazel_skylib//rules:write_file.bzl", "write_file")
 load("@rules_java//java/common:java_info.bzl", "JavaInfo")
 load("//elide:providers.bzl", "ElideInfo")
-load("//elide/rules:java.bzl", "elide_java_binary", "elide_java_library")
+load("//elide/rules:java.bzl", "elide_java_binary", "elide_java_library", "elide_java_test")
 
 def _library_providers_test_impl(ctx):
     env = analysistest.begin(ctx)
@@ -38,6 +38,17 @@ def _binary_executable_test_impl(ctx):
 
 _binary_executable_test = analysistest.make(_binary_executable_test_impl)
 
+def _test_rule_executable_test_impl(ctx):
+    env = analysistest.begin(ctx)
+    target = analysistest.target_under_test(env)
+    asserts.true(env, JavaInfo in target, "elide_java_test must emit JavaInfo")
+    asserts.true(env, ElideInfo in target, "elide_java_test must emit ElideInfo")
+    info = target[DefaultInfo]
+    asserts.true(env, info.files_to_run.executable != None, "test must be executable")
+    return analysistest.end(env)
+
+_test_rule_executable_test = analysistest.make(_test_rule_executable_test_impl)
+
 def java_rule_test_suite(name):
     """Wires fixtures and analysis tests for the Java compile rules.
 
@@ -67,6 +78,12 @@ def java_rule_test_suite(name):
         testonly = True,
         tags = ["manual"],
     )
+    elide_java_test(
+        name = "_test_fixture",
+        srcs = [":_hello_src"],
+        test_class = "Hello",
+        tags = ["manual"],
+    )
     _library_providers_test(
         name = "library_providers_test",
         target_under_test = ":_lib_fixture",
@@ -79,11 +96,16 @@ def java_rule_test_suite(name):
         name = "binary_executable_test",
         target_under_test = ":_bin_fixture",
     )
+    _test_rule_executable_test(
+        name = "test_rule_executable_test",
+        target_under_test = ":_test_fixture",
+    )
     native.test_suite(
         name = name,
         tests = [
             ":library_providers_test",
             ":library_action_test",
             ":binary_executable_test",
+            ":test_rule_executable_test",
         ],
     )
