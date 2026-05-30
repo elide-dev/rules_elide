@@ -1,5 +1,8 @@
+load(":common_test.bzl", "common_test_suite")
 load(":toolchain_test.bzl", "elide_toolchain_test_suite")
 load(":versions_test.bzl", "versions_test_suite")
+
+common_test_suite(name = "common_tests")
 
 elide_toolchain_test_suite(name = "toolchain_tests")
 

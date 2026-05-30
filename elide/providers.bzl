@@ -8,3 +8,12 @@ ElideToolchainInfo = provider(
         "version": "string. Semantic version of the elide binary.",
     },
 )
+
+ElideInfo = provider(
+    doc = "Elide-specific metadata emitted by rules_elide build rules.",
+    fields = {
+        "exported_compiler_plugins": "depset[Target]. Compiler plugins propagated " +
+                                     "to direct rdeps. Mirrors java_plugin's exported_plugins.",
+        "manifest": "File or None. Optional elide.pkl-style project manifest.",
+    },
+)
