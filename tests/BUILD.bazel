@@ -3,6 +3,7 @@ load("@bazel_skylib//rules:write_file.bzl", "write_file")
 load("//elide:toolchain.bzl", "elide_toolchain")
 load(":common_test.bzl", "common_test_suite")
 load(":java_rule_test.bzl", "java_rule_test_suite")
+load(":kotlin_rule_test.bzl", "kotlin_rule_test_suite")
 load(":toolchain_test.bzl", "elide_toolchain_test_suite")
 load(":versions_test.bzl", "versions_test_suite")
 
@@ -13,6 +14,8 @@ elide_toolchain_test_suite(name = "toolchain_tests")
 versions_test_suite(name = "versions_tests")
 
 java_rule_test_suite(name = "java_rule_tests")
+
+kotlin_rule_test_suite(name = "kotlin_rule_tests")
 
 # Test-only toolchain registered from MODULE.bazel for analysistest resolution.
 write_file(

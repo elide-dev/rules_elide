@@ -10,6 +10,11 @@ load(
     _elide_java_library = "elide_java_library",
 )
 load(
+    "//elide/rules:kotlin.bzl",
+    _elide_kotlin_binary = "elide_kotlin_binary",
+    _elide_kotlin_library = "elide_kotlin_library",
+)
+load(
     ":providers.bzl",
     _ElideInfo = "ElideInfo",
     _ElideToolchainInfo = "ElideToolchainInfo",
@@ -20,4 +25,6 @@ ElideInfo = _ElideInfo
 ElideToolchainInfo = _ElideToolchainInfo
 elide_java_binary = _elide_java_binary
 elide_java_library = _elide_java_library
+elide_kotlin_binary = _elide_kotlin_binary
+elide_kotlin_library = _elide_kotlin_library
 elide_toolchain = _elide_toolchain
