@@ -1,0 +1,17 @@
+module(name = "rules_elide_smoke")
+
+bazel_dep(name = "rules_elide", version = "0.0.1")
+local_path_override(
+    module_name = "rules_elide",
+    path = "../..",
+)
+
+bazel_dep(name = "bazel_skylib", version = "1.9.0")
+
+# Wire the module extension end-to-end. Without an `.install()` tag the
+# extension materializes an empty toolchains hub: this validates that
+# downstream consumers can `use_repo` it without registering real releases.
+elide_ext = use_extension("@rules_elide//elide:extensions.bzl", "elide")
+use_repo(elide_ext, "elide_toolchains")
+
+register_toolchains("//:smoke_elide_toolchain")

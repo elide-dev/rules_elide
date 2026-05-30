@@ -1,0 +1,84 @@
+load("@bazel_skylib//rules:native_binary.bzl", "native_binary")
+load("@bazel_skylib//rules:write_file.bzl", "write_file")
+load(
+    "@rules_elide//elide:defs.bzl",
+    "elide_java_binary",
+    "elide_java_library",
+    "elide_java_test",
+    "elide_kotlin_binary",
+    "elide_kotlin_library",
+    "elide_kotlin_test",
+    "elide_toolchain",
+)
+
+package(default_visibility = ["//visibility:public"])
+
+# --- toolchain (stub binary; analysis-only smoke) ---------------------------
+write_file(
+    name = "_stub_src",
+    out = "stub_elide.sh",
+    content = [
+        "#!/bin/sh",
+        "exit 0",
+        "",
+    ],
+    is_executable = True,
+)
+
+native_binary(
+    name = "_stub_elide",
+    src = ":_stub_src",
+    out = "stub_elide_bin",
+)
+
+elide_toolchain(
+    name = "smoke_elide_impl",
+    binary = ":_stub_elide",
+    version = "0.0.0-smoke",
+)
+
+toolchain(
+    name = "smoke_elide_toolchain",
+    toolchain = ":smoke_elide_impl",
+    toolchain_type = "@rules_elide//elide:toolchain_type",
+)
+
+# --- sample targets ---------------------------------------------------------
+elide_java_library(
+    name = "sample_java_lib",
+    srcs = ["sample/Hello.java"],
+)
+
+elide_java_binary(
+    name = "sample_java_bin",
+    srcs = ["sample/Main.java"],
+    main_class = "sample.Main",
+    deps = [":sample_java_lib"],
+)
+
+elide_java_test(
+    name = "sample_java_test",
+    srcs = ["sample/HelloTest.java"],
+    test_class = "sample.HelloTest",
+    deps = [":sample_java_lib"],
+)
+
+elide_kotlin_library(
+    name = "sample_kotlin_lib",
+    srcs = ["sample/Greeter.kt"],
+    deps = [":sample_java_lib"],
+)
+
+elide_kotlin_binary(
+    name = "sample_kotlin_bin",
+    srcs = ["sample/App.kt"],
+    main_class = "sample.AppKt",
+    deps = [":sample_kotlin_lib"],
+)
+
+elide_kotlin_test(
+    name = "sample_kotlin_test",
+    srcs = ["sample/GreeterTest.kt"],
+    test_class = "sample.GreeterTest",
+    deps = [":sample_kotlin_lib"],
+)
