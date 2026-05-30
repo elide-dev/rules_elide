@@ -1,0 +1,75 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  tests:
+    name: tests (bazel ${{ matrix.bazel }} / ${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        bazel: ["7.x", "8.x"]
+        os: [ubuntu-24.04, macos-14]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: bazel-contrib/setup-bazel@0.19.0
+        with:
+          bazelisk-cache: true
+          disk-cache: ci-${{ matrix.bazel }}-${{ matrix.os }}
+          repository-cache: true
+      - name: bazel test //tests:all
+        env:
+          USE_BAZEL_VERSION: ${{ matrix.bazel }}
+        run: bazel test //tests:all --config=ci
+
+  e2e:
+    name: e2e smoke (analysis)
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: bazel-contrib/setup-bazel@0.19.0
+        with:
+          bazelisk-cache: true
+          disk-cache: ci-e2e
+          repository-cache: true
+      - name: bazel build //... --nobuild
+        working-directory: e2e/smoke
+        run: bazel build //... --nobuild
+
+  lint:
+    name: lint (pre-commit)
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install pre-commit==4.6.0
+      - run: pre-commit run --all-files --show-diff-on-failure
+
+  docs-freshness:
+    name: docs freshness
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: bazel-contrib/setup-bazel@0.19.0
+        with:
+          bazelisk-cache: true
+          disk-cache: ci-docs
+          repository-cache: true
+      - name: regenerate docs
+        run: ./tools/update_docs.sh
+      - name: assert docs are up to date
+        run: git diff --exit-code -- docs/
