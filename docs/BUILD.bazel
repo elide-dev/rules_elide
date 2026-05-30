@@ -1,0 +1,57 @@
+load("@stardoc//stardoc:stardoc.bzl", "stardoc")
+
+package(default_visibility = ["//visibility:public"])
+
+stardoc(
+    name = "defs_doc",
+    out = "defs.md",
+    input = "//elide:defs.bzl",
+    deps = ["//elide:defs"],
+)
+
+stardoc(
+    name = "providers_doc",
+    out = "providers.md",
+    input = "//elide:providers.bzl",
+    deps = ["//elide:providers"],
+)
+
+stardoc(
+    name = "extensions_doc",
+    out = "extensions.md",
+    input = "//elide:extensions.bzl",
+    deps = ["//elide:extensions"],
+)
+
+stardoc(
+    name = "toolchain_doc",
+    out = "toolchain.md",
+    input = "//elide:toolchain.bzl",
+    deps = ["//elide:toolchain"],
+)
+
+stardoc(
+    name = "java_doc",
+    out = "java.md",
+    input = "//elide/rules:java.bzl",
+    deps = ["//elide/rules:java"],
+)
+
+stardoc(
+    name = "kotlin_doc",
+    out = "kotlin.md",
+    input = "//elide/rules:kotlin.bzl",
+    deps = ["//elide/rules:kotlin"],
+)
+
+filegroup(
+    name = "all_docs",
+    srcs = [
+        ":defs_doc",
+        ":extensions_doc",
+        ":java_doc",
+        ":kotlin_doc",
+        ":providers_doc",
+        ":toolchain_doc",
+    ],
+)

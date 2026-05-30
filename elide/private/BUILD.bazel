@@ -1,1 +1,36 @@
+load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
+
 package(default_visibility = ["//:__subpackages__"])
+
+bzl_library(
+    name = "versions",
+    srcs = ["versions.bzl"],
+)
+
+bzl_library(
+    name = "download",
+    srcs = ["download.bzl"],
+    deps = [":versions"],
+)
+
+bzl_library(
+    name = "hub",
+    srcs = ["hub.bzl"],
+    deps = [":versions"],
+)
+
+bzl_library(
+    name = "common",
+    srcs = ["common.bzl"],
+    deps = ["//elide:providers"],
+)
+
+bzl_library(
+    name = "compile_common",
+    srcs = ["compile_common.bzl"],
+    deps = [
+        ":common",
+        "//elide:providers",
+        "@rules_java//java/common",
+    ],
+)

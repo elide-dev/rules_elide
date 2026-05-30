@@ -5,6 +5,10 @@ common --enable_bzlmod
 build --incompatible_strict_action_env
 build --sandbox_default_allow_network=false
 
+# protobuf 5+ (pulled in transitively via stardoc) requires C++17.
+build --cxxopt=-std=c++17
+build --host_cxxopt=-std=c++17
+
 # Reproducibility helpers.
 build --remote_download_outputs=toplevel
 test --test_output=errors

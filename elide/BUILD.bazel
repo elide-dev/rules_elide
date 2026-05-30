@@ -1,3 +1,5 @@
+load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
+
 package(default_visibility = ["//visibility:public"])
 
 toolchain_type(name = "toolchain_type")
@@ -5,7 +7,40 @@ toolchain_type(name = "toolchain_type")
 exports_files(
     [
         "defs.bzl",
+        "extensions.bzl",
         "providers.bzl",
         "toolchain.bzl",
+    ],
+)
+
+bzl_library(
+    name = "providers",
+    srcs = ["providers.bzl"],
+)
+
+bzl_library(
+    name = "toolchain",
+    srcs = ["toolchain.bzl"],
+    deps = [":providers"],
+)
+
+bzl_library(
+    name = "extensions",
+    srcs = ["extensions.bzl"],
+    deps = [
+        "//elide/private:download",
+        "//elide/private:hub",
+        "//elide/private:versions",
+    ],
+)
+
+bzl_library(
+    name = "defs",
+    srcs = ["defs.bzl"],
+    deps = [
+        ":providers",
+        ":toolchain",
+        "//elide/rules:java",
+        "//elide/rules:kotlin",
     ],
 )

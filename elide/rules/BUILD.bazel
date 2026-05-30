@@ -1,6 +1,26 @@
+load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
+
 package(default_visibility = ["//visibility:public"])
 
 exports_files([
     "java.bzl",
     "kotlin.bzl",
 ])
+
+bzl_library(
+    name = "java",
+    srcs = ["java.bzl"],
+    deps = [
+        "//elide:providers",
+        "//elide/private:compile_common",
+    ],
+)
+
+bzl_library(
+    name = "kotlin",
+    srcs = ["kotlin.bzl"],
+    deps = [
+        "//elide:providers",
+        "//elide/private:compile_common",
+    ],
+)
