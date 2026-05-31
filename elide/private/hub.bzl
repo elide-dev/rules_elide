@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: Apache-2.0
+
 """Repository rule aggregating per-platform elide toolchains under one repo."""
 
 load(":versions.bzl", "CPU_CONSTRAINTS", "OS_CONSTRAINTS", "PLATFORMS")

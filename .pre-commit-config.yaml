@@ -23,7 +23,7 @@ repos:
         exclude: ^LICENSE$
 
   - repo: https://github.com/keith/pre-commit-buildifier
-    rev: 8.0.3
+    rev: 8.5.1.1
     hooks:
       - id: buildifier
         args: &bzlargs
@@ -32,7 +32,7 @@ repos:
         args: *bzlargs
 
   - repo: https://github.com/commitizen-tools/commitizen
-    rev: v4.1.0
+    rev: v4.9.1
     hooks:
       - id: commitizen
         stages: [commit-msg]

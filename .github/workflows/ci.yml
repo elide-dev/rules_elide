@@ -20,11 +20,11 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        bazel: ["7.x", "8.x"]
+        bazel: ["7.x", "8.x", "9.x"]
         os: [ubuntu-24.04, macos-14]
     steps:
-      - uses: actions/checkout@v4
-      - uses: bazel-contrib/setup-bazel@0.19.0
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5  # v4
+      - uses: bazel-contrib/setup-bazel@8cb04a772ab4c1eb984e9c1b493a182e96c5e425  # 0.19.0
         with:
           bazelisk-cache: true
           disk-cache: ci-${{ matrix.bazel }}-${{ matrix.os }}
@@ -38,8 +38,8 @@ jobs:
     name: e2e smoke (analysis)
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
-      - uses: bazel-contrib/setup-bazel@0.19.0
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5  # v4
+      - uses: bazel-contrib/setup-bazel@8cb04a772ab4c1eb984e9c1b493a182e96c5e425  # 0.19.0
         with:
           bazelisk-cache: true
           disk-cache: ci-e2e
@@ -52,8 +52,8 @@ jobs:
     name: lint (pre-commit)
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5  # v4
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065  # v5
         with:
           python-version: "3.12"
       - run: pip install pre-commit==4.6.0
@@ -63,8 +63,8 @@ jobs:
     name: docs freshness
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
-      - uses: bazel-contrib/setup-bazel@0.19.0
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5  # v4
+      - uses: bazel-contrib/setup-bazel@8cb04a772ab4c1eb984e9c1b493a182e96c5e425  # 0.19.0
         with:
           bazelisk-cache: true
           disk-cache: ci-docs
@@ -73,3 +73,21 @@ jobs:
         run: ./tools/update_docs.sh
       - name: assert docs are up to date
         run: git diff --exit-code -- docs/
+
+  integration:
+    name: integration (real elide toolchain)
+    runs-on: ubuntu-24.04
+    # Slow: downloads ~500 MB elide binary at repo-rule time. Run on schedule
+    # and on main pushes; PRs only get the analysis-level signal from
+    # the `e2e` job above.
+    if: github.event_name != 'pull_request'
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5  # v4
+      - uses: bazel-contrib/setup-bazel@8cb04a772ab4c1eb984e9c1b493a182e96c5e425  # 0.19.0
+        with:
+          bazelisk-cache: true
+          disk-cache: ci-integration
+          repository-cache: true
+      - name: bazel build //...
+        working-directory: e2e/integration
+        run: bazel build //...

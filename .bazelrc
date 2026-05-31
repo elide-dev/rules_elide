@@ -1,5 +1,6 @@
 # Bzlmod is the only supported external-dep mode.
 common --enable_bzlmod
+common --lockfile_mode=error
 
 # Stricter sandboxing defaults.
 build --incompatible_strict_action_env

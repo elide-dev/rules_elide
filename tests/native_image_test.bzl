@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: Apache-2.0
+
 """Analysis tests for elide_native_image."""
 
 load("@bazel_skylib//lib:unittest.bzl", "analysistest", "asserts")
@@ -11,8 +13,16 @@ def _native_image_test_impl(ctx):
     info = target[DefaultInfo]
     asserts.true(env, info.files_to_run.executable != None, "native image must be executable")
     actions = analysistest.target_actions(env)
-    native = [a for a in actions if a.mnemonic == "ElideNativeImage"]
-    asserts.equals(env, 1, len(native), "expected one ElideNativeImage action")
+    native_actions = [a for a in actions if a.mnemonic == "ElideNativeImage"]
+    asserts.equals(env, 1, len(native_actions), "expected one ElideNativeImage action")
+    argv = native_actions[0].argv
+    asserts.true(env, "native-image" in argv, "expected `native-image` subcommand in argv")
+    asserts.true(env, "--" in argv, "expected `--` separator before native-image flags")
+    asserts.true(env, "--no-fallback" in argv, "expected `--no-fallback` (hermetic build)")
+    asserts.true(env, "-classpath" in argv, "expected `-classpath` flag")
+    asserts.true(env, "-o" in argv, "expected `-o` output flag")
+    has_worker_tag = "supports-workers" in (native_actions[0].mnemonic + "")
+    asserts.false(env, has_worker_tag, "native-image is single-shot AOT — no worker tag")
     return analysistest.end(env)
 
 _native_image_test = analysistest.make(_native_image_test_impl)

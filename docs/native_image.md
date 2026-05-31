@@ -2,8 +2,8 @@
 
 Native image rule for rules_elide.
 
-`elide_native_image` compiles JVM bytecode (provided via JavaInfo deps) into
-a standalone native executable using the Elide CLI's native-image pipeline.
+`elide_native_image` runs `elide native-image` to compile JVM bytecode
+(provided via JavaInfo deps) into a standalone native executable.
 
 <a id="elide_native_image"></a>
 
@@ -25,4 +25,4 @@ elide_native_image(<a href="#elide_native_image-name">name</a>, <a href="#elide_
 | <a id="elide_native_image-name"></a>name |  A unique name for this target.   | <a href="https://bazel.build/concepts/labels#target-names">Name</a> | required |  |
 | <a id="elide_native_image-deps"></a>deps |  JVM dependencies whose runtime classpath enters the native image.   | <a href="https://bazel.build/concepts/labels">List of labels</a> | optional |  `[]`  |
 | <a id="elide_native_image-main_class"></a>main_class |  Fully qualified main class.   | String | required |  |
-| <a id="elide_native_image-native_image_opts"></a>native_image_opts |  Extra flags appended to the elide native-image invocation.   | List of strings | optional |  `[]`  |
+| <a id="elide_native_image-native_image_opts"></a>native_image_opts |  Extra flags appended to the native-image invocation.   | List of strings | optional |  `[]`  |

@@ -1,0 +1,6 @@
+common --enable_bzlmod
+common --lockfile_mode=update
+build --incompatible_strict_action_env
+build --cxxopt=-std=c++17
+build --host_cxxopt=-std=c++17
+test --test_output=errors

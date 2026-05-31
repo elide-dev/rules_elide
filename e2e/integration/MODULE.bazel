@@ -1,0 +1,19 @@
+module(name = "rules_elide_integration")
+
+bazel_dep(name = "rules_elide", version = "0.0.0")
+local_path_override(
+    module_name = "rules_elide",
+    path = "../..",
+)
+
+# Activate the elide module extension against the real Elide CDN. This
+# downloads the elide binary at repo-rule time, enabling real `bazel build`
+# of the sample target against the actual toolchain.
+elide = use_extension("@rules_elide//elide:extensions.bzl", "elide")
+elide.install(
+    channel = "nightly",
+    version = "latest",
+)
+use_repo(elide, "elide_toolchains")
+
+register_toolchains("@elide_toolchains//:all")

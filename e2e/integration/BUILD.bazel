@@ -1,0 +1,15 @@
+load("@rules_elide//elide:defs.bzl", "elide_java_binary", "elide_java_library")
+
+package(default_visibility = ["//visibility:public"])
+
+elide_java_library(
+    name = "lib",
+    srcs = ["sample/Hello.java"],
+)
+
+elide_java_binary(
+    name = "app",
+    srcs = ["sample/Main.java"],
+    main_class = "sample.Main",
+    deps = [":lib"],
+)

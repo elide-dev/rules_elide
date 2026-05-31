@@ -2,6 +2,7 @@ load("@bazel_skylib//rules:native_binary.bzl", "native_binary")
 load("@bazel_skylib//rules:write_file.bzl", "write_file")
 load("//elide:toolchain.bzl", "elide_toolchain")
 load(":common_test.bzl", "common_test_suite")
+load(":format_test.bzl", "format_test_suite")
 load(":java_rule_test.bzl", "java_rule_test_suite")
 load(":kotlin_rule_test.bzl", "kotlin_rule_test_suite")
 load(":native_image_test.bzl", "native_image_test_suite")
@@ -19,6 +20,8 @@ java_rule_test_suite(name = "java_rule_tests")
 kotlin_rule_test_suite(name = "kotlin_rule_tests")
 
 native_image_test_suite(name = "native_image_tests")
+
+format_test_suite(name = "format_tests")
 
 # Test-only toolchain registered from MODULE.bazel for analysistest resolution.
 write_file(

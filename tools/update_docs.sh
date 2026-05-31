@@ -1,6 +1,11 @@
 #!/bin/sh
 # Regenerate Markdown reference docs from .bzl sources via Stardoc.
 set -eu
+# POSIX sh lacks pipefail; bash provides it. Re-exec under bash when present.
+if [ -z "${BASH_VERSION:-}" ] && command -v bash >/dev/null 2>&1; then
+  exec bash -o errexit -o nounset -o pipefail "$0" "$@"
+fi
+[ -n "${BASH_VERSION:-}" ] && set -o pipefail
 
 cd "$(dirname "$0")/.."
 

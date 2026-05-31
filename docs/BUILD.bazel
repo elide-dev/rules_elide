@@ -51,11 +51,19 @@ stardoc(
     deps = ["//elide/rules:native_image"],
 )
 
+stardoc(
+    name = "format_doc",
+    out = "format.md",
+    input = "//elide/rules:format.bzl",
+    deps = ["//elide/rules:format"],
+)
+
 filegroup(
     name = "all_docs",
     srcs = [
         ":defs_doc",
         ":extensions_doc",
+        ":format_doc",
         ":java_doc",
         ":kotlin_doc",
         ":native_image_doc",

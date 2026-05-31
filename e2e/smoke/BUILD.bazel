@@ -15,15 +15,15 @@ package(default_visibility = ["//visibility:public"])
 
 # --- toolchain (env-aware wrapper) ------------------------------------------
 # Defaults to a no-op (analysis-only smoke). When invoked with
-# `--config=dev` and the ELIDE_BIN env var set to a locally-built elide
+# `--config=dev` and the ELIDE_DEV_BIN env var set to a locally-built elide
 # binary, the wrapper execs into it for real action execution.
 write_file(
     name = "_wrapper_src",
     out = "elide_wrapper.sh",
     content = [
         "#!/bin/sh",
-        "if [ -n \"${ELIDE_BIN-}\" ] && [ -x \"${ELIDE_BIN}\" ]; then",
-        "  exec \"${ELIDE_BIN}\" \"$@\"",
+        "if [ -n \"${ELIDE_DEV_BIN-}\" ] && [ -x \"${ELIDE_DEV_BIN}\" ]; then",
+        "  exec \"${ELIDE_DEV_BIN}\" \"$@\"",
         "fi",
         "exit 0",
         "",

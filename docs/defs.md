@@ -5,6 +5,27 @@ Public API entry point for rules_elide.
 Downstream users should load all symbols from this file. Internal paths under
 `elide/` are not part of the stable API.
 
+<a id="elide_format"></a>
+
+## elide_format
+
+<pre>
+load("@rules_elide//elide:defs.bzl", "elide_format")
+
+elide_format(<a href="#elide_format-name">name</a>, <a href="#elide_format-srcs">srcs</a>)
+</pre>
+
+
+
+**ATTRIBUTES**
+
+
+| Name  | Description | Type | Mandatory | Default |
+| :------------- | :------------- | :------------- | :------------- | :------------- |
+| <a id="elide_format-name"></a>name |  A unique name for this target.   | <a href="https://bazel.build/concepts/labels#target-names">Name</a> | required |  |
+| <a id="elide_format-srcs"></a>srcs |  Source files to format. All must be .java or all .kt/.kts.   | <a href="https://bazel.build/concepts/labels">List of labels</a> | required |  |
+
+
 <a id="elide_java_binary"></a>
 
 ## elide_java_binary
@@ -12,8 +33,8 @@ Downstream users should load all symbols from this file. Internal paths under
 <pre>
 load("@rules_elide//elide:defs.bzl", "elide_java_binary")
 
-elide_java_binary(<a href="#elide_java_binary-name">name</a>, <a href="#elide_java_binary-deps">deps</a>, <a href="#elide_java_binary-srcs">srcs</a>, <a href="#elide_java_binary-exported_compiler_plugins">exported_compiler_plugins</a>, <a href="#elide_java_binary-exports">exports</a>, <a href="#elide_java_binary-javac_opts">javac_opts</a>, <a href="#elide_java_binary-jvm_flags">jvm_flags</a>,
-                  <a href="#elide_java_binary-main_class">main_class</a>, <a href="#elide_java_binary-neverlink">neverlink</a>, <a href="#elide_java_binary-runtime_deps">runtime_deps</a>)
+elide_java_binary(<a href="#elide_java_binary-name">name</a>, <a href="#elide_java_binary-deps">deps</a>, <a href="#elide_java_binary-srcs">srcs</a>, <a href="#elide_java_binary-data">data</a>, <a href="#elide_java_binary-resources">resources</a>, <a href="#elide_java_binary-exported_compiler_plugins">exported_compiler_plugins</a>, <a href="#elide_java_binary-exports">exports</a>, <a href="#elide_java_binary-javac_opts">javac_opts</a>,
+                  <a href="#elide_java_binary-jvm_flags">jvm_flags</a>, <a href="#elide_java_binary-main_class">main_class</a>, <a href="#elide_java_binary-neverlink">neverlink</a>, <a href="#elide_java_binary-plugins">plugins</a>, <a href="#elide_java_binary-resource_jars">resource_jars</a>, <a href="#elide_java_binary-runtime_deps">runtime_deps</a>)
 </pre>
 
 
@@ -26,12 +47,16 @@ elide_java_binary(<a href="#elide_java_binary-name">name</a>, <a href="#elide_ja
 | <a id="elide_java_binary-name"></a>name |  A unique name for this target.   | <a href="https://bazel.build/concepts/labels#target-names">Name</a> | required |  |
 | <a id="elide_java_binary-deps"></a>deps |  -   | <a href="https://bazel.build/concepts/labels">List of labels</a> | optional |  `[]`  |
 | <a id="elide_java_binary-srcs"></a>srcs |  -   | <a href="https://bazel.build/concepts/labels">List of labels</a> | optional |  `[]`  |
+| <a id="elide_java_binary-data"></a>data |  -   | <a href="https://bazel.build/concepts/labels">List of labels</a> | optional |  `[]`  |
+| <a id="elide_java_binary-resources"></a>resources |  -   | <a href="https://bazel.build/concepts/labels">List of labels</a> | optional |  `[]`  |
 | <a id="elide_java_binary-exported_compiler_plugins"></a>exported_compiler_plugins |  -   | <a href="https://bazel.build/concepts/labels">List of labels</a> | optional |  `[]`  |
 | <a id="elide_java_binary-exports"></a>exports |  -   | <a href="https://bazel.build/concepts/labels">List of labels</a> | optional |  `[]`  |
 | <a id="elide_java_binary-javac_opts"></a>javac_opts |  -   | List of strings | optional |  `[]`  |
 | <a id="elide_java_binary-jvm_flags"></a>jvm_flags |  -   | List of strings | optional |  `[]`  |
 | <a id="elide_java_binary-main_class"></a>main_class |  -   | String | required |  |
 | <a id="elide_java_binary-neverlink"></a>neverlink |  -   | Boolean | optional |  `False`  |
+| <a id="elide_java_binary-plugins"></a>plugins |  -   | <a href="https://bazel.build/concepts/labels">List of labels</a> | optional |  `[]`  |
+| <a id="elide_java_binary-resource_jars"></a>resource_jars |  -   | <a href="https://bazel.build/concepts/labels">List of labels</a> | optional |  `[]`  |
 | <a id="elide_java_binary-runtime_deps"></a>runtime_deps |  -   | <a href="https://bazel.build/concepts/labels">List of labels</a> | optional |  `[]`  |
 
 
@@ -42,8 +67,8 @@ elide_java_binary(<a href="#elide_java_binary-name">name</a>, <a href="#elide_ja
 <pre>
 load("@rules_elide//elide:defs.bzl", "elide_java_library")
 
-elide_java_library(<a href="#elide_java_library-name">name</a>, <a href="#elide_java_library-deps">deps</a>, <a href="#elide_java_library-srcs">srcs</a>, <a href="#elide_java_library-exported_compiler_plugins">exported_compiler_plugins</a>, <a href="#elide_java_library-exports">exports</a>, <a href="#elide_java_library-javac_opts">javac_opts</a>, <a href="#elide_java_library-neverlink">neverlink</a>,
-                   <a href="#elide_java_library-runtime_deps">runtime_deps</a>)
+elide_java_library(<a href="#elide_java_library-name">name</a>, <a href="#elide_java_library-deps">deps</a>, <a href="#elide_java_library-srcs">srcs</a>, <a href="#elide_java_library-data">data</a>, <a href="#elide_java_library-resources">resources</a>, <a href="#elide_java_library-exported_compiler_plugins">exported_compiler_plugins</a>, <a href="#elide_java_library-exports">exports</a>,
+                   <a href="#elide_java_library-javac_opts">javac_opts</a>, <a href="#elide_java_library-neverlink">neverlink</a>, <a href="#elide_java_library-plugins">plugins</a>, <a href="#elide_java_library-resource_jars">resource_jars</a>, <a href="#elide_java_library-runtime_deps">runtime_deps</a>)
 </pre>
 
 
@@ -56,10 +81,14 @@ elide_java_library(<a href="#elide_java_library-name">name</a>, <a href="#elide_
 | <a id="elide_java_library-name"></a>name |  A unique name for this target.   | <a href="https://bazel.build/concepts/labels#target-names">Name</a> | required |  |
 | <a id="elide_java_library-deps"></a>deps |  -   | <a href="https://bazel.build/concepts/labels">List of labels</a> | optional |  `[]`  |
 | <a id="elide_java_library-srcs"></a>srcs |  -   | <a href="https://bazel.build/concepts/labels">List of labels</a> | optional |  `[]`  |
+| <a id="elide_java_library-data"></a>data |  -   | <a href="https://bazel.build/concepts/labels">List of labels</a> | optional |  `[]`  |
+| <a id="elide_java_library-resources"></a>resources |  -   | <a href="https://bazel.build/concepts/labels">List of labels</a> | optional |  `[]`  |
 | <a id="elide_java_library-exported_compiler_plugins"></a>exported_compiler_plugins |  -   | <a href="https://bazel.build/concepts/labels">List of labels</a> | optional |  `[]`  |
 | <a id="elide_java_library-exports"></a>exports |  -   | <a href="https://bazel.build/concepts/labels">List of labels</a> | optional |  `[]`  |
 | <a id="elide_java_library-javac_opts"></a>javac_opts |  -   | List of strings | optional |  `[]`  |
 | <a id="elide_java_library-neverlink"></a>neverlink |  -   | Boolean | optional |  `False`  |
+| <a id="elide_java_library-plugins"></a>plugins |  -   | <a href="https://bazel.build/concepts/labels">List of labels</a> | optional |  `[]`  |
+| <a id="elide_java_library-resource_jars"></a>resource_jars |  -   | <a href="https://bazel.build/concepts/labels">List of labels</a> | optional |  `[]`  |
 | <a id="elide_java_library-runtime_deps"></a>runtime_deps |  -   | <a href="https://bazel.build/concepts/labels">List of labels</a> | optional |  `[]`  |
 
 
@@ -70,8 +99,8 @@ elide_java_library(<a href="#elide_java_library-name">name</a>, <a href="#elide_
 <pre>
 load("@rules_elide//elide:defs.bzl", "elide_java_test")
 
-elide_java_test(<a href="#elide_java_test-name">name</a>, <a href="#elide_java_test-deps">deps</a>, <a href="#elide_java_test-srcs">srcs</a>, <a href="#elide_java_test-exported_compiler_plugins">exported_compiler_plugins</a>, <a href="#elide_java_test-exports">exports</a>, <a href="#elide_java_test-javac_opts">javac_opts</a>, <a href="#elide_java_test-jvm_flags">jvm_flags</a>,
-                <a href="#elide_java_test-neverlink">neverlink</a>, <a href="#elide_java_test-runtime_deps">runtime_deps</a>, <a href="#elide_java_test-test_class">test_class</a>)
+elide_java_test(<a href="#elide_java_test-name">name</a>, <a href="#elide_java_test-deps">deps</a>, <a href="#elide_java_test-srcs">srcs</a>, <a href="#elide_java_test-data">data</a>, <a href="#elide_java_test-resources">resources</a>, <a href="#elide_java_test-exported_compiler_plugins">exported_compiler_plugins</a>, <a href="#elide_java_test-exports">exports</a>, <a href="#elide_java_test-javac_opts">javac_opts</a>,
+                <a href="#elide_java_test-jvm_flags">jvm_flags</a>, <a href="#elide_java_test-neverlink">neverlink</a>, <a href="#elide_java_test-plugins">plugins</a>, <a href="#elide_java_test-resource_jars">resource_jars</a>, <a href="#elide_java_test-runtime_deps">runtime_deps</a>, <a href="#elide_java_test-test_class">test_class</a>)
 </pre>
 
 
@@ -84,13 +113,17 @@ elide_java_test(<a href="#elide_java_test-name">name</a>, <a href="#elide_java_t
 | <a id="elide_java_test-name"></a>name |  A unique name for this target.   | <a href="https://bazel.build/concepts/labels#target-names">Name</a> | required |  |
 | <a id="elide_java_test-deps"></a>deps |  -   | <a href="https://bazel.build/concepts/labels">List of labels</a> | optional |  `[]`  |
 | <a id="elide_java_test-srcs"></a>srcs |  -   | <a href="https://bazel.build/concepts/labels">List of labels</a> | optional |  `[]`  |
+| <a id="elide_java_test-data"></a>data |  -   | <a href="https://bazel.build/concepts/labels">List of labels</a> | optional |  `[]`  |
+| <a id="elide_java_test-resources"></a>resources |  -   | <a href="https://bazel.build/concepts/labels">List of labels</a> | optional |  `[]`  |
 | <a id="elide_java_test-exported_compiler_plugins"></a>exported_compiler_plugins |  -   | <a href="https://bazel.build/concepts/labels">List of labels</a> | optional |  `[]`  |
 | <a id="elide_java_test-exports"></a>exports |  -   | <a href="https://bazel.build/concepts/labels">List of labels</a> | optional |  `[]`  |
 | <a id="elide_java_test-javac_opts"></a>javac_opts |  -   | List of strings | optional |  `[]`  |
 | <a id="elide_java_test-jvm_flags"></a>jvm_flags |  -   | List of strings | optional |  `[]`  |
 | <a id="elide_java_test-neverlink"></a>neverlink |  -   | Boolean | optional |  `False`  |
+| <a id="elide_java_test-plugins"></a>plugins |  -   | <a href="https://bazel.build/concepts/labels">List of labels</a> | optional |  `[]`  |
+| <a id="elide_java_test-resource_jars"></a>resource_jars |  -   | <a href="https://bazel.build/concepts/labels">List of labels</a> | optional |  `[]`  |
 | <a id="elide_java_test-runtime_deps"></a>runtime_deps |  -   | <a href="https://bazel.build/concepts/labels">List of labels</a> | optional |  `[]`  |
-| <a id="elide_java_test-test_class"></a>test_class |  Single JUnit Platform test class to select. When unset, the runner scans the classpath.   | String | optional |  `""`  |
+| <a id="elide_java_test-test_class"></a>test_class |  Single JUnit Platform test class to select. Empty -> --scan-classpath.   | String | optional |  `""`  |
 
 
 <a id="elide_kotlin_binary"></a>
@@ -100,8 +133,9 @@ elide_java_test(<a href="#elide_java_test-name">name</a>, <a href="#elide_java_t
 <pre>
 load("@rules_elide//elide:defs.bzl", "elide_kotlin_binary")
 
-elide_kotlin_binary(<a href="#elide_kotlin_binary-name">name</a>, <a href="#elide_kotlin_binary-deps">deps</a>, <a href="#elide_kotlin_binary-srcs">srcs</a>, <a href="#elide_kotlin_binary-exported_compiler_plugins">exported_compiler_plugins</a>, <a href="#elide_kotlin_binary-exports">exports</a>, <a href="#elide_kotlin_binary-javac_opts">javac_opts</a>, <a href="#elide_kotlin_binary-jvm_flags">jvm_flags</a>,
-                    <a href="#elide_kotlin_binary-kotlinc_opts">kotlinc_opts</a>, <a href="#elide_kotlin_binary-main_class">main_class</a>, <a href="#elide_kotlin_binary-module_name">module_name</a>, <a href="#elide_kotlin_binary-neverlink">neverlink</a>, <a href="#elide_kotlin_binary-runtime_deps">runtime_deps</a>)
+elide_kotlin_binary(<a href="#elide_kotlin_binary-name">name</a>, <a href="#elide_kotlin_binary-deps">deps</a>, <a href="#elide_kotlin_binary-srcs">srcs</a>, <a href="#elide_kotlin_binary-data">data</a>, <a href="#elide_kotlin_binary-resources">resources</a>, <a href="#elide_kotlin_binary-associates">associates</a>, <a href="#elide_kotlin_binary-exported_compiler_plugins">exported_compiler_plugins</a>,
+                    <a href="#elide_kotlin_binary-exports">exports</a>, <a href="#elide_kotlin_binary-javac_opts">javac_opts</a>, <a href="#elide_kotlin_binary-jvm_flags">jvm_flags</a>, <a href="#elide_kotlin_binary-kotlinc_opts">kotlinc_opts</a>, <a href="#elide_kotlin_binary-main_class">main_class</a>, <a href="#elide_kotlin_binary-module_name">module_name</a>, <a href="#elide_kotlin_binary-neverlink">neverlink</a>,
+                    <a href="#elide_kotlin_binary-plugins">plugins</a>, <a href="#elide_kotlin_binary-resource_jars">resource_jars</a>, <a href="#elide_kotlin_binary-runtime_deps">runtime_deps</a>)
 </pre>
 
 
@@ -114,6 +148,9 @@ elide_kotlin_binary(<a href="#elide_kotlin_binary-name">name</a>, <a href="#elid
 | <a id="elide_kotlin_binary-name"></a>name |  A unique name for this target.   | <a href="https://bazel.build/concepts/labels#target-names">Name</a> | required |  |
 | <a id="elide_kotlin_binary-deps"></a>deps |  -   | <a href="https://bazel.build/concepts/labels">List of labels</a> | optional |  `[]`  |
 | <a id="elide_kotlin_binary-srcs"></a>srcs |  -   | <a href="https://bazel.build/concepts/labels">List of labels</a> | optional |  `[]`  |
+| <a id="elide_kotlin_binary-data"></a>data |  -   | <a href="https://bazel.build/concepts/labels">List of labels</a> | optional |  `[]`  |
+| <a id="elide_kotlin_binary-resources"></a>resources |  -   | <a href="https://bazel.build/concepts/labels">List of labels</a> | optional |  `[]`  |
+| <a id="elide_kotlin_binary-associates"></a>associates |  Targets whose compile jars become Kotlin friend-paths (grants internal visibility).   | <a href="https://bazel.build/concepts/labels">List of labels</a> | optional |  `[]`  |
 | <a id="elide_kotlin_binary-exported_compiler_plugins"></a>exported_compiler_plugins |  -   | <a href="https://bazel.build/concepts/labels">List of labels</a> | optional |  `[]`  |
 | <a id="elide_kotlin_binary-exports"></a>exports |  -   | <a href="https://bazel.build/concepts/labels">List of labels</a> | optional |  `[]`  |
 | <a id="elide_kotlin_binary-javac_opts"></a>javac_opts |  -   | List of strings | optional |  `[]`  |
@@ -122,6 +159,8 @@ elide_kotlin_binary(<a href="#elide_kotlin_binary-name">name</a>, <a href="#elid
 | <a id="elide_kotlin_binary-main_class"></a>main_class |  -   | String | required |  |
 | <a id="elide_kotlin_binary-module_name"></a>module_name |  -   | String | optional |  `""`  |
 | <a id="elide_kotlin_binary-neverlink"></a>neverlink |  -   | Boolean | optional |  `False`  |
+| <a id="elide_kotlin_binary-plugins"></a>plugins |  -   | <a href="https://bazel.build/concepts/labels">List of labels</a> | optional |  `[]`  |
+| <a id="elide_kotlin_binary-resource_jars"></a>resource_jars |  -   | <a href="https://bazel.build/concepts/labels">List of labels</a> | optional |  `[]`  |
 | <a id="elide_kotlin_binary-runtime_deps"></a>runtime_deps |  -   | <a href="https://bazel.build/concepts/labels">List of labels</a> | optional |  `[]`  |
 
 
@@ -132,8 +171,9 @@ elide_kotlin_binary(<a href="#elide_kotlin_binary-name">name</a>, <a href="#elid
 <pre>
 load("@rules_elide//elide:defs.bzl", "elide_kotlin_library")
 
-elide_kotlin_library(<a href="#elide_kotlin_library-name">name</a>, <a href="#elide_kotlin_library-deps">deps</a>, <a href="#elide_kotlin_library-srcs">srcs</a>, <a href="#elide_kotlin_library-exported_compiler_plugins">exported_compiler_plugins</a>, <a href="#elide_kotlin_library-exports">exports</a>, <a href="#elide_kotlin_library-javac_opts">javac_opts</a>, <a href="#elide_kotlin_library-kotlinc_opts">kotlinc_opts</a>,
-                     <a href="#elide_kotlin_library-module_name">module_name</a>, <a href="#elide_kotlin_library-neverlink">neverlink</a>, <a href="#elide_kotlin_library-runtime_deps">runtime_deps</a>)
+elide_kotlin_library(<a href="#elide_kotlin_library-name">name</a>, <a href="#elide_kotlin_library-deps">deps</a>, <a href="#elide_kotlin_library-srcs">srcs</a>, <a href="#elide_kotlin_library-data">data</a>, <a href="#elide_kotlin_library-resources">resources</a>, <a href="#elide_kotlin_library-associates">associates</a>, <a href="#elide_kotlin_library-exported_compiler_plugins">exported_compiler_plugins</a>,
+                     <a href="#elide_kotlin_library-exports">exports</a>, <a href="#elide_kotlin_library-javac_opts">javac_opts</a>, <a href="#elide_kotlin_library-kotlinc_opts">kotlinc_opts</a>, <a href="#elide_kotlin_library-module_name">module_name</a>, <a href="#elide_kotlin_library-neverlink">neverlink</a>, <a href="#elide_kotlin_library-plugins">plugins</a>,
+                     <a href="#elide_kotlin_library-resource_jars">resource_jars</a>, <a href="#elide_kotlin_library-runtime_deps">runtime_deps</a>)
 </pre>
 
 
@@ -146,12 +186,17 @@ elide_kotlin_library(<a href="#elide_kotlin_library-name">name</a>, <a href="#el
 | <a id="elide_kotlin_library-name"></a>name |  A unique name for this target.   | <a href="https://bazel.build/concepts/labels#target-names">Name</a> | required |  |
 | <a id="elide_kotlin_library-deps"></a>deps |  -   | <a href="https://bazel.build/concepts/labels">List of labels</a> | optional |  `[]`  |
 | <a id="elide_kotlin_library-srcs"></a>srcs |  -   | <a href="https://bazel.build/concepts/labels">List of labels</a> | optional |  `[]`  |
+| <a id="elide_kotlin_library-data"></a>data |  -   | <a href="https://bazel.build/concepts/labels">List of labels</a> | optional |  `[]`  |
+| <a id="elide_kotlin_library-resources"></a>resources |  -   | <a href="https://bazel.build/concepts/labels">List of labels</a> | optional |  `[]`  |
+| <a id="elide_kotlin_library-associates"></a>associates |  Targets whose compile jars become Kotlin friend-paths (grants internal visibility).   | <a href="https://bazel.build/concepts/labels">List of labels</a> | optional |  `[]`  |
 | <a id="elide_kotlin_library-exported_compiler_plugins"></a>exported_compiler_plugins |  -   | <a href="https://bazel.build/concepts/labels">List of labels</a> | optional |  `[]`  |
 | <a id="elide_kotlin_library-exports"></a>exports |  -   | <a href="https://bazel.build/concepts/labels">List of labels</a> | optional |  `[]`  |
 | <a id="elide_kotlin_library-javac_opts"></a>javac_opts |  -   | List of strings | optional |  `[]`  |
 | <a id="elide_kotlin_library-kotlinc_opts"></a>kotlinc_opts |  -   | List of strings | optional |  `[]`  |
 | <a id="elide_kotlin_library-module_name"></a>module_name |  -   | String | optional |  `""`  |
 | <a id="elide_kotlin_library-neverlink"></a>neverlink |  -   | Boolean | optional |  `False`  |
+| <a id="elide_kotlin_library-plugins"></a>plugins |  -   | <a href="https://bazel.build/concepts/labels">List of labels</a> | optional |  `[]`  |
+| <a id="elide_kotlin_library-resource_jars"></a>resource_jars |  -   | <a href="https://bazel.build/concepts/labels">List of labels</a> | optional |  `[]`  |
 | <a id="elide_kotlin_library-runtime_deps"></a>runtime_deps |  -   | <a href="https://bazel.build/concepts/labels">List of labels</a> | optional |  `[]`  |
 
 
@@ -162,8 +207,9 @@ elide_kotlin_library(<a href="#elide_kotlin_library-name">name</a>, <a href="#el
 <pre>
 load("@rules_elide//elide:defs.bzl", "elide_kotlin_test")
 
-elide_kotlin_test(<a href="#elide_kotlin_test-name">name</a>, <a href="#elide_kotlin_test-deps">deps</a>, <a href="#elide_kotlin_test-srcs">srcs</a>, <a href="#elide_kotlin_test-exported_compiler_plugins">exported_compiler_plugins</a>, <a href="#elide_kotlin_test-exports">exports</a>, <a href="#elide_kotlin_test-javac_opts">javac_opts</a>, <a href="#elide_kotlin_test-jvm_flags">jvm_flags</a>,
-                  <a href="#elide_kotlin_test-kotlinc_opts">kotlinc_opts</a>, <a href="#elide_kotlin_test-module_name">module_name</a>, <a href="#elide_kotlin_test-neverlink">neverlink</a>, <a href="#elide_kotlin_test-runtime_deps">runtime_deps</a>, <a href="#elide_kotlin_test-test_class">test_class</a>)
+elide_kotlin_test(<a href="#elide_kotlin_test-name">name</a>, <a href="#elide_kotlin_test-deps">deps</a>, <a href="#elide_kotlin_test-srcs">srcs</a>, <a href="#elide_kotlin_test-data">data</a>, <a href="#elide_kotlin_test-resources">resources</a>, <a href="#elide_kotlin_test-associates">associates</a>, <a href="#elide_kotlin_test-exported_compiler_plugins">exported_compiler_plugins</a>, <a href="#elide_kotlin_test-exports">exports</a>,
+                  <a href="#elide_kotlin_test-javac_opts">javac_opts</a>, <a href="#elide_kotlin_test-jvm_flags">jvm_flags</a>, <a href="#elide_kotlin_test-kotlinc_opts">kotlinc_opts</a>, <a href="#elide_kotlin_test-module_name">module_name</a>, <a href="#elide_kotlin_test-neverlink">neverlink</a>, <a href="#elide_kotlin_test-plugins">plugins</a>, <a href="#elide_kotlin_test-resource_jars">resource_jars</a>,
+                  <a href="#elide_kotlin_test-runtime_deps">runtime_deps</a>, <a href="#elide_kotlin_test-test_class">test_class</a>)
 </pre>
 
 
@@ -176,6 +222,9 @@ elide_kotlin_test(<a href="#elide_kotlin_test-name">name</a>, <a href="#elide_ko
 | <a id="elide_kotlin_test-name"></a>name |  A unique name for this target.   | <a href="https://bazel.build/concepts/labels#target-names">Name</a> | required |  |
 | <a id="elide_kotlin_test-deps"></a>deps |  -   | <a href="https://bazel.build/concepts/labels">List of labels</a> | optional |  `[]`  |
 | <a id="elide_kotlin_test-srcs"></a>srcs |  -   | <a href="https://bazel.build/concepts/labels">List of labels</a> | optional |  `[]`  |
+| <a id="elide_kotlin_test-data"></a>data |  -   | <a href="https://bazel.build/concepts/labels">List of labels</a> | optional |  `[]`  |
+| <a id="elide_kotlin_test-resources"></a>resources |  -   | <a href="https://bazel.build/concepts/labels">List of labels</a> | optional |  `[]`  |
+| <a id="elide_kotlin_test-associates"></a>associates |  Targets whose compile jars become Kotlin friend-paths (grants internal visibility).   | <a href="https://bazel.build/concepts/labels">List of labels</a> | optional |  `[]`  |
 | <a id="elide_kotlin_test-exported_compiler_plugins"></a>exported_compiler_plugins |  -   | <a href="https://bazel.build/concepts/labels">List of labels</a> | optional |  `[]`  |
 | <a id="elide_kotlin_test-exports"></a>exports |  -   | <a href="https://bazel.build/concepts/labels">List of labels</a> | optional |  `[]`  |
 | <a id="elide_kotlin_test-javac_opts"></a>javac_opts |  -   | List of strings | optional |  `[]`  |
@@ -183,8 +232,10 @@ elide_kotlin_test(<a href="#elide_kotlin_test-name">name</a>, <a href="#elide_ko
 | <a id="elide_kotlin_test-kotlinc_opts"></a>kotlinc_opts |  -   | List of strings | optional |  `[]`  |
 | <a id="elide_kotlin_test-module_name"></a>module_name |  -   | String | optional |  `""`  |
 | <a id="elide_kotlin_test-neverlink"></a>neverlink |  -   | Boolean | optional |  `False`  |
+| <a id="elide_kotlin_test-plugins"></a>plugins |  -   | <a href="https://bazel.build/concepts/labels">List of labels</a> | optional |  `[]`  |
+| <a id="elide_kotlin_test-resource_jars"></a>resource_jars |  -   | <a href="https://bazel.build/concepts/labels">List of labels</a> | optional |  `[]`  |
 | <a id="elide_kotlin_test-runtime_deps"></a>runtime_deps |  -   | <a href="https://bazel.build/concepts/labels">List of labels</a> | optional |  `[]`  |
-| <a id="elide_kotlin_test-test_class"></a>test_class |  Single JUnit Platform test class to select. When unset, the runner scans the classpath.   | String | optional |  `""`  |
+| <a id="elide_kotlin_test-test_class"></a>test_class |  Single JUnit Platform test class to select. Empty -> --scan-classpath.   | String | optional |  `""`  |
 
 
 <a id="elide_native_image"></a>
@@ -207,7 +258,7 @@ elide_native_image(<a href="#elide_native_image-name">name</a>, <a href="#elide_
 | <a id="elide_native_image-name"></a>name |  A unique name for this target.   | <a href="https://bazel.build/concepts/labels#target-names">Name</a> | required |  |
 | <a id="elide_native_image-deps"></a>deps |  JVM dependencies whose runtime classpath enters the native image.   | <a href="https://bazel.build/concepts/labels">List of labels</a> | optional |  `[]`  |
 | <a id="elide_native_image-main_class"></a>main_class |  Fully qualified main class.   | String | required |  |
-| <a id="elide_native_image-native_image_opts"></a>native_image_opts |  Extra flags appended to the elide native-image invocation.   | List of strings | optional |  `[]`  |
+| <a id="elide_native_image-native_image_opts"></a>native_image_opts |  Extra flags appended to the native-image invocation.   | List of strings | optional |  `[]`  |
 
 
 <a id="elide_toolchain"></a>

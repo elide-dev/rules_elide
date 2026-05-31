@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: Apache-2.0
+
 """Analysis tests for the elide_toolchain rule."""
 
 load("@bazel_skylib//lib:unittest.bzl", "analysistest", "asserts")

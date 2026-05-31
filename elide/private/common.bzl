@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: Apache-2.0
+
 """Internal helpers shared by rules_elide compile rules."""
 
 load("//elide:providers.bzl", "ElideInfo")

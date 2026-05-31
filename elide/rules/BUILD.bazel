@@ -3,6 +3,7 @@ load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
 package(default_visibility = ["//visibility:public"])
 
 exports_files([
+    "format.bzl",
     "java.bzl",
     "kotlin.bzl",
     "native_image.bzl",
@@ -32,5 +33,14 @@ bzl_library(
     deps = [
         "//elide/private:compile_common",
         "@rules_java//java/common",
+    ],
+)
+
+bzl_library(
+    name = "format",
+    srcs = ["format.bzl"],
+    deps = [
+        "//elide/private:compile_common",
+        "@bazel_skylib//lib:shell",
     ],
 )

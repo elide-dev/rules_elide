@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: Apache-2.0
+
 """The elide_toolchain rule wraps a concrete elide binary as a Bazel toolchain."""
 
 load(":providers.bzl", "ElideToolchainInfo")
@@ -28,6 +30,7 @@ elide_toolchain = rule(
         "tool_files": attr.label_list(
             doc = "Additional runfiles required by the elide binary at action time.",
             allow_files = True,
+            cfg = "exec",
         ),
         "version": attr.string(
             doc = "Semantic version of the elide binary.",

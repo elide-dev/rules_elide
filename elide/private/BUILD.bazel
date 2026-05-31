@@ -31,6 +31,7 @@ bzl_library(
     deps = [
         ":common",
         "//elide:providers",
+        "@bazel_skylib//lib:shell",
         "@rules_java//java/common",
     ],
 )

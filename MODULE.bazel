@@ -1,6 +1,5 @@
 module(
     name = "rules_elide",
-    version = "0.0.1",
     bazel_compatibility = [">=7.4.0"],
     compatibility_level = 1,
 )

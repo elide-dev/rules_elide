@@ -1,23 +1,30 @@
+# SPDX-License-Identifier: Apache-2.0
+
 """Repository rule that downloads one elide release artifact for one platform."""
 
-load(":versions.bzl", "DEFAULT_URL_TEMPLATE", "archive_ext", "binary_ext")
+load(":versions.bzl", "DEFAULT_CHANNEL", "DEFAULT_URL_TEMPLATE", "archive_ext", "binary_ext")
 
 visibility(["//elide/...", "//tests/..."])
 
+# Generated BUILD.bazel for the per-platform download repo.
+# - `elide_files` carries the full extracted distribution as runfiles so that
+#   actions invoking `:elide_bin` see sibling resources (`resources/`, jars, etc.).
+# - `elide_bin` is the wrapped executable target.
 _BUILD_TEMPLATE = """\
 load("@bazel_skylib//rules:native_binary.bzl", "native_binary")
 
 package(default_visibility = ["//visibility:public"])
 
+filegroup(
+    name = "elide_files",
+    srcs = glob(["**"], exclude = ["BUILD.bazel", "WORKSPACE", "WORKSPACE.bazel"]),
+)
+
 native_binary(
     name = "elide_bin",
     src = "{binary_path}",
     out = "elide_bin{bin_ext}",
-)
-
-filegroup(
-    name = "tool_files",
-    srcs = ["{binary_path}"],
+    data = [":elide_files"],
 )
 """
 
@@ -25,16 +32,16 @@ def _elide_download_impl(ctx):
     os = ctx.attr.os
     cpu = ctx.attr.cpu
     url = (ctx.attr.url_template or DEFAULT_URL_TEMPLATE).format(
+        channel = ctx.attr.channel or DEFAULT_CHANNEL,
         version = ctx.attr.version,
         os = os,
         cpu = cpu,
         ext = archive_ext(os),
     )
-    strip_prefix = ctx.attr.strip_prefix.format(version = ctx.attr.version)
     ctx.download_and_extract(
         url = url,
         integrity = ctx.attr.integrity,
-        stripPrefix = strip_prefix,
+        stripPrefix = ctx.attr.strip_prefix,
         canonical_id = "elide-{version}-{os}-{cpu}".format(
             version = ctx.attr.version,
             os = os,
@@ -55,15 +62,20 @@ elide_download = repository_rule(
             doc = "Path to the elide executable inside the archive after strip. " +
                   "Defaults to bin/elide(.exe on windows).",
         ),
+        "channel": attr.string(
+            doc = "Release channel: nightly, preview, or release. Defaults to the " +
+                  "value of DEFAULT_CHANNEL in versions.bzl.",
+        ),
         "cpu": attr.string(mandatory = True),
         "integrity": attr.string(mandatory = True),
         "os": attr.string(mandatory = True),
         "strip_prefix": attr.string(
-            default = "elide-{version}",
-            doc = "Top-level archive directory to strip. Token: {version}.",
+            default = "",
+            doc = "Top-level archive directory to strip. Default empty (CDN " +
+                  "artifacts unpack directly to bin/, resources/, ...).",
         ),
         "url_template": attr.string(
-            doc = "Override release URL. Tokens: {version}, {os}, {cpu}, {ext}.",
+            doc = "Override release URL. Tokens: {channel}, {version}, {os}, {cpu}, {ext}.",
         ),
         "version": attr.string(mandatory = True),
     },

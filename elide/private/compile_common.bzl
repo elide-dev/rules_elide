@@ -1,5 +1,8 @@
-"""Shared helpers for elide compile rules (Java, Kotlin)."""
+# SPDX-License-Identifier: Apache-2.0
 
+"""Shared helpers for elide compile rules (Java, Kotlin, native-image)."""
+
+load("@bazel_skylib//lib:shell.bzl", "shell")
 load("@rules_java//java/common:java_common.bzl", "java_common")
 load("@rules_java//java/common:java_info.bzl", "JavaInfo")
 load("//elide:providers.bzl", "ElideInfo")
@@ -8,6 +11,11 @@ load("//elide/private:common.bzl", "collect_exported_plugins")
 visibility(["//elide/..."])
 
 TOOLCHAIN_TYPE = "//elide:toolchain_type"
+
+# JUnit Platform ConsoleLauncher main class. Consumers must include
+# `org.junit.platform:junit-platform-console-standalone` on the test classpath
+# (typically as a `runtime_deps` entry) for elide_*_test rules to launch.
+JUNIT_CONSOLE_LAUNCHER_MAIN = "org.junit.platform.console.ConsoleLauncher"
 
 def _merge_java_infos(deps):
     return [d[JavaInfo] for d in deps if JavaInfo in d]
@@ -41,68 +49,156 @@ def runtime_classpath(deps, runtime_deps):
         return depset()
     return java_common.merge(java_infos).transitive_runtime_jars
 
-def run_compile(ctx, output_jar, subcommand, mnemonic, extra_args = None):
-    """Invokes the elide CLI to compile sources into output_jar.
+def _plugin_classpath(plugins):
+    java_infos = _merge_java_infos(plugins)
+    if not java_infos:
+        return depset()
+    return java_common.merge(java_infos).transitive_runtime_jars
 
-    Args are routed through a Bazel param file ("--flagfile=<path>", multiline
-    format) and the action declares persistent + multiplex worker support, so
-    the elide CLI can re-use a warm JVM when it implements the worker
-    protocol; otherwise Bazel transparently falls back to standalone.
+def run_javac(ctx, output_jar):
+    """Runs `elide javac` to compile `.java` sources into `output_jar`.
+
+    Uses the non-standard `--jar=<path>` flag (`elide javac --jar`) to ask the
+    embedded tool to pack the compiled classes directly into a JAR.
 
     Args:
-        ctx: rule context.
+        ctx: rule context. Must expose attrs srcs/deps/javac_opts/plugins.
         output_jar: File. Declared output classes jar.
-        subcommand: string. Elide subcommand (e.g. compile-java, compile-kotlin).
-        mnemonic: string. Bazel action mnemonic.
-        extra_args: list[string] or None. Extra CLI args appended before srcs.
     """
     elide = ctx.toolchains[TOOLCHAIN_TYPE].elide_info
     classpath = compile_classpath(ctx.attr.deps)
+    plugin_cp = _plugin_classpath(ctx.attr.plugins) if hasattr(ctx.attr, "plugins") else depset()
+    sep = ctx.configuration.host_path_separator
+
     args = ctx.actions.args()
-    args.set_param_file_format("multiline")
-    args.use_param_file("--flagfile=%s", use_always = True)
-    args.add(subcommand)
-    args.add("--output-jar", output_jar)
-    args.add_joined("--classpath", classpath, join_with = ctx.configuration.host_path_separator)
-    if extra_args:
-        for a in extra_args:
-            args.add(a)
+    args.add("javac")
+    args.add("--jar", output_jar)
+    args.add("--")
+    full_cp = depset(transitive = [classpath, plugin_cp])
+    args.add_joined("-classpath", full_cp, join_with = sep)
+    for o in ctx.attr.javac_opts:
+        args.add(o)
     args.add_all(ctx.files.srcs)
+
     ctx.actions.run(
-        mnemonic = mnemonic,
+        mnemonic = "ElideJavac",
         executable = elide.binary,
         arguments = [args],
-        inputs = depset(direct = ctx.files.srcs, transitive = [classpath, elide.tool_files]),
+        inputs = depset(direct = ctx.files.srcs, transitive = [classpath, plugin_cp, elide.tool_files]),
         outputs = [output_jar],
-        progress_message = "Compiling %{label}",
-        execution_requirements = {
-            "supports-multiplex-workers": "1",
-            "supports-workers": "1",
-            "worker-key-mnemonic": mnemonic,
-        },
+        progress_message = "Compiling %{label} (elide javac)",
     )
 
-def make_java_info(ctx, output_jar):
+def _friend_paths(associates):
+    paths = []
+    transitive = []
+    for assoc in associates:
+        if JavaInfo in assoc:
+            jars = assoc[JavaInfo].compile_jars
+            transitive.append(jars)
+            for jar in jars.to_list():
+                paths.append(jar.path)
+    return paths, depset(transitive = transitive)
+
+def run_kotlinc(ctx, output_jar):
+    """Runs `elide kotlinc` to compile mixed `.kt`/`.java` sources into a JAR.
+
+    kotlinc produces a JAR directly when given `-d <name>.jar`.
+
+    Args:
+        ctx: rule context. Must expose srcs/deps/kotlinc_opts/javac_opts/module_name/
+            plugins/associates.
+        output_jar: File. Declared output JAR (kotlinc writes it directly).
+    """
+    elide = ctx.toolchains[TOOLCHAIN_TYPE].elide_info
+    classpath = compile_classpath(ctx.attr.deps)
+    plugin_cp = _plugin_classpath(ctx.attr.plugins) if hasattr(ctx.attr, "plugins") else depset()
+    friend_path_strs, friend_jars = _friend_paths(getattr(ctx.attr, "associates", []))
+    sep = ctx.configuration.host_path_separator
+
+    args = ctx.actions.args()
+    args.add("kotlinc")
+    args.add("--")
+    args.add("-d", output_jar)
+    full_cp = depset(transitive = [classpath, plugin_cp, friend_jars])
+    args.add_joined("-classpath", full_cp, join_with = sep)
+    if ctx.attr.module_name:
+        args.add("-module-name", ctx.attr.module_name)
+    if friend_path_strs:
+        args.add("-Xfriend-paths=" + ",".join(friend_path_strs))
+    for plugin in ctx.attr.plugins:
+        for f in plugin[JavaInfo].transitive_runtime_jars.to_list():
+            args.add("-Xplugin=" + f.path)
+    for o in ctx.attr.kotlinc_opts:
+        args.add(o)
+    for o in ctx.attr.javac_opts:
+        args.add("-Xjavac-arguments=" + o)
+    args.add_all(ctx.files.srcs)
+
+    ctx.actions.run(
+        mnemonic = "ElideKotlinc",
+        executable = elide.binary,
+        arguments = [args],
+        inputs = depset(
+            direct = ctx.files.srcs,
+            transitive = [classpath, plugin_cp, friend_jars, elide.tool_files],
+        ),
+        outputs = [output_jar],
+        progress_message = "Compiling %{label} (elide kotlinc)",
+    )
+
+def make_java_info(ctx, output_jar, source_jar = None):
     """Builds the JavaInfo emitted by elide compile rules.
 
     Args:
         ctx: rule context.
         output_jar: File. Compiled classes jar.
+        source_jar: File or None. Optional sources jar (sets JavaInfo.source_jar).
 
     Returns:
-        JavaInfo carrying output_jar plus merged transitive deps.
+        JavaInfo carrying output_jar + ijar-derived compile jar + merged deps.
     """
+    java_toolchain = ctx.toolchains["@bazel_tools//tools/jdk:toolchain_type"].java
+    compile_jar = java_common.run_ijar(
+        actions = ctx.actions,
+        jar = output_jar,
+        target_label = ctx.label,
+        java_toolchain = java_toolchain,
+    )
     return JavaInfo(
         output_jar = output_jar,
-        compile_jar = output_jar,
+        compile_jar = compile_jar,
+        source_jar = source_jar,
         deps = _merge_java_infos(ctx.attr.deps),
         runtime_deps = _merge_java_infos(ctx.attr.runtime_deps),
         exports = _merge_java_infos(ctx.attr.exports),
         neverlink = getattr(ctx.attr, "neverlink", False),
     )
 
+def pack_source_jar(ctx):
+    """Packs `srcs` into a sources jar via the JDK java_toolchain.
+
+    Args:
+        ctx: rule context. Must expose `srcs` and resolve the JDK toolchain.
+
+    Returns:
+        File: declared `<name>-sources.jar`.
+    """
+    java_toolchain = ctx.toolchains["@bazel_tools//tools/jdk:toolchain_type"].java
+    source_jar = ctx.actions.declare_file(ctx.label.name + "-sources.jar")
+    java_common.pack_sources(
+        actions = ctx.actions,
+        output_source_jar = source_jar,
+        sources = ctx.files.srcs,
+        java_toolchain = java_toolchain,
+    )
+    return source_jar
+
 def make_elide_info(ctx):
     """Builds the ElideInfo emitted by elide compile rules.
+
+    Propagates `exported_compiler_plugins` from `exports + exported_compiler_plugins`
+    so downstream consumers transparently inherit plugin classpaths.
 
     Args:
         ctx: rule context.
@@ -119,7 +215,8 @@ def make_elide_info(ctx):
 
 _LAUNCHER_TEMPLATE = """\
 #!/bin/sh
-exec "{elide}" run-jvm {jvm_flags}--classpath="{classpath}" -- {main_class} "$@"
+set -eu
+exec {elide} java -- {jvm_flags}-cp {classpath} {main_class} "$@"
 """
 
 def build_launcher(ctx, output_jar):
@@ -137,55 +234,62 @@ def build_launcher(ctx, output_jar):
         direct = [output_jar],
         transitive = [runtime_classpath(ctx.attr.deps, ctx.attr.runtime_deps)],
     )
-    classpath_str = ctx.configuration.host_path_separator.join(
-        [f.short_path for f in classpath.to_list()],
+    sep = ctx.configuration.host_path_separator
+    classpath_str = sep.join([f.short_path for f in classpath.to_list()])
+    jvm_flags = "".join([shell.quote(f) + " " for f in ctx.attr.jvm_flags])
+    content = _LAUNCHER_TEMPLATE.format(
+        elide = shell.quote(elide.binary.short_path),
+        jvm_flags = jvm_flags,
+        classpath = shell.quote(classpath_str),
+        main_class = shell.quote(ctx.attr.main_class),
     )
-    jvm_flags = "".join([f + " " for f in ctx.attr.jvm_flags])
-    launcher = ctx.actions.declare_file(ctx.label.name)
-    ctx.actions.write(
-        output = launcher,
-        content = _LAUNCHER_TEMPLATE.format(
-            elide = elide.binary.short_path,
-            jvm_flags = jvm_flags,
-            classpath = classpath_str,
-            main_class = ctx.attr.main_class,
-        ),
-        is_executable = True,
-    )
+    launcher = ctx.actions.declare_file(ctx.label.name + "_launcher.sh")
+    ctx.actions.write(output = launcher, content = content, is_executable = True)
     runfiles = ctx.runfiles(
-        files = [output_jar, launcher] + ctx.files.runtime_deps,
+        files = [output_jar, launcher],
         transitive_files = depset(transitive = [elide.tool_files, classpath]),
     )
     return launcher, runfiles
 
-COMMON_LIBRARY_ATTRS = {
-    "deps": attr.label_list(providers = [[JavaInfo]]),
-    "exported_compiler_plugins": attr.label_list(providers = [[ElideInfo]]),
-    "exports": attr.label_list(providers = [[JavaInfo]]),
-    "neverlink": attr.bool(default = False),
-    "runtime_deps": attr.label_list(providers = [[JavaInfo]]),
-}
-
-COMMON_BINARY_EXTRA_ATTRS = {
-    "jvm_flags": attr.string_list(),
-    "main_class": attr.string(mandatory = True),
-}
-
-COMMON_TEST_EXTRA_ATTRS = {
-    "jvm_flags": attr.string_list(),
-    "test_class": attr.string(
-        doc = "Single JUnit Platform test class to select. " +
-              "When unset, the runner scans the classpath.",
-    ),
-}
-
 _TEST_LAUNCHER_TEMPLATE = """\
 #!/bin/sh
-exec "{elide}" run-test --junit-platform {jvm_flags}--classpath="{classpath}" {selector} "$@"
+set -eu
+# Bazel test runner contract: honour TEST_TMPDIR, XML_OUTPUT_FILE, TEST_FILTER.
+reports_dir="${{TEST_TMPDIR:-/tmp}}/reports"
+mkdir -p "$reports_dir"
+
+selector_flag={selector_flag}
+filter_flag=""
+if [ -n "${{TEST_FILTER:-}}" ]; then
+  filter_flag="--include-classname=${{TEST_FILTER}}"
+fi
+
+set +e
+{elide} java -- {jvm_flags}-cp {classpath} \\
+  org.junit.platform.console.ConsoleLauncher execute \\
+  $selector_flag \\
+  --reports-dir="$reports_dir" \\
+  $filter_flag
+status=$?
+set -e
+
+if [ -n "${{XML_OUTPUT_FILE:-}}" ]; then
+  for f in "$reports_dir"/TEST-*.xml; do
+    if [ -f "$f" ]; then
+      cp "$f" "$XML_OUTPUT_FILE"
+      break
+    fi
+  done
+fi
+exit $status
 """
 
 def build_test_launcher(ctx, output_jar):
     """Writes a JUnit Platform launcher for a test target.
+
+    Honours Bazel's test runner contract: TEST_TMPDIR, XML_OUTPUT_FILE, and
+    TEST_FILTER. Consumers must place `junit-platform-console-standalone` on
+    the test classpath (typically via `runtime_deps`).
 
     Args:
         ctx: rule context.
@@ -199,24 +303,83 @@ def build_test_launcher(ctx, output_jar):
         direct = [output_jar],
         transitive = [runtime_classpath(ctx.attr.deps, ctx.attr.runtime_deps)],
     )
-    classpath_str = ctx.configuration.host_path_separator.join(
-        [f.short_path for f in classpath.to_list()],
+    sep = ctx.configuration.host_path_separator
+    classpath_str = sep.join([f.short_path for f in classpath.to_list()])
+    jvm_flags = "".join([shell.quote(f) + " " for f in ctx.attr.jvm_flags])
+
+    selector_flag = (
+        "--select-class=" + shell.quote(ctx.attr.test_class) if ctx.attr.test_class else "--scan-classpath"
     )
-    jvm_flags = "".join([f + " " for f in ctx.attr.jvm_flags])
-    selector = "--test-class=" + ctx.attr.test_class if ctx.attr.test_class else "--scan-classpath"
-    launcher = ctx.actions.declare_file(ctx.label.name)
-    ctx.actions.write(
-        output = launcher,
-        content = _TEST_LAUNCHER_TEMPLATE.format(
-            elide = elide.binary.short_path,
-            jvm_flags = jvm_flags,
-            classpath = classpath_str,
-            selector = selector,
-        ),
-        is_executable = True,
+    content = _TEST_LAUNCHER_TEMPLATE.format(
+        elide = shell.quote(elide.binary.short_path),
+        jvm_flags = jvm_flags,
+        classpath = shell.quote(classpath_str),
+        selector_flag = shell.quote(selector_flag),
     )
+    launcher = ctx.actions.declare_file(ctx.label.name + "_launcher.sh")
+    ctx.actions.write(output = launcher, content = content, is_executable = True)
     runfiles = ctx.runfiles(
-        files = [output_jar, launcher] + ctx.files.runtime_deps,
+        files = [output_jar, launcher],
         transitive_files = depset(transitive = [elide.tool_files, classpath]),
     )
     return launcher, runfiles
+
+# Common attribute sets used by Java and Kotlin compile rules.
+
+COMMON_LIBRARY_ATTRS = {
+    "data": attr.label_list(
+        doc = "Files made available to this target's runfiles at action time.",
+        allow_files = True,
+    ),
+    "deps": attr.label_list(
+        doc = "Compile-time dependencies. Targets must provide JavaInfo.",
+        providers = [[JavaInfo]],
+    ),
+    "exported_compiler_plugins": attr.label_list(
+        doc = "Compiler plugins propagated to direct rdeps via ElideInfo (mirrors java_plugin.exported_plugins).",
+        providers = [[ElideInfo]],
+    ),
+    "exports": attr.label_list(
+        doc = "Targets re-exported to direct rdeps (transitive compile classpath).",
+        providers = [[JavaInfo]],
+    ),
+    "neverlink": attr.bool(
+        default = False,
+        doc = "If true, outputs are used only for compilation, not packaged into binaries.",
+    ),
+    "plugins": attr.label_list(
+        doc = "Compiler plugins for this compilation (only). Targets must provide JavaInfo.",
+        providers = [[JavaInfo]],
+    ),
+    "resource_jars": attr.label_list(
+        doc = "Pre-built JARs whose contents are merged into the output JAR.",
+        allow_files = [".jar"],
+    ),
+    "resources": attr.label_list(
+        doc = "Resource files packaged into the output JAR alongside compiled classes.",
+        allow_files = True,
+    ),
+    "runtime_deps": attr.label_list(
+        doc = "Runtime-only dependencies (excluded from compile classpath).",
+        providers = [[JavaInfo]],
+    ),
+}
+
+COMMON_BINARY_EXTRA_ATTRS = {
+    "jvm_flags": attr.string_list(
+        doc = "Flags passed to the JVM when running the binary.",
+    ),
+    "main_class": attr.string(
+        doc = "Fully qualified main class.",
+        mandatory = True,
+    ),
+}
+
+COMMON_TEST_EXTRA_ATTRS = {
+    "jvm_flags": attr.string_list(
+        doc = "Flags passed to the JVM when running the test.",
+    ),
+    "test_class": attr.string(
+        doc = "Single JUnit Platform test class to select. Empty -> --scan-classpath.",
+    ),
+}

@@ -40,6 +40,7 @@ bzl_library(
     deps = [
         ":providers",
         ":toolchain",
+        "//elide/rules:format",
         "//elide/rules:java",
         "//elide/rules:kotlin",
         "//elide/rules:native_image",

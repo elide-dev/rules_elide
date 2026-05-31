@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: Apache-2.0
+
 """Analysis tests for elide/private/common.bzl helpers."""
 
 load("@bazel_skylib//lib:unittest.bzl", "analysistest", "asserts")
