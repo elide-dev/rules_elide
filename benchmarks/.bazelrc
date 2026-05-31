@@ -1,0 +1,11 @@
+common --enable_bzlmod
+common --lockfile_mode=update
+build --incompatible_strict_action_env
+build --cxxopt=-std=c++17
+build --host_cxxopt=-std=c++17
+
+# Pin to hermetic remote JDK so vanilla targets don't probe a (possibly
+# incomplete) local JDK installation.
+build --java_runtime_version=remotejdk_21
+build --tool_java_runtime_version=remotejdk_21
+build --java_language_version=21

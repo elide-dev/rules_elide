@@ -1,0 +1,28 @@
+load("@rules_elide//elide:defs.bzl", "elide_java_library", "elide_kotlin_library")
+load("@rules_java//java:defs.bzl", "java_library")
+load("@rules_kotlin//kotlin:jvm.bzl", "kt_jvm_library")
+
+package(default_visibility = ["//visibility:public"])
+
+# --- Elide-rules targets ------------------------------------------------
+elide_java_library(
+    name = "elide_java_lib",
+    srcs = glob(["sources/java/**/*.java"]),
+)
+
+elide_kotlin_library(
+    name = "elide_kotlin_lib",
+    srcs = glob(["sources/kotlin/**/*.kt"]),
+    module_name = "bench_elide_kotlin",
+)
+
+# --- Canonical baseline targets -----------------------------------------
+java_library(
+    name = "vanilla_java_lib",
+    srcs = glob(["sources/java/**/*.java"]),
+)
+
+kt_jvm_library(
+    name = "vanilla_kotlin_lib",
+    srcs = glob(["sources/kotlin/**/*.kt"]),
+)

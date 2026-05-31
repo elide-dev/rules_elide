@@ -157,13 +157,16 @@ not mix languages — split into two `elide_format` targets if needed.
 
 | If you currently use…    | Migrate to `rules_elide` for…                                              |
 |--------------------------|----------------------------------------------------------------------------|
-| `rules_java`             | Faster compile (Elide-native), JUnit 5 native, ABI ijar + source jars      |
-| `rules_kotlin`           | Same rule surface (compile-time-compatible JavaInfo), single Elide JDK     |
+| `rules_java`             | Faster compile in steady state (~2.8x on micro-bench), JUnit 5 native, ABI ijar + source jars |
+| `rules_kotlin`           | Faster compile (~5.5x on micro-bench), compile-time-compatible JavaInfo, single Elide JDK |
 | `rules_graalvm`          | Native-image without a separate toolchain or GraalVM SDK download          |
 
 `rules_elide` returns `JavaInfo` from every compile rule, so existing
 `java_library` / `kt_jvm_library` consumers can depend on `elide_*` targets
 unchanged.
+
+See [`benchmarks/RESULTS.md`](benchmarks/RESULTS.md) for methodology, recorded
+numbers, and how to reproduce locally via `./benchmarks/bench.sh`.
 
 ## Local development against a non-released elide
 
@@ -180,13 +183,13 @@ See [`e2e/smoke/README.md`](e2e/smoke/README.md) for the full flow.
 
 ## Roadmap
 
-| Item                              | Status                                                |
-|-----------------------------------|-------------------------------------------------------|
-| Windows `.bat` launcher           | Pending — Windows platform omitted from `PLATFORMS`   |
-| Persistent worker protocol        | Pending Elide CLI WorkRequest/WorkResponse support    |
-| Kotlin `srcjars` (extract+compile)| Pending                                               |
-| Stable `release` channel populated| Pending upstream                                      |
-| BCR (Bazel Central Registry)      | Templates in `.bcr/`; first publication after release |
+| Item                                 | Status                                                |
+|--------------------------------------|-------------------------------------------------------|
+| Persistent worker protocol           | Pending Elide CLI WorkRequest/WorkResponse support    |
+| `elide native-image` under Bazel     | Blocked on upstream Elide CLI `JavaCommand` NPE under sandbox env |
+| Kotlin `srcjars` (extract+compile)   | Pending                                               |
+| Stable `release` channel populated   | Pending upstream                                      |
+| BCR (Bazel Central Registry)         | Templates in `.bcr/`; first publication after release |
 
 ## Compatibility
 

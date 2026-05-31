@@ -20,7 +20,10 @@ def _native_image_test_impl(ctx):
     asserts.true(env, "--" in argv, "expected `--` separator before native-image flags")
     asserts.true(env, "--no-fallback" in argv, "expected `--no-fallback` (hermetic build)")
     asserts.true(env, "-classpath" in argv, "expected `-classpath` flag")
-    asserts.true(env, "-o" in argv, "expected `-o` output flag")
+    has_path = [a for a in argv if a.startswith("-H:Path=")]
+    has_name = [a for a in argv if a.startswith("-H:Name=")]
+    asserts.equals(env, 1, len(has_path), "expected one `-H:Path=` flag")
+    asserts.equals(env, 1, len(has_name), "expected one `-H:Name=` flag")
     has_worker_tag = "supports-workers" in (native_actions[0].mnemonic + "")
     asserts.false(env, has_worker_tag, "native-image is single-shot AOT — no worker tag")
     return analysistest.end(env)

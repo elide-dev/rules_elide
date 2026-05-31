@@ -1,4 +1,13 @@
-load("@rules_elide//elide:defs.bzl", "elide_java_binary", "elide_java_library")
+load(
+    "@rules_elide//elide:defs.bzl",
+    "elide_format",
+    "elide_java_binary",
+    "elide_java_library",
+    "elide_java_test",
+    "elide_kotlin_binary",
+    "elide_kotlin_library",
+    "elide_native_image",
+)
 
 package(default_visibility = ["//visibility:public"])
 
@@ -12,4 +21,40 @@ elide_java_binary(
     srcs = ["sample/Main.java"],
     main_class = "sample.Main",
     deps = [":lib"],
+)
+
+elide_kotlin_library(
+    name = "kt_lib",
+    srcs = ["sample/Greeter.kt"],
+    module_name = "greeter",
+    deps = [":lib"],
+)
+
+elide_kotlin_binary(
+    name = "kt_app",
+    srcs = ["sample/App.kt"],
+    main_class = "sample.AppKt",
+    deps = [":kt_lib"],
+)
+
+elide_native_image(
+    name = "native_app",
+    main_class = "sample.Main",
+    deps = [":lib"],
+)
+
+elide_java_test(
+    name = "HelloTest",
+    srcs = ["sample/HelloTest.java"],
+    test_class = "sample.HelloTest",
+    runtime_deps = ["@maven//:org_junit_platform_junit_platform_console_standalone"],
+    deps = [
+        ":lib",
+        "@maven//:org_junit_jupiter_junit_jupiter_api",
+    ],
+)
+
+elide_format(
+    name = "format",
+    srcs = ["sample/format_demo.java"],
 )

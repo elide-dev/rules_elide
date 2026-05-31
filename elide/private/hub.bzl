@@ -16,7 +16,8 @@ package(default_visibility = ["//visibility:public"])
 _TOOLCHAIN_TEMPLATE = """\
 elide_toolchain(
     name = "{name}_impl",
-    binary = "@{repo}//:elide_bin",
+    binary = "@{repo}//:bin/elide{bin_ext}",
+    tool_files = ["@{repo}//:elide_files"],
     version = "{version}",
 )
 
@@ -45,6 +46,7 @@ def _elide_toolchains_hub_impl(ctx):
             version = ctx.attr.version,
             os_constraint = OS_CONSTRAINTS[os],
             cpu_constraint = CPU_CONSTRAINTS[cpu],
+            bin_ext = ".exe" if os == "windows" else "",
         ))
     ctx.file("BUILD.bazel", "".join(parts))
 

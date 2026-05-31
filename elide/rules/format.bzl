@@ -22,8 +22,11 @@ if [ -z "${{BUILD_WORKSPACE_DIRECTORY:-}}" ]; then
   echo "elide_format must be invoked via 'bazel run'." >&2
   exit 64
 fi
+# Resolve elide to absolute path before cd-ing to the workspace, otherwise
+# the runfiles-relative short_path stops resolving once CWD changes.
+elide_abs="$(cd "$(dirname {elide})" && pwd)/$(basename {elide})"
 cd "$BUILD_WORKSPACE_DIRECTORY"
-exec {elide} {tool} -- {srcs} "$@"
+exec "$elide_abs" {tool} -- {in_place_flag} {srcs} "$@"
 """
 
 def _classify(srcs):
@@ -40,9 +43,15 @@ def _elide_format_impl(ctx):
         )
     if java:
         tool = "javaformat"
+
+        # google-java-format writes to stdout by default; --replace edits in place.
+        in_place_flag = "--replace"
         targets = java
     elif kotlin:
         tool = "ktfmt"
+
+        # ktfmt edits in place by default; no extra flag required.
+        in_place_flag = ""
         targets = kotlin
     else:
         fail("elide_format target {} has no .java/.kt/.kts sources.".format(ctx.label))
@@ -51,6 +60,7 @@ def _elide_format_impl(ctx):
     content = _LAUNCHER_TEMPLATE.format(
         elide = shell.quote(elide.binary.short_path),
         tool = tool,
+        in_place_flag = in_place_flag,
         srcs = src_args,
     )
     launcher = ctx.actions.declare_file(ctx.label.name + "_format.sh")

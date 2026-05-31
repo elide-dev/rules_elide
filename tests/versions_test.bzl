@@ -27,15 +27,11 @@ _binary_ext_test = unittest.make(_binary_ext_test_impl)
 
 def _platforms_complete_test_impl(ctx):
     env = unittest.begin(ctx)
-    asserts.equals(env, 3, len(PLATFORMS))
+    asserts.equals(env, 4, len(PLATFORMS))
     asserts.true(env, ("linux", "amd64") in PLATFORMS, "linux/amd64 missing")
     asserts.true(env, ("linux", "arm64") in PLATFORMS, "linux/arm64 missing")
     asserts.true(env, ("macos", "arm64") in PLATFORMS, "macos/arm64 missing")
-    asserts.true(
-        env,
-        ("windows", "amd64") not in PLATFORMS,
-        "windows/amd64 should be absent until launcher .bat ships",
-    )
+    asserts.true(env, ("windows", "amd64") in PLATFORMS, "windows/amd64 missing")
     return unittest.end(env)
 
 _platforms_complete_test = unittest.make(_platforms_complete_test_impl)

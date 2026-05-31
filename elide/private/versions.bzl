@@ -16,17 +16,17 @@ stable, immutable revisions.
 visibility(["//elide/...", "//tests/..."])
 
 # Supported (os, cpu) tuples for prebuilt releases.
-# Windows is published on the CDN but launcher templates are POSIX sh only;
-# it will be re-added when a `.bat` launcher ships (see README roadmap).
 PLATFORMS = [
     ("linux", "amd64"),
     ("linux", "arm64"),
     ("macos", "arm64"),
+    ("windows", "amd64"),
 ]
 
 OS_CONSTRAINTS = {
     "linux": "@platforms//os:linux",
     "macos": "@platforms//os:macos",
+    "windows": "@platforms//os:windows",
 }
 
 CPU_CONSTRAINTS = {
@@ -45,6 +45,7 @@ ELIDE_VERSIONS = {
         ("linux", "amd64"): "sha256-jxRDqurC0Gy0e3lNVzAxNsga3MlMD+m+LZRXvBYgHiA=",
         ("linux", "arm64"): "sha256-8ocQy7DnQYLVbWTL5eM5SBY1WlGIQuKyV00KW7qoPfM=",
         ("macos", "arm64"): "sha256-aQfBYn7vgORLuiDuSWItRMl/5o43lzUJciwE88ScSv0=",
+        ("windows", "amd64"): "sha256-PKjWrVA+uiAL8eX+Q3WMBEx4Ih0+Ntl6DV9XmlmIsiM=",
     },
 }
 

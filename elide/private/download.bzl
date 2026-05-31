@@ -11,20 +11,18 @@ visibility(["//elide/...", "//tests/..."])
 #   actions invoking `:elide_bin` see sibling resources (`resources/`, jars, etc.).
 # - `elide_bin` is the wrapped executable target.
 _BUILD_TEMPLATE = """\
-load("@bazel_skylib//rules:native_binary.bzl", "native_binary")
-
 package(default_visibility = ["//visibility:public"])
+
+# Export bin/elide as the canonical executable label. The toolchain rule
+# accepts it directly as `binary = ...` via attr.label(executable=True,
+# allow_files=True) — no rename, so its dirname points at the real bin/
+# inside the extracted distribution and JAVA_HOME = parent of bin/ resolves
+# `<JAVA_HOME>/bin/java` (and friends) as native-image expects.
+exports_files(["{binary_path}"])
 
 filegroup(
     name = "elide_files",
     srcs = glob(["**"], exclude = ["BUILD.bazel", "WORKSPACE", "WORKSPACE.bazel"]),
-)
-
-native_binary(
-    name = "elide_bin",
-    src = "{binary_path}",
-    out = "elide_bin{bin_ext}",
-    data = [":elide_files"],
 )
 """
 
@@ -48,6 +46,23 @@ def _elide_download_impl(ctx):
             cpu = cpu,
         ),
     )
+
+    # Wrapper scripts under bin/ (java, javac, kotlinc, ...) ship without an
+    # exec bit in the CDN archive; restore it so consumers (notably the
+    # `elide native-image` JAVA_HOME probe) can invoke them.
+    if os != "windows":
+        for name in [
+            "elide",
+            "google-java-format",
+            "jar",
+            "java",
+            "javac",
+            "javadoc",
+            "javap",
+            "kotlinc",
+            "ktfmt",
+        ]:
+            ctx.execute(["chmod", "+x", "bin/" + name])
     bin_ext = binary_ext(os)
     binary_path = ctx.attr.binary_path or ("bin/elide" + bin_ext)
     ctx.file("BUILD.bazel", _BUILD_TEMPLATE.format(

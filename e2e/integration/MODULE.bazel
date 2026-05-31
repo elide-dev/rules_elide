@@ -6,6 +6,8 @@ local_path_override(
     path = "../..",
 )
 
+bazel_dep(name = "rules_jvm_external", version = "7.0")
+
 # Activate the elide module extension against the real Elide CDN. This
 # downloads the elide binary at repo-rule time, enabling real `bazel build`
 # of the sample target against the actual toolchain.
@@ -17,3 +19,13 @@ elide.install(
 use_repo(elide, "elide_toolchains")
 
 register_toolchains("@elide_toolchains//:all")
+
+# JUnit Platform deps via Maven for test rules.
+maven = use_extension("@rules_jvm_external//:extensions.bzl", "maven")
+maven.install(
+    artifacts = [
+        "org.junit.jupiter:junit-jupiter-api:5.10.2",
+        "org.junit.platform:junit-platform-console-standalone:1.10.2",
+    ],
+)
+use_repo(maven, "maven")

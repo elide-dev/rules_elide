@@ -1,0 +1,20 @@
+module(name = "rules_elide_benchmarks")
+
+bazel_dep(name = "rules_elide", version = "0.0.0")
+local_path_override(
+    module_name = "rules_elide",
+    path = "..",
+)
+
+bazel_dep(name = "rules_java", version = "9.6.1")
+bazel_dep(name = "rules_kotlin", version = "2.3.20")
+
+# Elide toolchain (nightly via CDN).
+elide = use_extension("@rules_elide//elide:extensions.bzl", "elide")
+elide.install(
+    channel = "nightly",
+    version = "latest",
+)
+use_repo(elide, "elide_toolchains")
+
+register_toolchains("@elide_toolchains//:all")

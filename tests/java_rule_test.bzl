@@ -46,8 +46,10 @@ def _library_action_test_impl(ctx):
     argv = javacs[0].argv
     asserts.true(env, "javac" in argv, "expected `javac` subcommand in argv")
     asserts.true(env, "--" in argv, "expected `--` separator before native javac flags")
-    asserts.true(env, "--jar" in argv, "expected `--jar` packing flag")
+    asserts.true(env, "-d" in argv, "expected `-d <classes_dir>` flag")
     asserts.true(env, "-classpath" in argv, "expected `-classpath` flag passed to javac")
+    jars = [a for a in actions if a.mnemonic == "ElideJavacJar"]
+    asserts.equals(env, 1, len(jars), "expected one ElideJavacJar action (singlejar pack)")
     return analysistest.end(env)
 
 _library_action_test = analysistest.make(_library_action_test_impl)

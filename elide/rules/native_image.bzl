@@ -19,12 +19,20 @@ def _elide_native_image_impl(ctx):
     classpath = runtime_classpath(ctx.attr.deps, [])
     sep = ctx.configuration.host_path_separator
 
+    # The Elide distribution bundles a full GraalVM (lib/truffle, lib/svm, ...),
+    # so JAVA_HOME for `native-image` is the root of the extracted elide repo
+    # (i.e. parent of bin/elide).
+    elide_home = elide.binary.dirname
+    if elide_home.endswith("/bin"):
+        elide_home = elide_home[:-len("/bin")]
+
     args = ctx.actions.args()
     args.add("native-image")
     args.add("--")
     args.add("--no-fallback")
     args.add_joined("-classpath", classpath, join_with = sep)
-    args.add("-o", output)
+    args.add("-H:Path=" + output.dirname)
+    args.add("-H:Name=" + output.basename)
     args.add(ctx.attr.main_class)
     for opt in ctx.attr.native_image_opts:
         args.add(opt)
@@ -36,6 +44,7 @@ def _elide_native_image_impl(ctx):
         inputs = depset(transitive = [classpath, elide.tool_files]),
         outputs = [output],
         progress_message = "Building native image %{label}",
+        env = {"JAVA_HOME": elide_home},
     )
     runfiles = ctx.runfiles(files = [output])
     return [DefaultInfo(executable = output, runfiles = runfiles, files = depset([output]))]

@@ -37,14 +37,33 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   `bcr_test_module`.
 - `.gitattributes` export-ignore for tests / e2e / tools / .github / .bcr.
 
+- Cross-platform launcher emission: `.sh` on POSIX, `.bat` on Windows,
+  selected automatically via `@platforms//os:windows` constraint.
+- Windows back in `PLATFORMS` and `ELIDE_VERSIONS["latest"]`.
+- `e2e/integration/` standalone workspace exercising real `elide` toolchain
+  downloaded from the CDN; CI job `integration` validates end-to-end on
+  main pushes / scheduled runs.
+- `benchmarks/` workspace + `bench.sh` measuring `rules_elide` against
+  canonical `rules_java` / `rules_kotlin` on generated sources.
+  Recorded results in `benchmarks/RESULTS.md`. Weekly scheduled CI job
+  `benchmarks` re-runs and uploads results as an artifact.
+
+### Fixes
+
+- `elide javac` flow split into two actions: `elide javac -- -d <classes>
+  -classpath ... <srcs>` writes class files, then `elide jar -- cf
+  <output_jar> -C <classes> .` packs them into the output JAR. Closes the
+  read-only-sandbox failure mode that prevented any real Java compile.
+
 ### Known limitations
 
 - Persistent worker support requires Elide CLI WorkRequest/WorkResponse
-  protocol implementation (pending upstream); rules currently invoke the
-  CLI as one-shot processes.
-- Windows omitted from `PLATFORMS` until `.bat` launchers ship.
+  protocol implementation (pending upstream — see `plan.md` UP-1); rules
+  currently invoke the CLI as one-shot processes.
 - `srcjars` attribute (compile-time generated sources) not yet wired.
 - `latest` CDN revision is a rolling pointer; integrity snapshot captured
   in `versions.bzl` may drift when upstream advances.
+- Stable `release` channel on the CDN is not yet populated upstream (see
+  `plan.md` UP-2); consumers currently pin against `nightly`/`preview`.
 
 [Unreleased]: https://github.com/elide-dev/rules_elide/compare/HEAD

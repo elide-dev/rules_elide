@@ -1,0 +1,43 @@
+name: benchmarks
+
+on:
+  schedule:
+    - cron: "0 5 * * 1"  # weekly: Monday 05:00 UTC
+  workflow_dispatch:
+    inputs:
+      n:
+        description: "Number of generated sources per language"
+        default: "50"
+        required: false
+      runs:
+        description: "Measured runs per target"
+        default: "3"
+        required: false
+
+permissions:
+  contents: read
+
+jobs:
+  bench:
+    name: rules_elide vs vanilla
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5  # v4
+      - uses: bazel-contrib/setup-bazel@8cb04a772ab4c1eb984e9c1b493a182e96c5e425  # 0.19.0
+        with:
+          bazelisk-cache: true
+          disk-cache: bench
+          repository-cache: true
+      - name: run benchmark
+        working-directory: benchmarks
+        env:
+          BAZELISK: bazelisk
+          BENCH_N: ${{ inputs.n || '50' }}
+          BENCH_RUNS: ${{ inputs.runs || '3' }}
+        run: |
+          ./bench.sh "${BENCH_N}" "${BENCH_RUNS}" | tee results.txt
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02  # v4
+        with:
+          name: benchmark-results
+          path: benchmarks/results.txt
+          retention-days: 90

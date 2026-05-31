@@ -58,11 +58,14 @@ def _plugin_classpath(plugins):
 def run_javac(ctx, output_jar):
     """Runs `elide javac` to compile `.java` sources into `output_jar`.
 
-    Uses the non-standard `--jar=<path>` flag (`elide javac --jar`) to ask the
-    embedded tool to pack the compiled classes directly into a JAR.
+    Two-action flow:
+      1. `elide javac -- -d <classes_dir> -classpath <cp> <srcs>` writes
+         .class files into a declared classes-dir.
+      2. `elide jar -- cf <output_jar> -C <classes_dir> .` packs the
+         classes-dir into the output JAR.
 
     Args:
-        ctx: rule context. Must expose attrs srcs/deps/javac_opts/plugins.
+        ctx: rule context. Must expose srcs/deps/javac_opts/plugins.
         output_jar: File. Declared output classes jar.
     """
     elide = ctx.toolchains[TOOLCHAIN_TYPE].elide_info
@@ -70,23 +73,46 @@ def run_javac(ctx, output_jar):
     plugin_cp = _plugin_classpath(ctx.attr.plugins) if hasattr(ctx.attr, "plugins") else depset()
     sep = ctx.configuration.host_path_separator
 
-    args = ctx.actions.args()
-    args.add("javac")
-    args.add("--jar", output_jar)
-    args.add("--")
+    classes_dir = ctx.actions.declare_directory(ctx.label.name + "_classes")
+
+    # Step 1: javac -> classes_dir/
+    javac_args = ctx.actions.args()
+    javac_args.add("javac")
+    javac_args.add("--")
+    javac_args.add("-d", classes_dir.path)
     full_cp = depset(transitive = [classpath, plugin_cp])
-    args.add_joined("-classpath", full_cp, join_with = sep)
+    javac_args.add_joined("-classpath", full_cp, join_with = sep)
     for o in ctx.attr.javac_opts:
-        args.add(o)
-    args.add_all(ctx.files.srcs)
+        javac_args.add(o)
+    javac_args.add_all(ctx.files.srcs)
 
     ctx.actions.run(
         mnemonic = "ElideJavac",
         executable = elide.binary,
-        arguments = [args],
+        arguments = [javac_args],
         inputs = depset(direct = ctx.files.srcs, transitive = [classpath, plugin_cp, elide.tool_files]),
-        outputs = [output_jar],
+        outputs = [classes_dir],
         progress_message = "Compiling %{label} (elide javac)",
+    )
+
+    # Step 2: `elide jar -- cf <output> -C <classes_dir> .` packs the classes
+    # directory into the output JAR rooted at the dir contents.
+    jar_args = ctx.actions.args()
+    jar_args.add("jar")
+    jar_args.add("--")
+    jar_args.add("cf")
+    jar_args.add(output_jar)
+    jar_args.add("-C")
+    jar_args.add(classes_dir.path)
+    jar_args.add(".")
+
+    ctx.actions.run(
+        mnemonic = "ElideJavacJar",
+        executable = elide.binary,
+        arguments = [jar_args],
+        inputs = depset(direct = [classes_dir], transitive = [elide.tool_files]),
+        outputs = [output_jar],
+        progress_message = "Packing %{label} jar",
     )
 
 def _friend_paths(associates):
@@ -213,11 +239,23 @@ def make_elide_info(ctx):
         ),
     )
 
-_LAUNCHER_TEMPLATE = """\
+_LAUNCHER_TEMPLATE_SH = """\
 #!/bin/sh
 set -eu
 exec {elide} java -- {jvm_flags}-cp {classpath} {main_class} "$@"
 """
+
+_LAUNCHER_TEMPLATE_BAT = """\
+@echo off
+"{elide}" java -- {jvm_flags}-cp "{classpath}" {main_class} %*
+"""
+
+def _is_windows(ctx):
+    """Returns True when the target platform has @platforms//os:windows constraint."""
+    if not hasattr(ctx.attr, "_windows_constraint"):
+        return False
+    constraint = ctx.attr._windows_constraint[platform_common.ConstraintValueInfo]
+    return ctx.target_platform_has_constraint(constraint)
 
 def build_launcher(ctx, output_jar):
     """Writes a shell launcher running the binary via the elide toolchain.
@@ -236,14 +274,25 @@ def build_launcher(ctx, output_jar):
     )
     sep = ctx.configuration.host_path_separator
     classpath_str = sep.join([f.short_path for f in classpath.to_list()])
-    jvm_flags = "".join([shell.quote(f) + " " for f in ctx.attr.jvm_flags])
-    content = _LAUNCHER_TEMPLATE.format(
-        elide = shell.quote(elide.binary.short_path),
-        jvm_flags = jvm_flags,
-        classpath = shell.quote(classpath_str),
-        main_class = shell.quote(ctx.attr.main_class),
-    )
-    launcher = ctx.actions.declare_file(ctx.label.name + "_launcher.sh")
+    is_win = _is_windows(ctx)
+    if is_win:
+        jvm_flags = "".join([f + " " for f in ctx.attr.jvm_flags])
+        content = _LAUNCHER_TEMPLATE_BAT.format(
+            elide = elide.binary.short_path,
+            jvm_flags = jvm_flags,
+            classpath = classpath_str,
+            main_class = ctx.attr.main_class,
+        )
+        launcher = ctx.actions.declare_file(ctx.label.name + "_launcher.bat")
+    else:
+        jvm_flags = "".join([shell.quote(f) + " " for f in ctx.attr.jvm_flags])
+        content = _LAUNCHER_TEMPLATE_SH.format(
+            elide = shell.quote(elide.binary.short_path),
+            jvm_flags = jvm_flags,
+            classpath = shell.quote(classpath_str),
+            main_class = shell.quote(ctx.attr.main_class),
+        )
+        launcher = ctx.actions.declare_file(ctx.label.name + "_launcher.sh")
     ctx.actions.write(output = launcher, content = content, is_executable = True)
     runfiles = ctx.runfiles(
         files = [output_jar, launcher],
@@ -251,7 +300,7 @@ def build_launcher(ctx, output_jar):
     )
     return launcher, runfiles
 
-_TEST_LAUNCHER_TEMPLATE = """\
+_TEST_LAUNCHER_TEMPLATE_SH = """\
 #!/bin/sh
 set -eu
 # Bazel test runner contract: honour TEST_TMPDIR, XML_OUTPUT_FILE, TEST_FILTER.
@@ -284,6 +333,30 @@ fi
 exit $status
 """
 
+_TEST_LAUNCHER_TEMPLATE_BAT = """\
+@echo off
+setlocal
+if not defined TEST_TMPDIR set TEST_TMPDIR=%TEMP%
+set reports_dir=%TEST_TMPDIR%\\reports
+if not exist "%reports_dir%" mkdir "%reports_dir%"
+
+set selector_flag={selector_flag}
+set filter_flag=
+if defined TEST_FILTER set filter_flag=--include-classname=%TEST_FILTER%
+
+"{elide}" java -- {jvm_flags}-cp "{classpath}" org.junit.platform.console.ConsoleLauncher execute %selector_flag% --reports-dir="%reports_dir%" %filter_flag%
+set status=%errorlevel%
+
+if defined XML_OUTPUT_FILE (
+  for %%f in ("%reports_dir%\\TEST-*.xml") do (
+    copy "%%f" "%XML_OUTPUT_FILE%" >nul
+    goto :done_copy
+  )
+  :done_copy
+)
+endlocal & exit /b %status%
+"""
+
 def build_test_launcher(ctx, output_jar):
     """Writes a JUnit Platform launcher for a test target.
 
@@ -305,18 +378,28 @@ def build_test_launcher(ctx, output_jar):
     )
     sep = ctx.configuration.host_path_separator
     classpath_str = sep.join([f.short_path for f in classpath.to_list()])
-    jvm_flags = "".join([shell.quote(f) + " " for f in ctx.attr.jvm_flags])
-
+    is_win = _is_windows(ctx)
     selector_flag = (
-        "--select-class=" + shell.quote(ctx.attr.test_class) if ctx.attr.test_class else "--scan-classpath"
+        "--select-class=" + ctx.attr.test_class if ctx.attr.test_class else "--scan-classpath"
     )
-    content = _TEST_LAUNCHER_TEMPLATE.format(
-        elide = shell.quote(elide.binary.short_path),
-        jvm_flags = jvm_flags,
-        classpath = shell.quote(classpath_str),
-        selector_flag = shell.quote(selector_flag),
-    )
-    launcher = ctx.actions.declare_file(ctx.label.name + "_launcher.sh")
+    if is_win:
+        jvm_flags = "".join([f + " " for f in ctx.attr.jvm_flags])
+        content = _TEST_LAUNCHER_TEMPLATE_BAT.format(
+            elide = elide.binary.short_path,
+            jvm_flags = jvm_flags,
+            classpath = classpath_str,
+            selector_flag = selector_flag,
+        )
+        launcher = ctx.actions.declare_file(ctx.label.name + "_launcher.bat")
+    else:
+        jvm_flags = "".join([shell.quote(f) + " " for f in ctx.attr.jvm_flags])
+        content = _TEST_LAUNCHER_TEMPLATE_SH.format(
+            elide = shell.quote(elide.binary.short_path),
+            jvm_flags = jvm_flags,
+            classpath = shell.quote(classpath_str),
+            selector_flag = shell.quote(selector_flag),
+        )
+        launcher = ctx.actions.declare_file(ctx.label.name + "_launcher.sh")
     ctx.actions.write(output = launcher, content = content, is_executable = True)
     runfiles = ctx.runfiles(
         files = [output_jar, launcher],
@@ -373,6 +456,10 @@ COMMON_BINARY_EXTRA_ATTRS = {
         doc = "Fully qualified main class.",
         mandatory = True,
     ),
+    "_windows_constraint": attr.label(
+        default = "@platforms//os:windows",
+        providers = [[platform_common.ConstraintValueInfo]],
+    ),
 }
 
 COMMON_TEST_EXTRA_ATTRS = {
@@ -381,5 +468,9 @@ COMMON_TEST_EXTRA_ATTRS = {
     ),
     "test_class": attr.string(
         doc = "Single JUnit Platform test class to select. Empty -> --scan-classpath.",
+    ),
+    "_windows_constraint": attr.label(
+        default = "@platforms//os:windows",
+        providers = [[platform_common.ConstraintValueInfo]],
     ),
 }
