@@ -15,6 +15,9 @@ jobs:
     name: analyze (${{ matrix.language }})
     runs-on: ubuntu-24.04
     permissions:
+      # Job-level permissions override workflow-level read-all; restate
+      # contents: read so actions/checkout can clone a private repo.
+      contents: read
       security-events: write
       packages: read
     strategy:

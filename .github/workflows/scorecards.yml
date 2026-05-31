@@ -12,6 +12,9 @@ permissions: read-all
 jobs:
   analysis:
     name: scorecards analysis
+    # OpenSSF Scorecards requires public-repo GraphQL access. Skip the job
+    # while the repository is private (the token would 403 on ListCommits).
+    if: github.event.repository.visibility == 'public'
     runs-on: ubuntu-24.04
     permissions:
       security-events: write

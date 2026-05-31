@@ -1,6 +1,8 @@
 # Bzlmod is the only supported external-dep mode.
 common --enable_bzlmod
-common --lockfile_mode=error
+# Default lockfile_mode=update: Bazel quietly maintains a local
+# MODULE.bazel.lock (not committed — see .gitignore — because the schema
+# is not portable across Bazel 7/8/9 majors).
 
 # Stricter sandboxing defaults.
 build --incompatible_strict_action_env

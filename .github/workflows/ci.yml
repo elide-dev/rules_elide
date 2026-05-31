@@ -88,6 +88,9 @@ jobs:
           bazelisk-cache: true
           disk-cache: ci-integration
           repository-cache: true
-      - name: bazel build //...
+      - name: bazel build //... (excluding :native_app, blocked upstream)
         working-directory: e2e/integration
-        run: bazel build //...
+        # //:native_app is gated on an upstream Elide CLI fix (NPE in
+        # JavaCommand.selectDelegateJvm under Bazel sandbox env).
+        # See README "Roadmap" entry "elide native-image under Bazel".
+        run: bazel build -- //... -//:native_app

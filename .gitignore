@@ -2,6 +2,11 @@
 bazel-*
 .bazel/
 
+# MODULE.bazel.lock format is not portable across Bazel major versions
+# (7 -> v11, 8 -> v24, 9 -> separate schema). Multi-version CI cannot
+# share a single committed lockfile; each runner regenerates its own.
+MODULE.bazel.lock
+
 # Benchmark workspace: gen.sh emits these per run.
 benchmarks/sources/
 
