@@ -2,6 +2,9 @@
 bazel-*
 .bazel/
 
+# Benchmark workspace: gen.sh emits these per run.
+benchmarks/sources/
+
 # Editors / IDEs
 .idea/
 *.iml
