@@ -13,6 +13,11 @@ permissions: read-all
 jobs:
   analyze:
     name: analyze (${{ matrix.language }})
+    # Code scanning result upload requires GitHub Advanced Security /
+    # Code Security, which is free for public repos but paid on private
+    # ones. Skip the job while the repository is private; it will resume
+    # automatically when the repo flips to public.
+    if: github.event.repository.visibility == 'public'
     runs-on: ubuntu-24.04
     permissions:
       # Job-level permissions override workflow-level read-all; restate
