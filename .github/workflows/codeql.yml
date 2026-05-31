@@ -17,9 +17,12 @@ jobs:
     permissions:
       # Job-level permissions override workflow-level read-all; restate
       # contents: read so actions/checkout can clone a private repo.
+      # actions: read is required by language=actions analysis so the
+      # init action can read workflow files via the Actions API.
       contents: read
       security-events: write
       packages: read
+      actions: read
     strategy:
       fail-fast: false
       matrix:
