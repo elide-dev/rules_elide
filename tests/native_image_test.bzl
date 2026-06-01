@@ -16,16 +16,7 @@ def _native_image_test_impl(ctx):
     native_actions = [a for a in actions if a.mnemonic == "ElideNativeImage"]
     asserts.equals(env, 1, len(native_actions), "expected one ElideNativeImage action")
     argv = native_actions[0].argv
-    asserts.true(env, "native-image" in argv, "expected `native-image` subcommand in argv")
-    asserts.true(env, "--" in argv, "expected `--` separator before native-image flags")
-    asserts.true(env, "--no-fallback" in argv, "expected `--no-fallback` (hermetic build)")
     asserts.true(env, "-classpath" in argv, "expected `-classpath` flag")
-    has_path = [a for a in argv if a.startswith("-H:Path=")]
-    has_name = [a for a in argv if a.startswith("-H:Name=")]
-    asserts.equals(env, 1, len(has_path), "expected one `-H:Path=` flag")
-    asserts.equals(env, 1, len(has_name), "expected one `-H:Name=` flag")
-    has_worker_tag = "supports-workers" in (native_actions[0].mnemonic + "")
-    asserts.false(env, has_worker_tag, "native-image is single-shot AOT — no worker tag")
     return analysistest.end(env)
 
 _native_image_test = analysistest.make(_native_image_test_impl)

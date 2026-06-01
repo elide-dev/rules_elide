@@ -270,7 +270,7 @@ def build_launcher(ctx, output_jar):
     elide = ctx.toolchains[TOOLCHAIN_TYPE].elide_info
     classpath = depset(
         direct = [output_jar],
-        transitive = [runtime_classpath(ctx.attr.deps, ctx.attr.runtime_deps)],
+        transitive = [runtime_classpath(ctx.attr.deps, ctx.attr.runtime_deps), elide.kotlin_stdlib_jars],
     )
     sep = ctx.configuration.host_path_separator
     classpath_str = sep.join([f.short_path for f in classpath.to_list()])
@@ -374,7 +374,7 @@ def build_test_launcher(ctx, output_jar):
     elide = ctx.toolchains[TOOLCHAIN_TYPE].elide_info
     classpath = depset(
         direct = [output_jar],
-        transitive = [runtime_classpath(ctx.attr.deps, ctx.attr.runtime_deps)],
+        transitive = [runtime_classpath(ctx.attr.deps, ctx.attr.runtime_deps), elide.kotlin_stdlib_jars],
     )
     sep = ctx.configuration.host_path_separator
     classpath_str = sep.join([f.short_path for f in classpath.to_list()])
