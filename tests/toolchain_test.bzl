@@ -19,6 +19,7 @@ def _provider_shape_test_impl(ctx):
     asserts.equals(env, "1.2.3", info.version)
     asserts.true(env, info.binary != None, "binary must not be None")
     asserts.true(env, hasattr(info, "tool_files"), "tool_files field missing")
+    asserts.true(env, hasattr(info, "kotlin_stdlib_jars"), "kotlin_stdlib_jars field missing")
     return analysistest.end(env)
 
 _provider_shape_test = analysistest.make(_provider_shape_test_impl)

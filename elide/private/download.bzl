@@ -24,6 +24,11 @@ filegroup(
     name = "elide_files",
     srcs = glob(["**"], exclude = ["BUILD.bazel", "WORKSPACE", "WORKSPACE.bazel"]),
 )
+
+filegroup(
+    name = "kotlin_stdlib_jars",
+    srcs = glob(["lib/resources/kotlin/*/lib/kotlin-stdlib.jar"]),
+)
 """
 
 def _elide_download_impl(ctx):
@@ -63,6 +68,8 @@ def _elide_download_impl(ctx):
             "ktfmt",
         ]:
             ctx.execute(["chmod", "+x", "bin/" + name])
+        for name in ["native-image", "native-image-configure"]:
+            ctx.execute(["chmod", "+x", "lib/svm/bin/" + name])
     bin_ext = binary_ext(os)
     binary_path = ctx.attr.binary_path or ("bin/elide" + bin_ext)
     ctx.file("BUILD.bazel", _BUILD_TEMPLATE.format(

@@ -17,6 +17,7 @@ _TOOLCHAIN_TEMPLATE = """\
 elide_toolchain(
     name = "{name}_impl",
     binary = "@{repo}//:bin/elide{bin_ext}",
+    kotlin_stdlib = ["@{repo}//:kotlin_stdlib_jars"],
     tool_files = ["@{repo}//:elide_files"],
     version = "{version}",
 )
