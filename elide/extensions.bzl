@@ -4,7 +4,7 @@
 
 load("//elide/private:download.bzl", "elide_download")
 load("//elide/private:hub.bzl", "elide_toolchains_hub")
-load("//elide/private:versions.bzl", "DEFAULT_CHANNEL", "ELIDE_VERSIONS", "PLATFORMS")
+load("//elide/private:versions.bzl", "DEFAULT_CHANNEL", "DEFAULT_VERSION", "ELIDE_VERSIONS", "PLATFORMS")
 
 _install = tag_class(
     attrs = {
@@ -21,8 +21,10 @@ _install = tag_class(
                   "{os}, {cpu}, {ext}.",
         ),
         "version": attr.string(
-            doc = "Elide release version (e.g. `latest` or a concrete tag).",
-            mandatory = True,
+            default = DEFAULT_VERSION,
+            doc = "Elide release version tag, e.g. `1.2.0+20260602`. " +
+                  "Must match an entry in elide/private/versions.bzl. " +
+                  "Defaults to the most-recently verified release.",
         ),
     },
 )
