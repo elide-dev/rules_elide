@@ -90,18 +90,20 @@ def run_javac(ctx, output_jar):
         mnemonic = "ElideJavac",
         executable = elide.binary,
         arguments = [javac_args],
-        inputs = depset(direct = ctx.files.srcs, transitive = [classpath, plugin_cp, elide.tool_files]),
+        inputs = depset(direct = ctx.files.srcs, transitive = [classpath, plugin_cp, elide.compile_tool_files]),
         outputs = [classes_dir],
         progress_message = "Compiling %{label} (elide javac)",
     )
 
-    # Step 2: `elide jar -- cf <output> -C <classes_dir> .` packs the classes
-    # directory into the output JAR rooted at the dir contents.
+    # Step 2: `elide jar -- --create --file=<output> --date=... -C <classes_dir> .`
+    # Uses GNU-style options to allow --date for deterministic ZIP entry timestamps.
+    # The traditional `cf` form treats --date as a filename; GNU-style required.
     jar_args = ctx.actions.args()
     jar_args.add("jar")
     jar_args.add("--")
-    jar_args.add("cf")
-    jar_args.add(output_jar)
+    jar_args.add("--create")
+    jar_args.add("--file", output_jar)
+    jar_args.add("--date=1980-01-01T00:00:02Z")
     jar_args.add("-C")
     jar_args.add(classes_dir.path)
     jar_args.add(".")
@@ -110,7 +112,7 @@ def run_javac(ctx, output_jar):
         mnemonic = "ElideJavacJar",
         executable = elide.binary,
         arguments = [jar_args],
-        inputs = depset(direct = [classes_dir], transitive = [elide.tool_files]),
+        inputs = depset(direct = [classes_dir], transitive = [elide.compile_tool_files]),
         outputs = [output_jar],
         progress_message = "Packing %{label} jar",
     )
@@ -167,7 +169,7 @@ def run_kotlinc(ctx, output_jar):
         arguments = [args],
         inputs = depset(
             direct = ctx.files.srcs,
-            transitive = [classpath, plugin_cp, friend_jars, elide.tool_files],
+            transitive = [classpath, plugin_cp, friend_jars, elide.compile_tool_files],
         ),
         outputs = [output_jar],
         progress_message = "Compiling %{label} (elide kotlinc)",

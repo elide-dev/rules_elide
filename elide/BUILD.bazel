@@ -1,8 +1,14 @@
 load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
+load("@bazel_skylib//rules:common_settings.bzl", "string_flag")
 
 package(default_visibility = ["//visibility:public"])
 
 toolchain_type(name = "toolchain_type")
+
+string_flag(
+    name = "graalvm_home",
+    build_setting_default = "",
+)
 
 exports_files(
     [
@@ -44,5 +50,6 @@ bzl_library(
         "//elide/rules:java",
         "//elide/rules:kotlin",
         "//elide/rules:native_image",
+        "@bazel_skylib//rules:common_settings",
     ],
 )

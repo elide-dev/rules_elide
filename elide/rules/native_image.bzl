@@ -6,6 +6,7 @@
 (provided via JavaInfo deps) into a standalone native executable.
 """
 
+load("@bazel_skylib//rules:common_settings.bzl", "BuildSettingInfo")
 load("@rules_java//java/common:java_info.bzl", "JavaInfo")
 load(
     "//elide/private:compile_common.bzl",
@@ -26,8 +27,8 @@ def _elide_native_image_impl(ctx):
     if elide_home.endswith("/bin"):
         elide_home = elide_home[:-len("/bin")]
 
-    host_java_home = ctx.configuration.default_shell_env.get("JAVA_HOME", "")
-    java_home = host_java_home if host_java_home else elide_home
+    graalvm_home = ctx.attr._graalvm_home[BuildSettingInfo].value
+    java_home = graalvm_home if graalvm_home else elide_home
     path = java_home + "/bin:" + elide_home + "/lib/svm/bin:/usr/bin:/bin:/usr/sbin:/sbin"
 
     args = ctx.actions.args()
@@ -35,19 +36,26 @@ def _elide_native_image_impl(ctx):
     for opt in ctx.attr.native_image_opts:
         args.add(opt)
 
+    # GraalVM uses UUID.randomUUID() for the Mach-O LC_UUID field (has a FIXME comment
+    # in the source), making macOS binaries non-deterministic across clean builds.
+    # strip -no_uuid removes the UUID load command, producing byte-identical output.
+    strip_cmd = ('strip -no_uuid "$EXECROOT/{output_path}"\n'.format(output_path = output.path) if ctx.attr.strip_uuid else "")
+
     ctx.actions.run_shell(
         mnemonic = "ElideNativeImage",
         command = """\
 EXECROOT="$(pwd)"
+export SOURCE_DATE_EPOCH=0
 export JAVA_HOME="{java_home}"
 export PATH="{path}"
-exec "{elide_bin}" native-image -- --no-fallback "$@" -o "$EXECROOT/{output_path}" "{main_class}"
-""".format(
+"{elide_bin}" native-image -- --no-fallback "$@" -o "$EXECROOT/{output_path}" "{main_class}" || exit $?
+{strip_cmd}""".format(
             java_home = java_home,
             path = path,
             elide_bin = elide.binary.path,
             output_path = output.path,
             main_class = ctx.attr.main_class,
+            strip_cmd = strip_cmd,
         ),
         arguments = [args],
         inputs = depset(transitive = [classpath, elide.tool_files]),
@@ -70,6 +78,17 @@ elide_native_image = rule(
         ),
         "native_image_opts": attr.string_list(
             doc = "Extra flags appended to the native-image invocation.",
+        ),
+        "strip_uuid": attr.bool(
+            doc = "Strip the Mach-O LC_UUID from the output binary (macOS only). " +
+                  "GraalVM generates a random UUID per build; stripping it makes " +
+                  "the binary byte-identical across clean builds. Disables UUID-based " +
+                  "dSYM lookup.",
+            default = False,
+        ),
+        "_graalvm_home": attr.label(
+            default = "@rules_elide//elide:graalvm_home",
+            providers = [BuildSettingInfo],
         ),
     },
     toolchains = [TOOLCHAIN_TYPE],
