@@ -72,7 +72,7 @@ def _elide_impl(ctx):
     integrity_for_version = ELIDE_VERSIONS.get(version)
     if integrity_for_version == None:
         fail(
-            ("Unknown elide version {!r}. Pin a release recorded in " +
+            ("Unknown elide version '{}'. Pin a release recorded in " +
              "elide/private/versions.bzl, or contribute a new entry.").format(version),
         )
     for (os, cpu) in PLATFORMS:
