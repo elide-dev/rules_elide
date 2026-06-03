@@ -34,7 +34,8 @@ elide_format(<a href="#elide_format-name">name</a>, <a href="#elide_format-srcs"
 load("@rules_elide//elide:defs.bzl", "elide_java_binary")
 
 elide_java_binary(<a href="#elide_java_binary-name">name</a>, <a href="#elide_java_binary-deps">deps</a>, <a href="#elide_java_binary-srcs">srcs</a>, <a href="#elide_java_binary-data">data</a>, <a href="#elide_java_binary-resources">resources</a>, <a href="#elide_java_binary-exported_compiler_plugins">exported_compiler_plugins</a>, <a href="#elide_java_binary-exports">exports</a>, <a href="#elide_java_binary-javac_opts">javac_opts</a>,
-                  <a href="#elide_java_binary-jvm_flags">jvm_flags</a>, <a href="#elide_java_binary-main_class">main_class</a>, <a href="#elide_java_binary-neverlink">neverlink</a>, <a href="#elide_java_binary-plugins">plugins</a>, <a href="#elide_java_binary-resource_jars">resource_jars</a>, <a href="#elide_java_binary-runtime_deps">runtime_deps</a>)
+                  <a href="#elide_java_binary-jvm_flags">jvm_flags</a>, <a href="#elide_java_binary-main_class">main_class</a>, <a href="#elide_java_binary-neverlink">neverlink</a>, <a href="#elide_java_binary-plugins">plugins</a>, <a href="#elide_java_binary-resource_jars">resource_jars</a>, <a href="#elide_java_binary-resource_strip_prefix">resource_strip_prefix</a>,
+                  <a href="#elide_java_binary-runtime_deps">runtime_deps</a>)
 </pre>
 
 
@@ -57,6 +58,7 @@ elide_java_binary(<a href="#elide_java_binary-name">name</a>, <a href="#elide_ja
 | <a id="elide_java_binary-neverlink"></a>neverlink |  If true, outputs are used only for compilation, not packaged into binaries.   | Boolean | optional |  `False`  |
 | <a id="elide_java_binary-plugins"></a>plugins |  Compiler plugins for this compilation (only). Targets must provide JavaInfo.   | <a href="https://bazel.build/concepts/labels">List of labels</a> | optional |  `[]`  |
 | <a id="elide_java_binary-resource_jars"></a>resource_jars |  Pre-built JARs whose contents are merged into the output JAR.   | <a href="https://bazel.build/concepts/labels">List of labels</a> | optional |  `[]`  |
+| <a id="elide_java_binary-resource_strip_prefix"></a>resource_strip_prefix |  Workspace-root-relative path prefix stripped from each `resources` entry when computing its in-JAR location (mirrors java_library.resource_strip_prefix). Empty -> use the full short_path.   | String | optional |  `""`  |
 | <a id="elide_java_binary-runtime_deps"></a>runtime_deps |  Runtime-only dependencies (excluded from compile classpath).   | <a href="https://bazel.build/concepts/labels">List of labels</a> | optional |  `[]`  |
 
 
@@ -68,7 +70,7 @@ elide_java_binary(<a href="#elide_java_binary-name">name</a>, <a href="#elide_ja
 load("@rules_elide//elide:defs.bzl", "elide_java_library")
 
 elide_java_library(<a href="#elide_java_library-name">name</a>, <a href="#elide_java_library-deps">deps</a>, <a href="#elide_java_library-srcs">srcs</a>, <a href="#elide_java_library-data">data</a>, <a href="#elide_java_library-resources">resources</a>, <a href="#elide_java_library-exported_compiler_plugins">exported_compiler_plugins</a>, <a href="#elide_java_library-exports">exports</a>,
-                   <a href="#elide_java_library-javac_opts">javac_opts</a>, <a href="#elide_java_library-neverlink">neverlink</a>, <a href="#elide_java_library-plugins">plugins</a>, <a href="#elide_java_library-resource_jars">resource_jars</a>, <a href="#elide_java_library-runtime_deps">runtime_deps</a>)
+                   <a href="#elide_java_library-javac_opts">javac_opts</a>, <a href="#elide_java_library-neverlink">neverlink</a>, <a href="#elide_java_library-plugins">plugins</a>, <a href="#elide_java_library-resource_jars">resource_jars</a>, <a href="#elide_java_library-resource_strip_prefix">resource_strip_prefix</a>, <a href="#elide_java_library-runtime_deps">runtime_deps</a>)
 </pre>
 
 
@@ -89,6 +91,7 @@ elide_java_library(<a href="#elide_java_library-name">name</a>, <a href="#elide_
 | <a id="elide_java_library-neverlink"></a>neverlink |  If true, outputs are used only for compilation, not packaged into binaries.   | Boolean | optional |  `False`  |
 | <a id="elide_java_library-plugins"></a>plugins |  Compiler plugins for this compilation (only). Targets must provide JavaInfo.   | <a href="https://bazel.build/concepts/labels">List of labels</a> | optional |  `[]`  |
 | <a id="elide_java_library-resource_jars"></a>resource_jars |  Pre-built JARs whose contents are merged into the output JAR.   | <a href="https://bazel.build/concepts/labels">List of labels</a> | optional |  `[]`  |
+| <a id="elide_java_library-resource_strip_prefix"></a>resource_strip_prefix |  Workspace-root-relative path prefix stripped from each `resources` entry when computing its in-JAR location (mirrors java_library.resource_strip_prefix). Empty -> use the full short_path.   | String | optional |  `""`  |
 | <a id="elide_java_library-runtime_deps"></a>runtime_deps |  Runtime-only dependencies (excluded from compile classpath).   | <a href="https://bazel.build/concepts/labels">List of labels</a> | optional |  `[]`  |
 
 
@@ -100,7 +103,8 @@ elide_java_library(<a href="#elide_java_library-name">name</a>, <a href="#elide_
 load("@rules_elide//elide:defs.bzl", "elide_java_test")
 
 elide_java_test(<a href="#elide_java_test-name">name</a>, <a href="#elide_java_test-deps">deps</a>, <a href="#elide_java_test-srcs">srcs</a>, <a href="#elide_java_test-data">data</a>, <a href="#elide_java_test-resources">resources</a>, <a href="#elide_java_test-exported_compiler_plugins">exported_compiler_plugins</a>, <a href="#elide_java_test-exports">exports</a>, <a href="#elide_java_test-javac_opts">javac_opts</a>,
-                <a href="#elide_java_test-jvm_flags">jvm_flags</a>, <a href="#elide_java_test-neverlink">neverlink</a>, <a href="#elide_java_test-plugins">plugins</a>, <a href="#elide_java_test-resource_jars">resource_jars</a>, <a href="#elide_java_test-runtime_deps">runtime_deps</a>, <a href="#elide_java_test-test_class">test_class</a>)
+                <a href="#elide_java_test-jvm_flags">jvm_flags</a>, <a href="#elide_java_test-neverlink">neverlink</a>, <a href="#elide_java_test-plugins">plugins</a>, <a href="#elide_java_test-resource_jars">resource_jars</a>, <a href="#elide_java_test-resource_strip_prefix">resource_strip_prefix</a>, <a href="#elide_java_test-runtime_deps">runtime_deps</a>,
+                <a href="#elide_java_test-test_class">test_class</a>)
 </pre>
 
 
@@ -122,6 +126,7 @@ elide_java_test(<a href="#elide_java_test-name">name</a>, <a href="#elide_java_t
 | <a id="elide_java_test-neverlink"></a>neverlink |  If true, outputs are used only for compilation, not packaged into binaries.   | Boolean | optional |  `False`  |
 | <a id="elide_java_test-plugins"></a>plugins |  Compiler plugins for this compilation (only). Targets must provide JavaInfo.   | <a href="https://bazel.build/concepts/labels">List of labels</a> | optional |  `[]`  |
 | <a id="elide_java_test-resource_jars"></a>resource_jars |  Pre-built JARs whose contents are merged into the output JAR.   | <a href="https://bazel.build/concepts/labels">List of labels</a> | optional |  `[]`  |
+| <a id="elide_java_test-resource_strip_prefix"></a>resource_strip_prefix |  Workspace-root-relative path prefix stripped from each `resources` entry when computing its in-JAR location (mirrors java_library.resource_strip_prefix). Empty -> use the full short_path.   | String | optional |  `""`  |
 | <a id="elide_java_test-runtime_deps"></a>runtime_deps |  Runtime-only dependencies (excluded from compile classpath).   | <a href="https://bazel.build/concepts/labels">List of labels</a> | optional |  `[]`  |
 | <a id="elide_java_test-test_class"></a>test_class |  Single JUnit Platform test class to select. Empty -> --scan-classpath.   | String | optional |  `""`  |
 
@@ -135,7 +140,7 @@ load("@rules_elide//elide:defs.bzl", "elide_kotlin_binary")
 
 elide_kotlin_binary(<a href="#elide_kotlin_binary-name">name</a>, <a href="#elide_kotlin_binary-deps">deps</a>, <a href="#elide_kotlin_binary-srcs">srcs</a>, <a href="#elide_kotlin_binary-data">data</a>, <a href="#elide_kotlin_binary-resources">resources</a>, <a href="#elide_kotlin_binary-associates">associates</a>, <a href="#elide_kotlin_binary-exported_compiler_plugins">exported_compiler_plugins</a>,
                     <a href="#elide_kotlin_binary-exports">exports</a>, <a href="#elide_kotlin_binary-javac_opts">javac_opts</a>, <a href="#elide_kotlin_binary-jvm_flags">jvm_flags</a>, <a href="#elide_kotlin_binary-kotlinc_opts">kotlinc_opts</a>, <a href="#elide_kotlin_binary-main_class">main_class</a>, <a href="#elide_kotlin_binary-module_name">module_name</a>, <a href="#elide_kotlin_binary-neverlink">neverlink</a>,
-                    <a href="#elide_kotlin_binary-plugins">plugins</a>, <a href="#elide_kotlin_binary-resource_jars">resource_jars</a>, <a href="#elide_kotlin_binary-runtime_deps">runtime_deps</a>)
+                    <a href="#elide_kotlin_binary-plugins">plugins</a>, <a href="#elide_kotlin_binary-resource_jars">resource_jars</a>, <a href="#elide_kotlin_binary-resource_strip_prefix">resource_strip_prefix</a>, <a href="#elide_kotlin_binary-runtime_deps">runtime_deps</a>)
 </pre>
 
 
@@ -161,6 +166,7 @@ elide_kotlin_binary(<a href="#elide_kotlin_binary-name">name</a>, <a href="#elid
 | <a id="elide_kotlin_binary-neverlink"></a>neverlink |  If true, outputs are used only for compilation, not packaged into binaries.   | Boolean | optional |  `False`  |
 | <a id="elide_kotlin_binary-plugins"></a>plugins |  Compiler plugins for this compilation (only). Targets must provide JavaInfo.   | <a href="https://bazel.build/concepts/labels">List of labels</a> | optional |  `[]`  |
 | <a id="elide_kotlin_binary-resource_jars"></a>resource_jars |  Pre-built JARs whose contents are merged into the output JAR.   | <a href="https://bazel.build/concepts/labels">List of labels</a> | optional |  `[]`  |
+| <a id="elide_kotlin_binary-resource_strip_prefix"></a>resource_strip_prefix |  Workspace-root-relative path prefix stripped from each `resources` entry when computing its in-JAR location (mirrors java_library.resource_strip_prefix). Empty -> use the full short_path.   | String | optional |  `""`  |
 | <a id="elide_kotlin_binary-runtime_deps"></a>runtime_deps |  Runtime-only dependencies (excluded from compile classpath).   | <a href="https://bazel.build/concepts/labels">List of labels</a> | optional |  `[]`  |
 
 
@@ -173,7 +179,7 @@ load("@rules_elide//elide:defs.bzl", "elide_kotlin_library")
 
 elide_kotlin_library(<a href="#elide_kotlin_library-name">name</a>, <a href="#elide_kotlin_library-deps">deps</a>, <a href="#elide_kotlin_library-srcs">srcs</a>, <a href="#elide_kotlin_library-data">data</a>, <a href="#elide_kotlin_library-resources">resources</a>, <a href="#elide_kotlin_library-associates">associates</a>, <a href="#elide_kotlin_library-exported_compiler_plugins">exported_compiler_plugins</a>,
                      <a href="#elide_kotlin_library-exports">exports</a>, <a href="#elide_kotlin_library-javac_opts">javac_opts</a>, <a href="#elide_kotlin_library-kotlinc_opts">kotlinc_opts</a>, <a href="#elide_kotlin_library-module_name">module_name</a>, <a href="#elide_kotlin_library-neverlink">neverlink</a>, <a href="#elide_kotlin_library-plugins">plugins</a>,
-                     <a href="#elide_kotlin_library-resource_jars">resource_jars</a>, <a href="#elide_kotlin_library-runtime_deps">runtime_deps</a>)
+                     <a href="#elide_kotlin_library-resource_jars">resource_jars</a>, <a href="#elide_kotlin_library-resource_strip_prefix">resource_strip_prefix</a>, <a href="#elide_kotlin_library-runtime_deps">runtime_deps</a>)
 </pre>
 
 
@@ -197,6 +203,7 @@ elide_kotlin_library(<a href="#elide_kotlin_library-name">name</a>, <a href="#el
 | <a id="elide_kotlin_library-neverlink"></a>neverlink |  If true, outputs are used only for compilation, not packaged into binaries.   | Boolean | optional |  `False`  |
 | <a id="elide_kotlin_library-plugins"></a>plugins |  Compiler plugins for this compilation (only). Targets must provide JavaInfo.   | <a href="https://bazel.build/concepts/labels">List of labels</a> | optional |  `[]`  |
 | <a id="elide_kotlin_library-resource_jars"></a>resource_jars |  Pre-built JARs whose contents are merged into the output JAR.   | <a href="https://bazel.build/concepts/labels">List of labels</a> | optional |  `[]`  |
+| <a id="elide_kotlin_library-resource_strip_prefix"></a>resource_strip_prefix |  Workspace-root-relative path prefix stripped from each `resources` entry when computing its in-JAR location (mirrors java_library.resource_strip_prefix). Empty -> use the full short_path.   | String | optional |  `""`  |
 | <a id="elide_kotlin_library-runtime_deps"></a>runtime_deps |  Runtime-only dependencies (excluded from compile classpath).   | <a href="https://bazel.build/concepts/labels">List of labels</a> | optional |  `[]`  |
 
 
@@ -209,7 +216,7 @@ load("@rules_elide//elide:defs.bzl", "elide_kotlin_test")
 
 elide_kotlin_test(<a href="#elide_kotlin_test-name">name</a>, <a href="#elide_kotlin_test-deps">deps</a>, <a href="#elide_kotlin_test-srcs">srcs</a>, <a href="#elide_kotlin_test-data">data</a>, <a href="#elide_kotlin_test-resources">resources</a>, <a href="#elide_kotlin_test-associates">associates</a>, <a href="#elide_kotlin_test-exported_compiler_plugins">exported_compiler_plugins</a>, <a href="#elide_kotlin_test-exports">exports</a>,
                   <a href="#elide_kotlin_test-javac_opts">javac_opts</a>, <a href="#elide_kotlin_test-jvm_flags">jvm_flags</a>, <a href="#elide_kotlin_test-kotlinc_opts">kotlinc_opts</a>, <a href="#elide_kotlin_test-module_name">module_name</a>, <a href="#elide_kotlin_test-neverlink">neverlink</a>, <a href="#elide_kotlin_test-plugins">plugins</a>, <a href="#elide_kotlin_test-resource_jars">resource_jars</a>,
-                  <a href="#elide_kotlin_test-runtime_deps">runtime_deps</a>, <a href="#elide_kotlin_test-test_class">test_class</a>)
+                  <a href="#elide_kotlin_test-resource_strip_prefix">resource_strip_prefix</a>, <a href="#elide_kotlin_test-runtime_deps">runtime_deps</a>, <a href="#elide_kotlin_test-test_class">test_class</a>)
 </pre>
 
 
@@ -234,6 +241,7 @@ elide_kotlin_test(<a href="#elide_kotlin_test-name">name</a>, <a href="#elide_ko
 | <a id="elide_kotlin_test-neverlink"></a>neverlink |  If true, outputs are used only for compilation, not packaged into binaries.   | Boolean | optional |  `False`  |
 | <a id="elide_kotlin_test-plugins"></a>plugins |  Compiler plugins for this compilation (only). Targets must provide JavaInfo.   | <a href="https://bazel.build/concepts/labels">List of labels</a> | optional |  `[]`  |
 | <a id="elide_kotlin_test-resource_jars"></a>resource_jars |  Pre-built JARs whose contents are merged into the output JAR.   | <a href="https://bazel.build/concepts/labels">List of labels</a> | optional |  `[]`  |
+| <a id="elide_kotlin_test-resource_strip_prefix"></a>resource_strip_prefix |  Workspace-root-relative path prefix stripped from each `resources` entry when computing its in-JAR location (mirrors java_library.resource_strip_prefix). Empty -> use the full short_path.   | String | optional |  `""`  |
 | <a id="elide_kotlin_test-runtime_deps"></a>runtime_deps |  Runtime-only dependencies (excluded from compile classpath).   | <a href="https://bazel.build/concepts/labels">List of labels</a> | optional |  `[]`  |
 | <a id="elide_kotlin_test-test_class"></a>test_class |  Single JUnit Platform test class to select. Empty -> --scan-classpath.   | String | optional |  `""`  |
 

@@ -60,6 +60,7 @@ _LIBRARY_ATTRS["module_name"] = attr.string(
 elide_kotlin_library = rule(
     implementation = _elide_kotlin_library_impl,
     attrs = _LIBRARY_ATTRS,
+    fragments = ["java"],
     toolchains = _KOTLIN_TOOLCHAINS,
     provides = [JavaInfo, ElideInfo],
 )
@@ -81,6 +82,7 @@ _BINARY_ATTRS.update(COMMON_BINARY_EXTRA_ATTRS)
 elide_kotlin_binary = rule(
     implementation = _elide_kotlin_binary_impl,
     attrs = _BINARY_ATTRS,
+    fragments = ["java"],
     toolchains = _KOTLIN_TOOLCHAINS,
     provides = [JavaInfo, ElideInfo],
     executable = True,
@@ -103,6 +105,7 @@ _TEST_ATTRS.update(COMMON_TEST_EXTRA_ATTRS)
 elide_kotlin_test = rule(
     implementation = _elide_kotlin_test_impl,
     attrs = _TEST_ATTRS,
+    fragments = ["java"],
     toolchains = _KOTLIN_TOOLCHAINS,
     provides = [JavaInfo, ElideInfo],
     test = True,
