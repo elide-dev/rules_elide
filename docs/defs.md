@@ -245,7 +245,7 @@ elide_kotlin_test(<a href="#elide_kotlin_test-name">name</a>, <a href="#elide_ko
 <pre>
 load("@rules_elide//elide:defs.bzl", "elide_native_image")
 
-elide_native_image(<a href="#elide_native_image-name">name</a>, <a href="#elide_native_image-deps">deps</a>, <a href="#elide_native_image-main_class">main_class</a>, <a href="#elide_native_image-native_image_opts">native_image_opts</a>)
+elide_native_image(<a href="#elide_native_image-name">name</a>, <a href="#elide_native_image-deps">deps</a>, <a href="#elide_native_image-main_class">main_class</a>, <a href="#elide_native_image-native_image_opts">native_image_opts</a>, <a href="#elide_native_image-strip_uuid">strip_uuid</a>)
 </pre>
 
 
@@ -259,6 +259,7 @@ elide_native_image(<a href="#elide_native_image-name">name</a>, <a href="#elide_
 | <a id="elide_native_image-deps"></a>deps |  JVM dependencies whose runtime classpath enters the native image.   | <a href="https://bazel.build/concepts/labels">List of labels</a> | optional |  `[]`  |
 | <a id="elide_native_image-main_class"></a>main_class |  Fully qualified main class.   | String | required |  |
 | <a id="elide_native_image-native_image_opts"></a>native_image_opts |  Extra flags appended to the native-image invocation.   | List of strings | optional |  `[]`  |
+| <a id="elide_native_image-strip_uuid"></a>strip_uuid |  Strip the Mach-O LC_UUID from the output binary (macOS only). GraalVM generates a random UUID per build; stripping it makes the binary byte-identical across clean builds. Disables UUID-based dSYM lookup.   | Boolean | optional |  `False`  |
 
 
 <a id="elide_toolchain"></a>
@@ -268,7 +269,7 @@ elide_native_image(<a href="#elide_native_image-name">name</a>, <a href="#elide_
 <pre>
 load("@rules_elide//elide:defs.bzl", "elide_toolchain")
 
-elide_toolchain(<a href="#elide_toolchain-name">name</a>, <a href="#elide_toolchain-binary">binary</a>, <a href="#elide_toolchain-kotlin_stdlib">kotlin_stdlib</a>, <a href="#elide_toolchain-tool_files">tool_files</a>, <a href="#elide_toolchain-version">version</a>)
+elide_toolchain(<a href="#elide_toolchain-name">name</a>, <a href="#elide_toolchain-binary">binary</a>, <a href="#elide_toolchain-compile_tool_files">compile_tool_files</a>, <a href="#elide_toolchain-kotlin_stdlib">kotlin_stdlib</a>, <a href="#elide_toolchain-tool_files">tool_files</a>, <a href="#elide_toolchain-version">version</a>)
 </pre>
 
 
@@ -280,8 +281,9 @@ elide_toolchain(<a href="#elide_toolchain-name">name</a>, <a href="#elide_toolch
 | :------------- | :------------- | :------------- | :------------- | :------------- |
 | <a id="elide_toolchain-name"></a>name |  A unique name for this target.   | <a href="https://bazel.build/concepts/labels#target-names">Name</a> | required |  |
 | <a id="elide_toolchain-binary"></a>binary |  Executable target for the elide binary.   | <a href="https://bazel.build/concepts/labels">Label</a> | required |  |
+| <a id="elide_toolchain-compile_tool_files"></a>compile_tool_files |  Inputs for JVM compile actions (javac, kotlinc, jar). Should reference the elide_compile_files filegroup.   | <a href="https://bazel.build/concepts/labels">List of labels</a> | optional |  `[]`  |
 | <a id="elide_toolchain-kotlin_stdlib"></a>kotlin_stdlib |  Kotlin stdlib jars bundled with this Elide release (from kotlin_stdlib_jars filegroup).   | <a href="https://bazel.build/concepts/labels">List of labels</a> | optional |  `[]`  |
-| <a id="elide_toolchain-tool_files"></a>tool_files |  Additional runfiles required by the elide binary at action time.   | <a href="https://bazel.build/concepts/labels">List of labels</a> | optional |  `[]`  |
+| <a id="elide_toolchain-tool_files"></a>tool_files |  Inputs for native-image actions (includes lib/svm, include/). Should reference the elide_native_image_files filegroup.   | <a href="https://bazel.build/concepts/labels">List of labels</a> | optional |  `[]`  |
 | <a id="elide_toolchain-version"></a>version |  Semantic version of the elide binary.   | String | required |  |
 
 
@@ -312,7 +314,7 @@ Elide-specific metadata emitted by rules_elide build rules.
 <pre>
 load("@rules_elide//elide:defs.bzl", "ElideToolchainInfo")
 
-ElideToolchainInfo(<a href="#ElideToolchainInfo-binary">binary</a>, <a href="#ElideToolchainInfo-kotlin_stdlib_jars">kotlin_stdlib_jars</a>, <a href="#ElideToolchainInfo-tool_files">tool_files</a>, <a href="#ElideToolchainInfo-version">version</a>)
+ElideToolchainInfo(<a href="#ElideToolchainInfo-binary">binary</a>, <a href="#ElideToolchainInfo-compile_tool_files">compile_tool_files</a>, <a href="#ElideToolchainInfo-kotlin_stdlib_jars">kotlin_stdlib_jars</a>, <a href="#ElideToolchainInfo-tool_files">tool_files</a>, <a href="#ElideToolchainInfo-version">version</a>)
 </pre>
 
 Resolved Elide toolchain information.
@@ -322,6 +324,7 @@ Resolved Elide toolchain information.
 | Name  | Description |
 | :------------- | :------------- |
 | <a id="ElideToolchainInfo-binary"></a>binary |  File. The elide binary executable.    |
+| <a id="ElideToolchainInfo-compile_tool_files"></a>compile_tool_files |  depset[File]. Inputs for JVM compile actions (javac, kotlinc, jar). Excludes native-image-only subtrees (lib/svm, lib/truffle, doc).    |
 | <a id="ElideToolchainInfo-kotlin_stdlib_jars"></a>kotlin_stdlib_jars |  depset[File]. Kotlin stdlib jar(s) bundled with this Elide release.    |
-| <a id="ElideToolchainInfo-tool_files"></a>tool_files |  depset[File]. All runfiles required to invoke elide.    |
+| <a id="ElideToolchainInfo-tool_files"></a>tool_files |  depset[File]. Inputs for native-image actions (includes lib/svm, include/).    |
 | <a id="ElideToolchainInfo-version"></a>version |  string. Semantic version of the elide binary.    |

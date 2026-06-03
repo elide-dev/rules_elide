@@ -20,9 +20,33 @@ package(default_visibility = ["//visibility:public"])
 # `<JAVA_HOME>/bin/java` (and friends) as native-image expects.
 exports_files(["{binary_path}"])
 
+# Minimal input set for JVM compile actions (elide javac, kotlinc, jar).
+# Excludes: doc/ (HTML docs), lib/svm/ + lib/truffle/ (native-image only),
+#           lib/resources/python/ (Python runtime), lib/maven/ (Maven tools).
 filegroup(
-    name = "elide_files",
-    srcs = glob(["**"], exclude = ["BUILD.bazel", "WORKSPACE", "WORKSPACE.bazel"]),
+    name = "elide_compile_files",
+    srcs = glob(
+        ["bin/**", "lib/**"],
+        exclude = [
+            "lib/svm/**",
+            "lib/truffle/**",
+            "lib/resources/python/**",
+            "lib/maven/**",
+        ],
+    ),
+)
+
+# Full tool set for elide native-image: compile files + GraalVM SVM + C headers.
+# Excludes only the clearly irrelevant: doc/, Python runtime, Maven tools.
+filegroup(
+    name = "elide_native_image_files",
+    srcs = glob(
+        ["bin/**", "lib/**", "include/**"],
+        exclude = [
+            "lib/resources/python/**",
+            "lib/maven/**",
+        ],
+    ),
 )
 
 filegroup(

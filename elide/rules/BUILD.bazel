@@ -32,6 +32,7 @@ bzl_library(
     srcs = ["native_image.bzl"],
     deps = [
         "//elide/private:compile_common",
+        "@bazel_skylib//rules:common_settings",
         "@rules_java//java/common",
     ],
 )

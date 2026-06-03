@@ -11,10 +11,7 @@ bazel_dep(name = "rules_kotlin", version = "2.3.20")
 
 # Elide toolchain (nightly via CDN).
 elide = use_extension("@rules_elide//elide:extensions.bzl", "elide")
-elide.install(
-    channel = "nightly",
-    version = "latest",
-)
+elide.install(channel = "nightly")
 use_repo(elide, "elide_toolchains")
 
 register_toolchains("@elide_toolchains//:all")
