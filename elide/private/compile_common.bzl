@@ -55,6 +55,52 @@ def _plugin_classpath(plugins):
         return depset()
     return java_common.merge(java_infos).transitive_runtime_jars
 
+def _has_exported_processors(deps):
+    for d in deps:
+        if JavaInfo in d and d[JavaInfo].plugins.processor_classes.to_list():
+            return True
+    return False
+
+def _has_packaged_resources(ctx):
+    return bool(ctx.files.resources) or bool(ctx.files.resource_jars)
+
+def _resource_jar_path(file, strip_prefix):
+    path = file.short_path
+    if not strip_prefix:
+        return path
+    prefix = strip_prefix if strip_prefix.endswith("/") else strip_prefix + "/"
+    if not path.startswith(prefix):
+        fail("resource %s is not under resource_strip_prefix %r" % (path, strip_prefix))
+    return path[len(prefix):]
+
+def _merge_resources(ctx, class_jars, output_jar):
+    java_toolchain = ctx.toolchains["@bazel_tools//tools/jdk:toolchain_type"].java
+    strip_prefix = getattr(ctx.attr, "resource_strip_prefix", "")
+    resources = ctx.files.resources
+    resource_jars = ctx.files.resource_jars
+
+    args = ctx.actions.args()
+    args.add("--output", output_jar)
+    args.add("--normalize")
+    args.add("--exclude_build_data")
+    if class_jars or resource_jars:
+        args.add("--sources")
+        args.add_all(class_jars)
+        args.add_all(resource_jars)
+    if resources:
+        args.add("--resources")
+        for f in resources:
+            args.add("%s:%s" % (f.path, _resource_jar_path(f, strip_prefix)))
+
+    ctx.actions.run(
+        mnemonic = "ElideResourceJar",
+        executable = java_toolchain.single_jar,
+        arguments = [args],
+        inputs = depset(direct = class_jars + resources + resource_jars),
+        outputs = [output_jar],
+        progress_message = "Packing %{label} jar",
+    )
+
 def run_javac(ctx, output_jar):
     """Runs `elide javac` to compile `.java` sources into `output_jar`.
 
@@ -98,11 +144,14 @@ def run_javac(ctx, output_jar):
     # Step 2: `elide jar -- --create --file=<output> --date=... -C <classes_dir> .`
     # Uses GNU-style options to allow --date for deterministic ZIP entry timestamps.
     # The traditional `cf` form treats --date as a filename; GNU-style required.
+    has_res = _has_packaged_resources(ctx)
+    class_jar = ctx.actions.declare_file(ctx.label.name + "_classes.jar") if has_res else output_jar
+
     jar_args = ctx.actions.args()
     jar_args.add("jar")
     jar_args.add("--")
     jar_args.add("--create")
-    jar_args.add("--file", output_jar)
+    jar_args.add("--file", class_jar)
     jar_args.add("--date=1980-01-01T00:00:02Z")
     jar_args.add("-C")
     jar_args.add(classes_dir.path)
@@ -113,9 +162,12 @@ def run_javac(ctx, output_jar):
         executable = elide.binary,
         arguments = [jar_args],
         inputs = depset(direct = [classes_dir], transitive = [elide.compile_tool_files]),
-        outputs = [output_jar],
+        outputs = [class_jar],
         progress_message = "Packing %{label} jar",
     )
+
+    if has_res:
+        _merge_resources(ctx, [class_jar], output_jar)
 
 def _friend_paths(associates):
     paths = []
@@ -129,14 +181,12 @@ def _friend_paths(associates):
     return paths, depset(transitive = transitive)
 
 def run_kotlinc(ctx, output_jar):
-    """Runs `elide kotlinc` to compile mixed `.kt`/`.java` sources into a JAR.
-
-    kotlinc produces a JAR directly when given `-d <name>.jar`.
+    """Compiles mixed `.kt`/`.java` sources into `output_jar`.
 
     Args:
         ctx: rule context. Must expose srcs/deps/kotlinc_opts/javac_opts/module_name/
             plugins/associates.
-        output_jar: File. Declared output JAR (kotlinc writes it directly).
+        output_jar: File. Declared output JAR.
     """
     elide = ctx.toolchains[TOOLCHAIN_TYPE].elide_info
     classpath = compile_classpath(ctx.attr.deps)
@@ -144,36 +194,135 @@ def run_kotlinc(ctx, output_jar):
     friend_path_strs, friend_jars = _friend_paths(getattr(ctx.attr, "associates", []))
     sep = ctx.configuration.host_path_separator
 
-    args = ctx.actions.args()
-    args.add("kotlinc")
-    args.add("--")
-    args.add("-d", output_jar)
-    full_cp = depset(transitive = [classpath, plugin_cp, friend_jars])
-    args.add_joined("-classpath", full_cp, join_with = sep)
-    if ctx.attr.module_name:
-        args.add("-module-name", ctx.attr.module_name)
-    if friend_path_strs:
-        args.add("-Xfriend-paths=" + ",".join(friend_path_strs))
-    for plugin in ctx.attr.plugins:
-        for f in plugin[JavaInfo].transitive_runtime_jars.to_list():
-            args.add("-Xplugin=" + f.path)
-    for o in ctx.attr.kotlinc_opts:
-        args.add(o)
+    kt_srcs = [f for f in ctx.files.srcs if f.extension == "kt"]
+    java_srcs = [f for f in ctx.files.srcs if f.extension == "java"]
+    has_kt = bool(kt_srcs)
+    has_java = bool(java_srcs)
+    has_res = _has_packaged_resources(ctx)
+
+    single_kt_only = has_kt and not has_java and not has_res
+    kt_jar = None
+    if has_kt:
+        kt_jar = output_jar if single_kt_only else ctx.actions.declare_file(ctx.label.name + "_kotlin_classes.jar")
+
+        args = ctx.actions.args()
+        args.add("kotlinc")
+        args.add("--")
+        args.add("-d", kt_jar)
+        full_cp = depset(transitive = [classpath, plugin_cp, friend_jars])
+        args.add_joined("-classpath", full_cp, join_with = sep)
+        if ctx.attr.module_name:
+            args.add("-module-name", ctx.attr.module_name)
+        if friend_path_strs:
+            args.add("-Xfriend-paths=" + ",".join(friend_path_strs))
+        for plugin in ctx.attr.plugins:
+            for f in plugin[JavaInfo].transitive_runtime_jars.to_list():
+                args.add("-Xplugin=" + f.path)
+        for o in ctx.attr.kotlinc_opts:
+            args.add(o)
+        for o in ctx.attr.javac_opts:
+            args.add("-Xjavac-arguments=" + o)
+
+        args.add_all(ctx.files.srcs)
+
+        ctx.actions.run(
+            mnemonic = "ElideKotlinc",
+            executable = elide.binary,
+            arguments = [args],
+            inputs = depset(
+                direct = ctx.files.srcs,
+                transitive = [classpath, plugin_cp, friend_jars, elide.compile_tool_files],
+            ),
+            outputs = [kt_jar],
+            progress_message = "Compiling %{label} (elide kotlinc)",
+        )
+
+    if single_kt_only:
+        return
+
+    class_jars = []
+    if has_kt:
+        class_jars.append(kt_jar)
+    if has_java:
+        class_jars.append(_compile_java_aux(ctx, java_srcs, kt_jar))
+
+    _merge_resources(ctx, class_jars, output_jar)
+
+def _compile_java_aux(ctx, java_srcs, kt_jar):
+    if _has_exported_processors(ctx.attr.deps):
+        return _compile_java_processed(ctx, java_srcs, kt_jar)
+
+    elide = ctx.toolchains[TOOLCHAIN_TYPE].elide_info
+    classpath = compile_classpath(ctx.attr.deps)
+    plugin_cp = _plugin_classpath(ctx.attr.plugins) if hasattr(ctx.attr, "plugins") else depset()
+    sep = ctx.configuration.host_path_separator
+
+    classes_dir = ctx.actions.declare_directory(ctx.label.name + "_java_classes")
+    kt_jars = [kt_jar] if kt_jar else []
+    full_cp = depset(direct = kt_jars, transitive = [classpath, plugin_cp, elide.kotlin_stdlib_jars])
+
+    javac_args = ctx.actions.args()
+    javac_args.add("javac")
+    javac_args.add("--")
+    javac_args.add("-d", classes_dir.path)
+    javac_args.add_joined("-classpath", full_cp, join_with = sep)
+
+    javac_args.add("-proc:none")
     for o in ctx.attr.javac_opts:
-        args.add("-Xjavac-arguments=" + o)
-    args.add_all(ctx.files.srcs)
+        javac_args.add(o)
+    javac_args.add_all(java_srcs)
 
     ctx.actions.run(
-        mnemonic = "ElideKotlinc",
+        mnemonic = "ElideKotlinJavac",
         executable = elide.binary,
-        arguments = [args],
+        arguments = [javac_args],
         inputs = depset(
-            direct = ctx.files.srcs,
-            transitive = [classpath, plugin_cp, friend_jars, elide.compile_tool_files],
+            direct = java_srcs + kt_jars,
+            transitive = [classpath, plugin_cp, elide.kotlin_stdlib_jars, elide.compile_tool_files],
         ),
-        outputs = [output_jar],
-        progress_message = "Compiling %{label} (elide kotlinc)",
+        outputs = [classes_dir],
+        progress_message = "Compiling %{label} java sources (elide javac)",
     )
+
+    java_jar = ctx.actions.declare_file(ctx.label.name + "_java_classes.jar")
+    jar_args = ctx.actions.args()
+    jar_args.add("jar")
+    jar_args.add("--")
+    jar_args.add("--create")
+    jar_args.add("--file", java_jar)
+    jar_args.add("--date=1980-01-01T00:00:02Z")
+    jar_args.add("-C")
+    jar_args.add(classes_dir.path)
+    jar_args.add(".")
+
+    ctx.actions.run(
+        mnemonic = "ElideKotlinJavacJar",
+        executable = elide.binary,
+        arguments = [jar_args],
+        inputs = depset(direct = [classes_dir], transitive = [elide.compile_tool_files]),
+        outputs = [java_jar],
+        progress_message = "Packing %{label} java classes jar",
+    )
+    return java_jar
+
+def _compile_java_processed(ctx, java_srcs, kt_jar):
+    elide = ctx.toolchains[TOOLCHAIN_TYPE].elide_info
+    java_toolchain = ctx.toolchains["@bazel_tools//tools/jdk:toolchain_type"].java
+    java_jar = ctx.actions.declare_file(ctx.label.name + "_java_classes.jar")
+
+    extra_jars = ([kt_jar] if kt_jar else []) + elide.kotlin_stdlib_jars.to_list()
+    extra_deps = [JavaInfo(output_jar = j, compile_jar = j) for j in extra_jars]
+
+    java_common.compile(
+        ctx,
+        source_files = java_srcs,
+        output = java_jar,
+        java_toolchain = java_toolchain,
+        deps = _merge_java_infos(ctx.attr.deps) + _merge_java_infos(getattr(ctx.attr, "plugins", [])) + extra_deps,
+        javac_opts = ctx.attr.javac_opts,
+        strict_deps = "OFF",
+    )
+    return java_jar
 
 def make_java_info(ctx, output_jar, source_jar = None):
     """Builds the JavaInfo emitted by elide compile rules.
@@ -439,6 +588,11 @@ COMMON_LIBRARY_ATTRS = {
     "resource_jars": attr.label_list(
         doc = "Pre-built JARs whose contents are merged into the output JAR.",
         allow_files = [".jar"],
+    ),
+    "resource_strip_prefix": attr.string(
+        doc = "Workspace-root-relative path prefix stripped from each `resources` " +
+              "entry when computing its in-JAR location (mirrors " +
+              "java_library.resource_strip_prefix). Empty -> use the full short_path.",
     ),
     "resources": attr.label_list(
         doc = "Resource files packaged into the output JAR alongside compiled classes.",
