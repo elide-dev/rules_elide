@@ -5,7 +5,7 @@
 Elide publishes prebuilt binaries as GitHub release assets at:
   https://github.com/elide-dev/elide/releases/download/{version}/elide.{os}-{cpu}.{ext}
 
-Each version tag (e.g. `1.2.0+20260602`) is immutable: once a GitHub release is
+Each version tag (e.g. `1.2.0+20260603`) is immutable: once a GitHub release is
 published its assets never change, so the SRI hashes below are stable forever.
 The `{version}` token in DEFAULT_URL_TEMPLATE maps directly to the GitHub release
 tag; no URL-encoding of `+` is required — GitHub's CDN accepts the literal `+`.
@@ -43,6 +43,7 @@ DEFAULT_CHANNEL = "nightly"
 # Per-version SRI integrity table.
 # Shape: ELIDE_VERSIONS[version][(os, cpu)] = "sha256-<base64>"
 # Hashes verified 2026-06-02 against GitHub release tag 1.2.0+20260602.
+# Hashes verified 2026-06-03 against GitHub release tag 1.2.0+20260603.
 ELIDE_VERSIONS = {
     "1.2.0+20260602": {
         ("linux", "amd64"): "sha256-yIQZwU4nM0SN19Zj2rdikdWBpj9d+fVlJK0d10p3DRA=",
@@ -50,11 +51,17 @@ ELIDE_VERSIONS = {
         ("macos", "arm64"): "sha256-qaZ7vN9GJWF5c+lZoMkmTvFuuKfZndxt5YpEkWgVpT8=",
         ("windows", "amd64"): "sha256-vaT3d/mbyEnS7Rk+z0ahj273eS9enolQ5QeQ9hW5how=",
     },
+    "1.2.0+20260603": {
+        ("linux", "amd64"): "sha256-MT9d986Ih7Z/SrKIMPvnY0hsG20euG2KnLAQMm9h+uk=",
+        ("linux", "arm64"): "sha256-L+fDxoRB4/58OgRLS/HP2he7XNnEK8LjtfbS8Az9Xqg=",
+        ("macos", "arm64"): "sha256-KqhHWtnNNIFbmbwhWiZGgQRrnlHUAep9Y0l7flYgMQc=",
+        ("windows", "amd64"): "sha256-5oMvVWvJs+RMThCqulVLLAVoT0YCVICzTrb+J9u+o4k=",
+    },
 }
 
 # Default version used when consumers call elide.install() without a version.
 # Points at the most-recently verified entry in ELIDE_VERSIONS above.
-DEFAULT_VERSION = "1.2.0+20260602"
+DEFAULT_VERSION = "1.2.0+20260603"
 
 # GitHub releases serve each tag as an immutable artifact. The {channel} token
 # is accepted but unused here; it remains available for consumers who override
