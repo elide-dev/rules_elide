@@ -36,13 +36,7 @@ def _elide_native_image_impl(ctx):
     for opt in ctx.attr.native_image_opts:
         args.add(opt)
 
-    # GraalVM uses UUID.randomUUID() for the Mach-O LC_UUID field (has a FIXME comment
-    # in the source), making macOS binaries non-deterministic across clean builds.
-    # strip -no_uuid removes the UUID load command
-    if ctx.attr.strip_uuid:
-        strip_cmd = 'case "$(uname)" in Darwin) strip -no_uuid "$EXECROOT/{output_path}" ;; esac\n'.format(output_path = output.path)
-    else:
-        strip_cmd = ""
+    strip_cmd = ""
 
     ctx.actions.run_shell(
         mnemonic = "ElideNativeImage",
@@ -81,13 +75,6 @@ elide_native_image = rule(
         ),
         "native_image_opts": attr.string_list(
             doc = "Extra flags appended to the native-image invocation.",
-        ),
-        "strip_uuid": attr.bool(
-            doc = "Strip the Mach-O LC_UUID from the output binary (macOS only). " +
-                  "GraalVM generates a random UUID per build; stripping it makes " +
-                  "the binary byte-identical across clean builds. Disables UUID-based " +
-                  "dSYM lookup.",
-            default = False,
         ),
         "_graalvm_home": attr.label(
             default = "@rules_elide//elide:graalvm_home",
