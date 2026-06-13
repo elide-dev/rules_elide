@@ -34,6 +34,19 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   selection.
 - In-tree SRI integrity table, semver-aware version comparator, full
   extracted distribution exposed as toolchain runfiles.
+- Bazel persistent worker (singleplex) support for the `elide javac` and
+  `elide kotlinc` compile actions: each is tagged `supports-workers` with
+  the `proto` worker protocol, enabled by default. Per-request TOOL_ARGS are
+  delivered via a multiline params-file WorkRequest; Bazel injects the
+  `--persistent_worker` startup flag itself. (Note: workers are roughly
+  wall-clock-neutral for elide, a native image with ~12 ms startup — see
+  `benchmarks/RESULTS.md`.)
+- `--@rules_elide//elide:use_workers` build flag (default `true`) toggles the
+  above. Setting it `false` compiles each target as a one-shot
+  `elide <tool> -- <args>` process — the supported way to run without workers,
+  since the Bazel-native worker-off path (`--worker_max_instances=0`,
+  `--strategy=...=local`) hits a broken upstream standalone mode (WHIPLASH
+  #994).
 - Kotlin compile pipeline supports `module_name`, `kotlinc_opts`,
   `javac_opts`, `plugins`, and `associates` (friend-paths for `internal`
   visibility).
@@ -71,9 +84,13 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Known limitations
 
-- Persistent worker support requires Elide CLI WorkRequest/WorkResponse
-  protocol implementation (pending upstream — see `plan.md` UP-1); rules
-  currently invoke the CLI as one-shot processes.
+- The Bazel-native worker-off path (`--worker_max_instances=0`,
+  `--strategy=...=local`, remote execution) is broken upstream: it runs
+  `elide <tool> @flagfile`, where elide's top-level parser expects a `--`
+  before TOOL_ARGS, while the worker WorkRequest must omit it (WHIPLASH #994).
+  Until elide parses WorkRequest arguments and the standalone `@flagfile`
+  identically, run without workers via `--@rules_elide//elide:use_workers=false`
+  (one-shot `elide <tool> -- <args>`) rather than the Bazel-native switches.
 - `srcjars` attribute (compile-time generated sources) not yet wired.
 - `latest` CDN revision is a rolling pointer; integrity snapshot captured
   in `versions.bzl` may drift when upstream advances.

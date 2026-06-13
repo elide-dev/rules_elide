@@ -186,7 +186,7 @@ See [`e2e/smoke/README.md`](e2e/smoke/README.md) for the full flow.
 
 | Item                                 | Status                                                |
 |--------------------------------------|-------------------------------------------------------|
-| Persistent worker protocol           | Pending Elide CLI WorkRequest/WorkResponse support    |
+| Persistent worker protocol           | Done for `javac`/`kotlinc` (singleplex, `proto`); non-worker fallback pending elide `@flagfile`/WorkRequest parity |
 | `elide native-image` under Bazel     | Blocked on upstream Elide CLI `JavaCommand` NPE under sandbox env |
 | Kotlin `srcjars` (extract+compile)   | Pending                                               |
 | Stable `release` channel populated   | Pending upstream                                      |

@@ -36,7 +36,16 @@ def _library_action_test_impl(ctx):
     asserts.equals(env, 1, len(kotlincs), "expected one ElideKotlinc action")
     argv = kotlincs[0].argv
     asserts.true(env, "kotlinc" in argv, "expected `kotlinc` subcommand in argv")
-    asserts.true(env, "--" in argv, "expected `--` separator before native kotlinc flags")
+
+    # Persistent-worker mode: Bazel injects `--persistent_worker` when it spawns
+    # the worker, so the rule must not pass it, and the per-request TOOL_ARGS are
+    # delivered bare (no `--` separator) for the embedded kotlinc to consume.
+    asserts.false(
+        env,
+        "--persistent_worker" in argv,
+        "rule must not pass `--persistent_worker`; Bazel injects it for workers",
+    )
+    asserts.false(env, "--" in argv, "worker mode delivers bare TOOL_ARGS with no `--` separator")
     asserts.true(env, "-d" in argv, "expected `-d` output flag passed to kotlinc")
     asserts.true(env, "-classpath" in argv, "expected `-classpath` flag passed to kotlinc")
     asserts.true(env, "-module-name" in argv, "expected `-module-name` flag (set on fixture)")

@@ -32,6 +32,7 @@ bzl_library(
         ":common",
         "//elide:providers",
         "@bazel_skylib//lib:shell",
+        "@bazel_skylib//rules:common_settings",
         "@rules_java//java/common",
     ],
 )

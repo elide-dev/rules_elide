@@ -45,7 +45,16 @@ def _library_action_test_impl(ctx):
     asserts.equals(env, 1, len(javacs), "expected one ElideJavac action")
     argv = javacs[0].argv
     asserts.true(env, "javac" in argv, "expected `javac` subcommand in argv")
-    asserts.true(env, "--" in argv, "expected `--` separator before native javac flags")
+
+    # Persistent-worker mode: Bazel injects `--persistent_worker` when it spawns
+    # the worker, so the rule must not pass it, and the per-request TOOL_ARGS are
+    # delivered bare (no `--` separator) for the embedded javac to consume.
+    asserts.false(
+        env,
+        "--persistent_worker" in argv,
+        "rule must not pass `--persistent_worker`; Bazel injects it for workers",
+    )
+    asserts.false(env, "--" in argv, "worker mode delivers bare TOOL_ARGS with no `--` separator")
     asserts.true(env, "-d" in argv, "expected `-d <classes_dir>` flag")
     asserts.true(env, "-classpath" in argv, "expected `-classpath` flag passed to javac")
     jars = [a for a in actions if a.mnemonic == "ElideJavacJar"]
@@ -53,6 +62,26 @@ def _library_action_test_impl(ctx):
     return analysistest.end(env)
 
 _library_action_test = analysistest.make(_library_action_test_impl)
+
+def _library_action_no_worker_test_impl(ctx):
+    env = analysistest.begin(ctx)
+    actions = analysistest.target_actions(env)
+    javacs = [a for a in actions if a.mnemonic == "ElideJavac"]
+    asserts.equals(env, 1, len(javacs), "expected one ElideJavac action")
+    argv = javacs[0].argv
+    asserts.true(env, "javac" in argv, "expected `javac` subcommand in argv")
+
+    # Workers off (`--@rules_elide//elide:use_workers=false`): one-shot
+    # `elide javac -- <TOOL_ARGS>`, so the `--` separator the top-level parser
+    # expects must be present.
+    asserts.true(env, "--" in argv, "one-shot mode must pass the `--` separator")
+    asserts.true(env, "-d" in argv, "expected `-d <classes_dir>` flag")
+    return analysistest.end(env)
+
+_library_action_no_worker_test = analysistest.make(
+    _library_action_no_worker_test_impl,
+    config_settings = {"@@//elide:use_workers": False},
+)
 
 def _binary_executable_test_impl(ctx):
     env = analysistest.begin(ctx)
@@ -131,6 +160,10 @@ def java_rule_test_suite(name):
         name = "library_action_test",
         target_under_test = ":_lib_fixture",
     )
+    _library_action_no_worker_test(
+        name = "library_action_no_worker_test",
+        target_under_test = ":_lib_fixture",
+    )
     _binary_executable_test(
         name = "binary_executable_test",
         target_under_test = ":_bin_fixture",
@@ -144,6 +177,7 @@ def java_rule_test_suite(name):
         tests = [
             ":library_providers_test",
             ":library_action_test",
+            ":library_action_no_worker_test",
             ":binary_executable_test",
             ":test_rule_executable_test",
         ],

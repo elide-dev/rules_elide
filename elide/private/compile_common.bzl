@@ -3,6 +3,7 @@
 """Shared helpers for elide compile rules (Java, Kotlin, native-image)."""
 
 load("@bazel_skylib//lib:shell.bzl", "shell")
+load("@bazel_skylib//rules:common_settings.bzl", "BuildSettingInfo")
 load("@rules_java//java/common:java_common.bzl", "java_common")
 load("@rules_java//java/common:java_info.bzl", "JavaInfo")
 load("//elide:providers.bzl", "ElideInfo")
@@ -101,6 +102,77 @@ def _merge_resources(ctx, class_jars, output_jar):
         progress_message = "Packing %{label} jar",
     )
 
+# Execution requirements opting compile actions into Bazel persistent workers.
+# Elide's embedded javac/kotlinc workers are singleplex and speak the
+# length-delimited protobuf WorkRequest protocol, so we advertise `proto` and
+# deliberately omit `supports-multiplex-workers`. Bazel uses workers by default
+# for actions carrying these tags; users retain the standard kill-switches
+# (`--strategy=ElideJavac=local`, `--worker_max_instances=0`).
+_WORKER_EXEC_REQUIREMENTS = {
+    "requires-worker-protocol": "proto",
+    "supports-workers": "1",
+}
+
+def _tool_args(ctx):
+    """Begins a buffer for a compile action's bare TOOL_ARGS.
+
+    Holds only the arguments destined for the embedded tool (javac/kotlinc) —
+    no subcommand and no `--` separator. `_run_elide_compile` decides how they
+    are delivered (worker params-file WorkRequest vs one-shot inline).
+    """
+    return ctx.actions.args()
+
+def _run_elide_compile(ctx, mnemonic, subcommand, tool_args, inputs, outputs, progress_message):
+    """Runs `elide <subcommand>` to compile, as a worker or a one-shot process.
+
+    Selected by the `//elide:use_workers` build setting:
+
+    - workers on (default): the action advertises `supports-workers`; Bazel
+      appends `--persistent_worker` when it spawns the reusable process and
+      delivers `tool_args` as a multiline params-file WorkRequest. elide feeds
+      the WorkRequest straight to the embedded tool, so the args carry no `--`
+      separator (the worker rejects `--` as an unknown flag).
+    - workers off: a one-shot `elide <subcommand> -- <tool_args>` process per
+      target, with the `--` separator the top-level parser expects. This is the
+      supported way to compile without workers (the Bazel-native worker-off
+      path, `elide <tool> @flagfile`, is broken upstream — WHIPLASH #994).
+
+    Args:
+        ctx: rule context.
+        mnemonic: str. Action mnemonic (also the worker pool key).
+        subcommand: str. Elide compile subcommand, e.g. `javac` or `kotlinc`.
+        tool_args: Args. Bare TOOL_ARGS from `_tool_args`.
+        inputs: depset[File]. Action inputs.
+        outputs: list[File]. Declared action outputs.
+        progress_message: str. Bazel progress message.
+    """
+    elide = ctx.toolchains[TOOLCHAIN_TYPE].elide_info
+    lead = ctx.actions.args()
+    lead.add(subcommand)
+
+    if ctx.attr._use_workers[BuildSettingInfo].value:
+        tool_args.use_param_file("@%s", use_always = True)
+        tool_args.set_param_file_format("multiline")
+        ctx.actions.run(
+            mnemonic = mnemonic,
+            executable = elide.binary,
+            arguments = [lead, tool_args],
+            inputs = inputs,
+            outputs = outputs,
+            progress_message = progress_message,
+            execution_requirements = _WORKER_EXEC_REQUIREMENTS,
+        )
+    else:
+        lead.add("--")
+        ctx.actions.run(
+            mnemonic = mnemonic,
+            executable = elide.binary,
+            arguments = [lead, tool_args],
+            inputs = inputs,
+            outputs = outputs,
+            progress_message = progress_message,
+        )
+
 def run_javac(ctx, output_jar):
     """Runs `elide javac` to compile `.java` sources into `output_jar`.
 
@@ -121,10 +193,8 @@ def run_javac(ctx, output_jar):
 
     classes_dir = ctx.actions.declare_directory(ctx.label.name + "_classes")
 
-    # Step 1: javac -> classes_dir/
-    javac_args = ctx.actions.args()
-    javac_args.add("javac")
-    javac_args.add("--")
+    # Step 1: javac -> classes_dir/ (Bazel persistent worker).
+    javac_args = _tool_args(ctx)
     javac_args.add("-d", classes_dir.path)
     full_cp = depset(transitive = [classpath, plugin_cp])
     javac_args.add_joined("-classpath", full_cp, join_with = sep)
@@ -132,10 +202,11 @@ def run_javac(ctx, output_jar):
         javac_args.add(o)
     javac_args.add_all(ctx.files.srcs)
 
-    ctx.actions.run(
+    _run_elide_compile(
+        ctx,
         mnemonic = "ElideJavac",
-        executable = elide.binary,
-        arguments = [javac_args],
+        subcommand = "javac",
+        tool_args = javac_args,
         inputs = depset(direct = ctx.files.srcs, transitive = [classpath, plugin_cp, elide.compile_tool_files]),
         outputs = [classes_dir],
         progress_message = "Compiling %{label} (elide javac)",
@@ -205,9 +276,7 @@ def run_kotlinc(ctx, output_jar):
     if has_kt:
         kt_jar = output_jar if single_kt_only else ctx.actions.declare_file(ctx.label.name + "_kotlin_classes.jar")
 
-        args = ctx.actions.args()
-        args.add("kotlinc")
-        args.add("--")
+        args = _tool_args(ctx)
         args.add("-d", kt_jar)
         full_cp = depset(transitive = [classpath, plugin_cp, friend_jars])
         args.add_joined("-classpath", full_cp, join_with = sep)
@@ -225,10 +294,11 @@ def run_kotlinc(ctx, output_jar):
 
         args.add_all(ctx.files.srcs)
 
-        ctx.actions.run(
+        _run_elide_compile(
+            ctx,
             mnemonic = "ElideKotlinc",
-            executable = elide.binary,
-            arguments = [args],
+            subcommand = "kotlinc",
+            tool_args = args,
             inputs = depset(
                 direct = ctx.files.srcs,
                 transitive = [classpath, plugin_cp, friend_jars, elide.compile_tool_files],
@@ -261,9 +331,7 @@ def _compile_java_aux(ctx, java_srcs, kt_jar):
     kt_jars = [kt_jar] if kt_jar else []
     full_cp = depset(direct = kt_jars, transitive = [classpath, plugin_cp, elide.kotlin_stdlib_jars])
 
-    javac_args = ctx.actions.args()
-    javac_args.add("javac")
-    javac_args.add("--")
+    javac_args = _tool_args(ctx)
     javac_args.add("-d", classes_dir.path)
     javac_args.add_joined("-classpath", full_cp, join_with = sep)
 
@@ -272,10 +340,11 @@ def _compile_java_aux(ctx, java_srcs, kt_jar):
         javac_args.add(o)
     javac_args.add_all(java_srcs)
 
-    ctx.actions.run(
+    _run_elide_compile(
+        ctx,
         mnemonic = "ElideKotlinJavac",
-        executable = elide.binary,
-        arguments = [javac_args],
+        subcommand = "javac",
+        tool_args = javac_args,
         inputs = depset(
             direct = java_srcs + kt_jars,
             transitive = [classpath, plugin_cp, elide.kotlin_stdlib_jars, elide.compile_tool_files],
@@ -644,6 +713,12 @@ COMMON_LIBRARY_ATTRS = {
     "runtime_deps": attr.label_list(
         doc = "Runtime-only dependencies (excluded from compile classpath).",
         providers = [[JavaInfo]],
+    ),
+    "_use_workers": attr.label(
+        default = "@rules_elide//elide:use_workers",
+        providers = [BuildSettingInfo],
+        doc = "Build setting toggling Bazel persistent workers for the elide " +
+              "javac/kotlinc compile actions.",
     ),
 }
 
