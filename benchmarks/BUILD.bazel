@@ -4,25 +4,29 @@ load("@rules_kotlin//kotlin:jvm.bzl", "kt_jvm_library")
 
 package(default_visibility = ["//visibility:public"])
 
+JAVA_SRCS = glob(["sources/java/**/*.java"])
+
+KOTLIN_SRCS = glob(["sources/kotlin/**/*.kt"])
+
 # --- Elide-rules targets ------------------------------------------------
 elide_java_library(
     name = "elide_java_lib",
-    srcs = glob(["sources/java/**/*.java"]),
+    srcs = JAVA_SRCS,
 )
 
 elide_kotlin_library(
     name = "elide_kotlin_lib",
-    srcs = glob(["sources/kotlin/**/*.kt"]),
+    srcs = KOTLIN_SRCS,
     module_name = "bench_elide_kotlin",
 )
 
 # --- Canonical baseline targets -----------------------------------------
 java_library(
     name = "vanilla_java_lib",
-    srcs = glob(["sources/java/**/*.java"]),
+    srcs = JAVA_SRCS,
 )
 
 kt_jvm_library(
     name = "vanilla_kotlin_lib",
-    srcs = glob(["sources/kotlin/**/*.kt"]),
+    srcs = KOTLIN_SRCS,
 )
