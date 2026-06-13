@@ -43,3 +43,18 @@ elide_kotlin_test(
         "@kt_test_deps//:org_junit_platform_junit_platform_console_standalone",
     ],
 )
+
+elide_kotlin_test(
+    name = "elide_compile_test",
+    srcs = ["ElideCompileTest.kt"],
+    test_class = "elide.kotlin.builder.ElideCompileTest",
+    kotlinc_opts = ["-jvm-target=21"],
+    deps = [
+        "//elide/kotlin/builder:lib",
+        "@kt_test_deps//:org_jetbrains_kotlin_kotlin_test",
+        "@kt_test_deps//:org_jetbrains_kotlin_kotlin_test_junit5",
+    ],
+    runtime_deps = [
+        "@kt_test_deps//:org_junit_platform_junit_platform_console_standalone",
+    ],
+)
