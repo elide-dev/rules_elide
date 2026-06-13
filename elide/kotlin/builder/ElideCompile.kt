@@ -71,14 +71,15 @@ object ElideCompile {
         //     -P plugin:org.jetbrains.kotlin.jvm.abi:outputDir=<abi.jar>
         //     <srcs>
         req.abiJar?.let { abiJarPath ->
+            val distRoot = File(elidePath).parentFile?.parentFile
             val pluginJar = findJvmAbiGenJar(elidePath)
-            if (pluginJar != null) {
-                kt += "-Xplugin=${pluginJar.path}"
-                kt += "-P"
-                kt += "plugin:$JVM_ABI_GEN_PLUGIN_ID:outputDir=$abiJarPath"
-            }
-            // If pluginJar is null (unusual distribution layout), skip silently;
-            // the caller is responsible for detecting a missing abi.jar output.
+                ?: error(
+                    "abiJar requested ($abiJarPath) but jvm-abi-gen.jar not found under the " +
+                    "Elide distribution at $distRoot; cannot produce the ABI jar"
+                )
+            kt += "-Xplugin=${pluginJar.path}"
+            kt += "-P"
+            kt += "plugin:$JVM_ABI_GEN_PLUGIN_ID:outputDir=$abiJarPath"
         }
         kt += req.passthroughFlags
         kt += req.sources
@@ -93,20 +94,27 @@ object ElideCompile {
     }
 
     /**
-     * Executes each command from [plan] sequentially, streaming stderr on failure.
+     * Executes each command from [plan] sequentially, capturing output to a temp file to avoid
+     * deadlocking on the OS pipe buffer. On failure the captured output is written to stderr
+     * (never to stdout, which carries the Bazel persistent-worker WorkResponse protocol).
      * Returns 0 on success, or the first non-zero exit code encountered.
      */
     fun run(cmds: List<List<String>>, workDir: File): Int {
         for (c in cmds) {
-            val p = ProcessBuilder(c)
-                .directory(workDir)
-                .redirectErrorStream(true)
-                .start()
-            val out = p.inputStream.bufferedReader().readText()
-            val code = p.waitFor()
-            if (code != 0) {
-                System.err.print(out)
-                return code
+            val log = File.createTempFile("elide-compile", ".log")
+            try {
+                val p = ProcessBuilder(c)
+                    .directory(workDir)
+                    .redirectErrorStream(true)
+                    .redirectOutput(log)
+                    .start()
+                val code = p.waitFor()
+                if (code != 0) {
+                    System.err.print(log.readText())
+                    return code
+                }
+            } finally {
+                log.delete()
             }
         }
         return 0

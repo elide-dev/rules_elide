@@ -2,6 +2,7 @@ package elide.kotlin.builder
 
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 import kotlin.test.assertTrue
 
 class ElideCompileTest {
@@ -86,14 +87,14 @@ class ElideCompileTest {
             "expected plugin option -P plugin:org.jetbrains.kotlin.jvm.abi:outputDir=abi.jar")
     }
 
-    @Test fun abiJarSkippedGracefullyWhenPluginJarMissing() {
-        // Use a non-existent path — findJvmAbiGenJar returns null, flags are omitted silently.
+    @Test fun abiJarThrowsWhenPluginJarMissing() {
+        // Use a non-existent path — findJvmAbiGenJar returns null, plan() must throw immediately.
         val req = CompileRequest(output = "out.jar", abiJar = "abi.jar", sources = listOf("A.kt"))
-        val kotlinc = ElideCompile.plan(req, elidePath = "/nonexistent/bin/elide").first { it.contains("kotlinc") }
-        assertTrue(!kotlinc.any { it.startsWith("-Xplugin=") },
-            "no -Xplugin flag when plugin jar cannot be found")
-        assertTrue(!kotlinc.contains("-P"),
-            "no -P flag when plugin jar cannot be found")
+        val ex = assertFailsWith<IllegalStateException> {
+            ElideCompile.plan(req, elidePath = "/nonexistent/bin/elide")
+        }
+        assertTrue(ex.message?.contains("jvm-abi-gen.jar") == true,
+            "expected error message to mention jvm-abi-gen.jar, got: ${ex.message}")
     }
 
     @Test fun noAbiJarFlagsWhenAbiJarNotRequested() {
