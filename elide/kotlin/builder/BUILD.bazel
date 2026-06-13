@@ -1,0 +1,10 @@
+load("@rules_elide//elide:defs.bzl", "elide_kotlin_library")
+
+package(default_visibility = ["//visibility:public"])
+
+elide_kotlin_library(
+    name = "lib",
+    srcs = glob(["*.kt"]),
+    module_name = "elide_kotlin_builder",
+    kotlinc_opts = ["-jvm-target=21"],
+)
