@@ -67,4 +67,39 @@ class ElideCompileTest {
         val kotlinc = ElideCompile.plan(req, elidePath = "/bin/elide").first { it.contains("kotlinc") }
         assertTrue(!kotlinc.contains("-classpath"), "classpath flag should be absent when cp is empty")
     }
+
+    // --- ABI jar (jvm-abi-gen) tests ---
+
+    @Test fun abiJarInjectsXpluginWhenPluginJarFound() {
+        // Stub elidePath to point at the real Elide binary so findJvmAbiGenJar can locate
+        // lib/resources/kotlin/<ver>/lib/jvm-abi-gen.jar from the distribution root.
+        val elideBin = System.getenv("ELIDE_BINARY_PATH")
+            ?: return  // skip if not running under Bazel with the toolchain present
+        val req = CompileRequest(output = "out.jar", abiJar = "abi.jar", sources = listOf("A.kt"))
+        val kotlinc = ElideCompile.plan(req, elidePath = elideBin).first { it.contains("kotlinc") }
+        assertTrue(kotlinc.any { it.startsWith("-Xplugin=") && it.contains("jvm-abi-gen") },
+            "expected -Xplugin=...jvm-abi-gen.jar in kotlinc argv")
+        val pIdx = kotlinc.indexOf("-P")
+        assertTrue(pIdx >= 0, "expected -P flag")
+        assertTrue(kotlinc[pIdx + 1].contains("org.jetbrains.kotlin.jvm.abi") &&
+            kotlinc[pIdx + 1].contains("outputDir=abi.jar"),
+            "expected plugin option -P plugin:org.jetbrains.kotlin.jvm.abi:outputDir=abi.jar")
+    }
+
+    @Test fun abiJarSkippedGracefullyWhenPluginJarMissing() {
+        // Use a non-existent path — findJvmAbiGenJar returns null, flags are omitted silently.
+        val req = CompileRequest(output = "out.jar", abiJar = "abi.jar", sources = listOf("A.kt"))
+        val kotlinc = ElideCompile.plan(req, elidePath = "/nonexistent/bin/elide").first { it.contains("kotlinc") }
+        assertTrue(!kotlinc.any { it.startsWith("-Xplugin=") },
+            "no -Xplugin flag when plugin jar cannot be found")
+        assertTrue(!kotlinc.contains("-P"),
+            "no -P flag when plugin jar cannot be found")
+    }
+
+    @Test fun noAbiJarFlagsWhenAbiJarNotRequested() {
+        val req = CompileRequest(output = "out.jar", sources = listOf("A.kt"))
+        val kotlinc = ElideCompile.plan(req, elidePath = "/bin/elide").first { it.contains("kotlinc") }
+        assertTrue(!kotlinc.any { it.startsWith("-Xplugin=") }, "no -Xplugin when abiJar not set")
+        assertTrue(!kotlinc.contains("-P"), "no -P when abiJar not set")
+    }
 }
