@@ -1,6 +1,7 @@
 package elide.kotlin.builder
 
 import java.io.File
+import java.nio.file.Files
 import java.nio.file.Paths
 
 object Main {
@@ -22,9 +23,18 @@ object Main {
         val req = Flagfile.parse(Flagfile.readTokens(Paths.get(ff)))
         val wd = File(".")
         if (Router.route(req).route == Route.FALLBACK) return Fallback.run(cfg.fallback, ff, wd)
-        val code = ElideCompile.run(ElideCompile.plan(req, cfg.elide), wd)
-        if (code == 0) req.jdeps?.let { Jdeps.writeStub(it, req.moduleName ?: "") }
-        return code to ""
+
+        // Unpack generated sources from --source_jars (KAPT/KSP) so the compile can
+        // resolve references to generated symbols; clean up the temp dir after.
+        val srcJarDir = if (req.sourceJars.isNotEmpty()) Files.createTempDirectory("elide-srcjars").toFile() else null
+        try {
+            val extraSources = srcJarDir?.let { ElideCompile.extractSourceJars(req.sourceJars, it) } ?: emptyList()
+            val (code, out) = ElideCompile.run(ElideCompile.plan(req, cfg.elide, extraSources), wd)
+            if (code == 0) req.jdeps?.let { Jdeps.writeStub(it, req.moduleName ?: "") }
+            return code to out
+        } finally {
+            srcJarDir?.deleteRecursively()
+        }
     }
 
     @JvmStatic

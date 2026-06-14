@@ -1,6 +1,7 @@
 package elide.kotlin.builder
 
 import java.io.File
+import java.util.zip.ZipFile
 
 /**
  * Constructs and executes Elide subprocess invocations for Kotlin compilation.
@@ -50,7 +51,38 @@ object ElideCompile {
      *     in one compiler pass. Verified against Elide 1.3.0 / Kotlin 2.4.0.
      *  2. An `elide jar` command to pack sources into [CompileRequest.srcjar], if set.
      */
-    fun plan(req: CompileRequest, elidePath: String): List<List<String>> {
+    /**
+     * Unpacks the given source jars into [into] and returns the paths of the
+     * extracted `.kt`/`.java` files.
+     *
+     * rules_kotlin delivers KAPT/KSP-generated sources to the post-processing
+     * compile via `--source_jars` (`CompileRequest.sourceJars`). `elide kotlinc`
+     * does not accept a source jar directly, so they must be unpacked and added
+     * to the compile's source set — needed for the `.kt` to RESOLVE references to
+     * generated symbols (e.g. Truffle DSL `*NodeGen`). The generated classes
+     * themselves are emitted by the KAPT step's `generated_class_jar` and merged
+     * by rules_kotlin, so these extracted sources are resolution inputs only.
+     */
+    fun extractSourceJars(sourceJars: List<String>, into: File): List<String> {
+        val extracted = mutableListOf<String>()
+        for (jar in sourceJars) {
+            ZipFile(File(jar)).use { zf ->
+                val entries = zf.entries()
+                while (entries.hasMoreElements()) {
+                    val entry = entries.nextElement()
+                    if (entry.isDirectory) continue
+                    if (!entry.name.endsWith(".kt") && !entry.name.endsWith(".java")) continue
+                    val dest = File(into, entry.name)
+                    dest.parentFile?.mkdirs()
+                    zf.getInputStream(entry).use { ins -> dest.outputStream().use(ins::copyTo) }
+                    extracted += dest.path
+                }
+            }
+        }
+        return extracted
+    }
+
+    fun plan(req: CompileRequest, elidePath: String, extraSources: List<String> = emptyList()): List<List<String>> {
         val cmds = mutableListOf<List<String>>()
         val sep = File.pathSeparator
 
@@ -83,6 +115,8 @@ object ElideCompile {
         }
         kt += req.passthroughFlags
         kt += req.sources
+        // Generated sources unpacked from --source_jars (KAPT/KSP), for resolution.
+        kt += extraSources
         cmds += kt
 
         // --- srcjar: pack sources when requested ---
@@ -94,12 +128,16 @@ object ElideCompile {
     }
 
     /**
-     * Executes each command from [plan] sequentially, capturing output to a temp file to avoid
-     * deadlocking on the OS pipe buffer. On failure the captured output is written to stderr
-     * (never to stdout, which carries the Bazel persistent-worker WorkResponse protocol).
-     * Returns 0 on success, or the first non-zero exit code encountered.
+     * Executes each command from [plan] sequentially, capturing merged stdout+stderr to a temp
+     * file (avoids deadlocking on the OS pipe buffer; never writes to this process's stdout,
+     * which carries the Bazel persistent-worker WorkResponse protocol).
+     *
+     * Returns `(exitCode, capturedOutput)`. The caller is responsible for surfacing the output —
+     * in worker/RBE mode it must go into `WorkResponse.output` (Bazel does not carry the worker
+     * process's own stderr), so we RETURN it rather than print it here. Mirrors `Fallback.run`.
      */
-    fun run(cmds: List<List<String>>, workDir: File): Int {
+    fun run(cmds: List<List<String>>, workDir: File): Pair<Int, String> {
+        val output = StringBuilder()
         for (c in cmds) {
             val log = File.createTempFile("elide-compile", ".log")
             try {
@@ -109,14 +147,12 @@ object ElideCompile {
                     .redirectOutput(log)
                     .start()
                 val code = p.waitFor()
-                if (code != 0) {
-                    System.err.print(log.readText())
-                    return code
-                }
+                output.append(log.readText())
+                if (code != 0) return code to output.toString()
             } finally {
                 log.delete()
             }
         }
-        return 0
+        return 0 to output.toString()
     }
 }

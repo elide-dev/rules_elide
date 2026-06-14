@@ -1,5 +1,9 @@
 package elide.kotlin.builder
 
+import java.io.File
+import java.nio.file.Files
+import java.util.zip.ZipEntry
+import java.util.zip.ZipOutputStream
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
@@ -102,5 +106,47 @@ class ElideCompileTest {
         val kotlinc = ElideCompile.plan(req, elidePath = "/bin/elide").first { it.contains("kotlinc") }
         assertTrue(!kotlinc.any { it.startsWith("-Xplugin=") }, "no -Xplugin when abiJar not set")
         assertTrue(!kotlinc.contains("-P"), "no -P when abiJar not set")
+    }
+
+    // --- #6: generated sources from --source_jars ---
+
+    @Test fun extraSourcesAddedToKotlincSourceSet() {
+        val req = CompileRequest(output = "out.jar", sources = listOf("A.kt"))
+        val kotlinc = ElideCompile.plan(req, elidePath = "/bin/elide", extraSources = listOf("gen/pkg/Gen.java"))
+            .first { it.contains("kotlinc") }
+        assertTrue(kotlinc.contains("A.kt"), "original source present")
+        assertTrue(kotlinc.contains("gen/pkg/Gen.java"), "generated source from source_jars must be on the source set")
+    }
+
+    @Test fun extractSourceJarsUnpacksKtAndJavaOnly() {
+        val jar = File.createTempFile("srcjar", ".jar")
+        ZipOutputStream(jar.outputStream()).use { zos ->
+            zos.putNextEntry(ZipEntry("pkg/Gen.java")); zos.write("package pkg; class Gen {}".toByteArray()); zos.closeEntry()
+            zos.putNextEntry(ZipEntry("pkg/Helper.kt")); zos.write("package pkg\nclass Helper".toByteArray()); zos.closeEntry()
+            zos.putNextEntry(ZipEntry("META-INF/MANIFEST.MF")); zos.write("Manifest-Version: 1.0\n".toByteArray()); zos.closeEntry()
+        }
+        val into = Files.createTempDirectory("extract").toFile()
+        try {
+            val files = ElideCompile.extractSourceJars(listOf(jar.path), into)
+            assertEquals(2, files.size, "only .kt/.java extracted (manifest ignored)")
+            assertTrue(files.any { it.endsWith("pkg/Gen.java") && File(it).exists() })
+            assertTrue(files.any { it.endsWith("pkg/Helper.kt") && File(it).exists() })
+        } finally {
+            jar.delete(); into.deleteRecursively()
+        }
+    }
+
+    // --- #7: run() surfaces captured output instead of swallowing it ---
+
+    @Test fun runReturnsCapturedOutputOnFailure() {
+        val (code, out) = ElideCompile.run(listOf(listOf("sh", "-c", "printf 'boom'; exit 3")), File("."))
+        assertEquals(3, code)
+        assertTrue(out.contains("boom"), "compiler output must be returned (not swallowed to stderr); got: $out")
+    }
+
+    @Test fun runReturnsOutputOnSuccess() {
+        val (code, out) = ElideCompile.run(listOf(listOf("sh", "-c", "printf 'ok'")), File("."))
+        assertEquals(0, code)
+        assertTrue(out.contains("ok"))
     }
 }
