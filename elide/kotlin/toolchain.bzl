@@ -137,14 +137,6 @@ _elide_kt_builder_launcher = rule(
     implementation = _elide_kt_builder_launcher_impl,
     doc = "Wraps the elide_kotlin_builder shim, injecting --elide/--fallback_builder config args.",
     attrs = {
-        "_jdk": attr.label(
-            default = "@bazel_tools//tools/jdk:current_java_runtime",
-            providers = [java_common.JavaRuntimeInfo],
-            cfg = "exec",
-        ),
-        "_runfiles_library": attr.label(
-            default = "@bazel_tools//tools/bash/runfiles",
-        ),
         "elide": attr.label(
             doc = "The elide binary, resolved via rlocation and passed as --elide.",
             mandatory = True,
@@ -164,6 +156,14 @@ _elide_kt_builder_launcher = rule(
             mandatory = True,
             executable = True,
             cfg = "exec",
+        ),
+        "_jdk": attr.label(
+            default = "@bazel_tools//tools/jdk:current_java_runtime",
+            providers = [java_common.JavaRuntimeInfo],
+            cfg = "exec",
+        ),
+        "_runfiles_library": attr.label(
+            default = "@bazel_tools//tools/bash/runfiles",
         ),
     },
     executable = True,

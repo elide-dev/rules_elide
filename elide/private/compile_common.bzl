@@ -648,13 +648,6 @@ COMMON_LIBRARY_ATTRS = {
 }
 
 COMMON_BINARY_EXTRA_ATTRS = {
-    "_runfiles_library": attr.label(
-        default = "@bazel_tools//tools/bash/runfiles",
-    ),
-    "_windows_constraint": attr.label(
-        default = "@platforms//os:windows",
-        providers = [[platform_common.ConstraintValueInfo]],
-    ),
     "jvm_flags": attr.string_list(
         doc = "Flags passed to the JVM when running the binary.",
     ),
@@ -662,17 +655,24 @@ COMMON_BINARY_EXTRA_ATTRS = {
         doc = "Fully qualified main class.",
         mandatory = True,
     ),
-}
-
-COMMON_TEST_EXTRA_ATTRS = {
+    "_runfiles_library": attr.label(
+        default = "@bazel_tools//tools/bash/runfiles",
+    ),
     "_windows_constraint": attr.label(
         default = "@platforms//os:windows",
         providers = [[platform_common.ConstraintValueInfo]],
     ),
+}
+
+COMMON_TEST_EXTRA_ATTRS = {
     "jvm_flags": attr.string_list(
         doc = "Flags passed to the JVM when running the test.",
     ),
     "test_class": attr.string(
         doc = "Single JUnit Platform test class to select. Empty -> --scan-classpath.",
+    ),
+    "_windows_constraint": attr.label(
+        default = "@platforms//os:windows",
+        providers = [[platform_common.ConstraintValueInfo]],
     ),
 }
