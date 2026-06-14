@@ -94,3 +94,24 @@ jobs:
         # JavaCommand.selectDelegateJvm under Bazel sandbox env).
         # See README "Roadmap" entry "elide native-image under Bazel".
         run: bazel build -- //... -//:native_app
+
+  kotlin-builder:
+    name: kotlin-builder e2e (rules_kotlin toolchain swap)
+    runs-on: ubuntu-24.04
+    # Same gate as `integration`: downloads the Elide binary. PRs get
+    # analysis-level coverage from the `e2e` job; this validates actual
+    # compilation through the KotlinBuilder shim on main pushes.
+    if: github.event_name != 'pull_request'
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5  # v4
+      - uses: bazel-contrib/setup-bazel@8cb04a772ab4c1eb984e9c1b493a182e96c5e425  # 0.19.0
+        with:
+          bazelisk-cache: true
+          disk-cache: ci-kotlin-builder
+          repository-cache: true
+      - name: bazel build //:greeter //:annotated
+        working-directory: e2e/kotlin_builder
+        # //:greeter — plain kt_jvm_library, takes the Elide fast path.
+        # //:annotated — kt_jvm_library with annotation processors, exercises
+        # the transparent KAPT fallback to the stock rules_kotlin KotlinBuilder.
+        run: bazel build //:greeter //:annotated

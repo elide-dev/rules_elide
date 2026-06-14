@@ -8,6 +8,20 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- `rules_kotlin` KotlinBuilder interop via `register_elide_kotlin_toolchain`
+  (load from `@rules_elide//elide/kotlin:toolchain.bzl`). Existing
+  `kt_jvm_library` / `kt_jvm_binary` / `kt_jvm_test` targets compile through
+  Elide with no BUILD-file migration — only a toolchain swap in `MODULE.bazel`.
+  - Plain Kotlin / mixed Kotlin+Java: compiled via `elide kotlinc` (fast path).
+  - KAPT / KSP (annotation processors): transparently delegated to the stock
+    `rules_kotlin` KotlinBuilder supplied as `fallback_builder`.
+  - ABI jars produced via Elide's embedded `jvm-abi-gen` when the toolchain
+    enables `experimental_use_abi_jars`.
+  - `.jdeps` output is a valid-but-stub proto (no per-dep classification);
+    `strict_kotlin_deps` / unused-deps / reduced-classpath are effectively
+    off until Elide can report used classpath entries — tracked in WHIPLASH #998.
+  - `e2e/kotlin_builder/` workspace exercises both the fast path
+    (`//:greeter`) and the KAPT fallback path (`//:annotated`).
 - Bzlmod-only Bazel rules for the Elide runtime.
   - `elide_java_library`, `elide_java_binary`, `elide_java_test`
   - `elide_kotlin_library`, `elide_kotlin_binary`, `elide_kotlin_test`
@@ -65,5 +79,10 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   in `versions.bzl` may drift when upstream advances.
 - Stable `release` channel on the CDN is not yet populated upstream (see
   `plan.md` UP-2); consumers currently pin against `nightly`/`preview`.
+- `rules_kotlin` KotlinBuilder shim: `.jdeps` output is a stub (no
+  per-dependency classification); `strict_kotlin_deps`, unused-deps
+  enforcement, and reduced-classpath mode are disabled until Elide can
+  report used classpath entries (WHIPLASH #998). Windows workers not
+  supported (POSIX launcher only).
 
 [Unreleased]: https://github.com/elide-dev/rules_elide/compare/HEAD

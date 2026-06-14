@@ -68,6 +68,7 @@ bazel run //:app
 | `elide_native_image`  | Native AOT binary from JavaInfo deps (via `elide native-image`)   | [docs/native_image.md](docs/native_image.md) |
 | `elide_format`        | In-place format `.java` (google-java-format) or `.kt` (ktfmt)     | [docs/format.md](docs/format.md) |
 | `elide_toolchain`     | Wrap an elide binary as a Bazel toolchain                         | [docs/toolchain.md](docs/toolchain.md) |
+| `register_elide_kotlin_toolchain` | Drop-in `rules_kotlin` toolchain swap — `kt_jvm_*` targets compile via Elide with no BUILD changes | [docs/kotlin_builder.md](docs/kotlin_builder.md) |
 
 Providers: `ElideToolchainInfo`, `ElideInfo` ([docs/providers.md](docs/providers.md)).
 Top-level entry point: [`@rules_elide//elide:defs.bzl`](docs/defs.md).
@@ -158,7 +159,7 @@ not mix languages — split into two `elide_format` targets if needed.
 | If you currently use…    | Migrate to `rules_elide` for…                                              |
 |--------------------------|----------------------------------------------------------------------------|
 | `rules_java`             | Faster compile in steady state (~2.8x on micro-bench), JUnit 5 native, ABI ijar + source jars |
-| `rules_kotlin`           | Faster compile (~5.5x on micro-bench), compile-time-compatible JavaInfo, single Elide JDK |
+| `rules_kotlin`           | Faster compile (~5.5x on micro-bench), compile-time-compatible JavaInfo, single Elide JDK — or keep `kt_jvm_*` rules and swap only the toolchain via `register_elide_kotlin_toolchain` |
 | `rules_graalvm`          | Native-image without a separate toolchain or GraalVM SDK download          |
 
 `rules_elide` returns `JavaInfo` from every compile rule, so existing
@@ -190,12 +191,15 @@ See [`e2e/smoke/README.md`](e2e/smoke/README.md) for the full flow.
 | Kotlin `srcjars` (extract+compile)   | Pending                                               |
 | Stable `release` channel populated   | Pending upstream                                      |
 | BCR (Bazel Central Registry)         | Templates in `.bcr/`; first publication after release |
+| KotlinBuilder jdeps (per-dep tracking) | Pending Elide used-classpath reporting (WHIPLASH #998); strict_kotlin_deps / unused-deps currently off on Elide fast path |
+| KotlinBuilder Windows workers        | Pending POSIX-only launcher replacement               |
 
 ## Compatibility
 
 | Layer                       | Status                                                                  |
 |-----------------------------|-------------------------------------------------------------------------|
 | Bazel                       | 7.4.0+ (Bzlmod-only; legacy `WORKSPACE` is not supported)               |
+| `rules_kotlin` interop      | Drop-in builder for non-AP targets; AP targets via fallback; jdeps/strict-deps pending WHIPLASH #998 |
 
 ## Versioning
 
