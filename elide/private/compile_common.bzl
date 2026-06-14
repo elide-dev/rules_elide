@@ -492,6 +492,8 @@ def build_launcher(ctx, output_jar):
     ).merge(ctx.attr._runfiles_library[DefaultInfo].default_runfiles)
     return launcher, runfiles
 
+# Unlike build_launcher, test launchers keep short_path (no rlocation): they only
+# run under `bazel test` (cwd = runfiles tree), never as a persistent worker.
 _TEST_LAUNCHER_TEMPLATE_SH = """\
 #!/bin/sh
 set -eu
@@ -646,6 +648,13 @@ COMMON_LIBRARY_ATTRS = {
 }
 
 COMMON_BINARY_EXTRA_ATTRS = {
+    "_runfiles_library": attr.label(
+        default = "@bazel_tools//tools/bash/runfiles",
+    ),
+    "_windows_constraint": attr.label(
+        default = "@platforms//os:windows",
+        providers = [[platform_common.ConstraintValueInfo]],
+    ),
     "jvm_flags": attr.string_list(
         doc = "Flags passed to the JVM when running the binary.",
     ),
@@ -653,24 +662,17 @@ COMMON_BINARY_EXTRA_ATTRS = {
         doc = "Fully qualified main class.",
         mandatory = True,
     ),
+}
+
+COMMON_TEST_EXTRA_ATTRS = {
     "_windows_constraint": attr.label(
         default = "@platforms//os:windows",
         providers = [[platform_common.ConstraintValueInfo]],
     ),
-    "_runfiles_library": attr.label(
-        default = "@bazel_tools//tools/bash/runfiles",
-    ),
-}
-
-COMMON_TEST_EXTRA_ATTRS = {
     "jvm_flags": attr.string_list(
         doc = "Flags passed to the JVM when running the test.",
     ),
     "test_class": attr.string(
         doc = "Single JUnit Platform test class to select. Empty -> --scan-classpath.",
-    ),
-    "_windows_constraint": attr.label(
-        default = "@platforms//os:windows",
-        providers = [[platform_common.ConstraintValueInfo]],
     ),
 }

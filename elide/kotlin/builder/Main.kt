@@ -32,6 +32,8 @@ object Main {
         val (cfg, rest) = splitConfig(argv.toList())
         if (rest.contains("--persistent_worker")) {
             val stdin = System.`in`; val stdout = System.out
+            // Singleplex worker: requests are handled serially; we intentionally do not
+            // support multiplex or honor WorkRequest.cancel (rules_kotlin drives KotlinCompile singleplex).
             while (true) {
                 val wr = Worker.readRequest(stdin) ?: break
                 val (cfg2, r) = splitConfig(wr.argumentsList)
