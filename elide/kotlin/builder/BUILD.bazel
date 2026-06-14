@@ -7,5 +7,8 @@ elide_kotlin_library(
     srcs = glob(["*.kt"]),
     module_name = "elide_kotlin_builder",
     kotlinc_opts = ["-jvm-target=21"],
-    deps = ["//elide/kotlin/builder/proto:worker_protocol_java_proto"],
+    deps = [
+        "//elide/kotlin/builder/proto:deps_java_proto",
+        "//elide/kotlin/builder/proto:worker_protocol_java_proto",
+    ],
 )
