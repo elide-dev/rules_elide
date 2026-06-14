@@ -1,0 +1,24 @@
+load("@rules_proto//proto:defs.bzl", "proto_library")
+load("@protobuf//bazel:java_proto_library.bzl", "java_proto_library")
+
+package(default_visibility = ["//elide/kotlin/builder:__subpackages__"])
+
+proto_library(
+    name = "worker_protocol_proto",
+    srcs = ["worker_protocol.proto"],
+)
+
+proto_library(
+    name = "deps_proto",
+    srcs = ["deps.proto"],
+)
+
+java_proto_library(
+    name = "worker_protocol_java_proto",
+    deps = [":worker_protocol_proto"],
+)
+
+java_proto_library(
+    name = "deps_java_proto",
+    deps = [":deps_proto"],
+)
