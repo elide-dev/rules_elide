@@ -36,19 +36,22 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   selection.
 - In-tree SRI integrity table, semver-aware version comparator, full
   extracted distribution exposed as toolchain runfiles.
-- Bazel persistent worker (singleplex) support for the `elide javac` and
-  `elide kotlinc` compile actions: each is tagged `supports-workers` with
-  the `proto` worker protocol, enabled by default. Per-request TOOL_ARGS are
-  delivered via a multiline params-file WorkRequest; Bazel injects the
-  `--persistent_worker` startup flag itself. (Note: workers are roughly
-  wall-clock-neutral for elide, a native image with ~12 ms startup — see
-  `benchmarks/RESULTS.md`.)
+- Bazel persistent worker support for the `elide javac` and `elide kotlinc`
+  compile actions: each is tagged `supports-workers` + `supports-multiplex-workers`
+  with the `proto` worker protocol, enabled by default. Per-request TOOL_ARGS are
+  delivered via a multiline params-file WorkRequest (in the unified
+  `elide <tool> [opts] -- <args>` form — Elide 1.3.1's worker accepts the `--`
+  separator); Bazel injects the `--persistent_worker` startup flag itself.
+  Multiplex (one warm process serving concurrent requests) is verified working
+  on 1.3.1 and lifts the singleplex `--worker_max_instances` concurrency cap.
+  (Workers are otherwise roughly wall-clock-neutral for elide, a native image
+  with ~12 ms startup — see `benchmarks/RESULTS.md`.)
+- `elide javac` compiles in a single action via the `--jar` option
+  (`elide javac --jar <out> -- <args>`, Elide 1.3.1 #993), replacing the prior
+  javac → `elide jar` two-action flow.
 - `--@rules_elide//elide:use_workers` build flag (default `true`) toggles the
-  above. Setting it `false` compiles each target as a one-shot
-  `elide <tool> -- <args>` process — the supported way to run without workers,
-  since the Bazel-native worker-off path (`--worker_max_instances=0`,
-  `--strategy=...=local`) hits a broken upstream standalone mode (WHIPLASH
-  #994).
+  worker path. Setting it `false` compiles each target as a one-shot
+  `elide <tool> -- <args>` process — the same arg form the worker now uses.
 - Kotlin compile pipeline supports `module_name`, `kotlinc_opts`,
   `javac_opts`, `plugins`, and `associates` (friend-paths for `internal`
   visibility).
@@ -86,13 +89,6 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Known limitations
 
-- The Bazel-native worker-off path (`--worker_max_instances=0`,
-  `--strategy=...=local`, remote execution) is broken upstream: it runs
-  `elide <tool> @flagfile`, where elide's top-level parser expects a `--`
-  before TOOL_ARGS, while the worker WorkRequest must omit it (WHIPLASH #994).
-  Until elide parses WorkRequest arguments and the standalone `@flagfile`
-  identically, run without workers via `--@rules_elide//elide:use_workers=false`
-  (one-shot `elide <tool> -- <args>`) rather than the Bazel-native switches.
 - `srcjars` attribute (compile-time generated sources) not yet wired.
 - `latest` CDN revision is a rolling pointer; integrity snapshot captured
   in `versions.bzl` may drift when upstream advances.
