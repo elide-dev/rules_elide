@@ -1,7 +1,10 @@
 load("@rules_proto//proto:defs.bzl", "proto_library")
 load("@protobuf//bazel:java_proto_library.bzl", "java_proto_library")
 
-package(default_visibility = ["//elide/kotlin/builder:__subpackages__"])
+package(default_visibility = [
+    "//elide/kotlin/builder:__subpackages__",
+    "//tests/kotlin_builder:__pkg__",
+])
 
 proto_library(
     name = "worker_protocol_proto",
