@@ -118,10 +118,15 @@ means:
 - `experimental_reduce_classpath_mode` does not reduce the classpath.
 
 Full jdeps reporting — where Elide introspects which classpath entries were
-actually referenced during compilation — is tracked in **WHIPLASH #998**. Until
-that lands, consuming repositories should continue relying on `rules_kotlin`'s
-own jdeps enforcement for any targets that stay on the fallback path, and accept
-that strict-dep enforcement is relaxed for targets compiled by the fast path.
+actually referenced during compilation — is tracked in **WHIPLASH #998**. Elide
+1.3.1 added a `--report-used-deps` flag for this, but it currently writes an
+**empty** report (the bundled `jdeps` analyzer cannot load its resource bundle in
+the native image — **WHIPLASH #1002**), so the shim keeps the stub. Once #1002 is
+fixed the shim can populate a real `.jdeps` and `strict_kotlin_deps` can be
+enabled. Until then, consuming repositories should continue relying on
+`rules_kotlin`'s own jdeps enforcement for any targets that stay on the fallback
+path, and accept that strict-dep enforcement is relaxed for targets compiled by
+the fast path.
 
 ## Caveats
 

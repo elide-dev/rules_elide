@@ -19,7 +19,9 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
     enables `experimental_use_abi_jars`.
   - `.jdeps` output is a valid-but-stub proto (no per-dep classification);
     `strict_kotlin_deps` / unused-deps / reduced-classpath are effectively
-    off until Elide can report used classpath entries — tracked in WHIPLASH #998.
+    off until Elide can report used classpath entries (WHIPLASH #998). Elide
+    1.3.1's `--report-used-deps` is not yet usable — it writes an empty report
+    (jdeps resource bundle missing in the native image, WHIPLASH #1002).
   - `e2e/kotlin_builder/` workspace exercises both the fast path
     (`//:greeter`) and the KAPT fallback path (`//:annotated`).
 - Bzlmod-only Bazel rules for the Elide runtime.
@@ -99,7 +101,8 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - `rules_kotlin` KotlinBuilder shim: `.jdeps` output is a stub (no
   per-dependency classification); `strict_kotlin_deps`, unused-deps
   enforcement, and reduced-classpath mode are disabled until Elide can
-  report used classpath entries (WHIPLASH #998). Windows workers not
-  supported (POSIX launcher only).
+  report used classpath entries (WHIPLASH #998). Elide 1.3.1's
+  `--report-used-deps` is not yet usable (writes an empty report —
+  WHIPLASH #1002). Windows workers not supported (POSIX launcher only).
 
 [Unreleased]: https://github.com/elide-dev/rules_elide/compare/HEAD
