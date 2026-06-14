@@ -87,7 +87,10 @@ def _library_action_no_worker_test_impl(ctx):
 
 _library_action_no_worker_test = analysistest.make(
     _library_action_no_worker_test_impl,
-    config_settings = {"@@//elide:use_workers": False},
+    # analysis_test_transition resolves these labels from bazel_skylib's context,
+    # where neither //elide nor @rules_elide is visible; the canonical root ref
+    # (@@, this module when it is the root) is the only form that resolves.
+    config_settings = {"@@//elide:use_workers": False},  # buildifier: disable=canonical-repository
 )
 
 def _binary_executable_test_impl(ctx):
