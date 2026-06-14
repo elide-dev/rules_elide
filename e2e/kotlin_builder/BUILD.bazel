@@ -1,4 +1,17 @@
+load("@rules_elide//elide/kotlin:toolchain.bzl", "register_elide_kotlin_toolchain")
 load("@rules_kotlin//kotlin:jvm.bzl", "kt_jvm_library")
+
+# Smoke-build target for the wrapping Elide Kotlin toolchain. This only
+# exercises analysis (macro expansion, rule resolution, ToolchainInfo re-emit);
+# actually compiling a kt_jvm_library through it is the next (e2e) task.
+register_elide_kotlin_toolchain(
+    name = "elide_kt",
+    # TODO(e2e): platform-pinned label. The elide binary is exposed per-platform
+    # by @elide_toolchains as @elide_<os>_<cpu>//:bin/elide. This smoke test runs
+    # on linux/amd64. The e2e task should make this select() on the exec platform.
+    elide = "@elide_linux_amd64//:bin/elide",
+    fallback_builder = "@rules_kotlin//src/main/kotlin:build",
+)
 
 kt_jvm_library(
     name = "greeter",
