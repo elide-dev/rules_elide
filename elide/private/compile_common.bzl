@@ -103,45 +103,55 @@ def _merge_resources(ctx, class_jars, output_jar):
     )
 
 # Execution requirements opting compile actions into Bazel persistent workers.
-# Elide's embedded javac/kotlinc workers are singleplex and speak the
-# length-delimited protobuf WorkRequest protocol, so we advertise `proto` and
-# deliberately omit `supports-multiplex-workers`. Bazel uses workers by default
-# for actions carrying these tags; users retain the standard kill-switches
+# Elide's embedded javac/kotlinc workers speak the length-delimited protobuf
+# WorkRequest protocol, so we advertise `proto`. Multiplex workers are verified
+# working in Elide 1.3.1 (one process serves concurrent WorkRequests with
+# isolated, correct outputs — WHIPLASH #1004), so we advertise
+# `supports-multiplex-workers`. Bazel uses workers by default for actions
+# carrying these tags; users retain the standard kill-switches
 # (`--strategy=ElideJavac=local`, `--worker_max_instances=0`).
 _WORKER_EXEC_REQUIREMENTS = {
     "requires-worker-protocol": "proto",
+    "supports-multiplex-workers": "1",
     "supports-workers": "1",
 }
 
 def _tool_args(ctx):
-    """Begins a buffer for a compile action's bare TOOL_ARGS.
+    """Begins a buffer for a compile action's tool args.
 
-    Holds only the arguments destined for the embedded tool (javac/kotlinc) —
-    no subcommand and no `--` separator. `_run_elide_compile` decides how they
-    are delivered (worker params-file WorkRequest vs one-shot inline).
+    Holds the args destined for the embedded tool (javac/kotlinc), including
+    any leading Elide options (e.g. `--jar`) and the `--` separator that
+    precedes the bare TOOL_ARGS. Callers are responsible for adding `--`
+    themselves; `_run_elide_compile` delivers this buffer verbatim, deciding
+    only how it is transported (worker params-file WorkRequest vs one-shot
+    inline).
     """
     return ctx.actions.args()
 
 def _run_elide_compile(ctx, mnemonic, subcommand, tool_args, inputs, outputs, progress_message):
     """Runs `elide <subcommand>` to compile, as a worker or a one-shot process.
 
+    Both modes use the same arg form: `elide <subcommand> <tool_args>`, where
+    `tool_args` already carries any leading Elide options and the `--`
+    separator (callers add these). As of Elide 1.3.1 the persistent worker
+    accepts the leading `--` (it rejected it in 1.3.0) and parses Elide options
+    like `--jar`, so worker and one-shot share one arg form.
+
     Selected by the `//elide:use_workers` build setting:
 
     - workers on (default): the action advertises `supports-workers`; Bazel
       appends `--persistent_worker` when it spawns the reusable process and
-      delivers `tool_args` as a multiline params-file WorkRequest. elide feeds
-      the WorkRequest straight to the embedded tool, so the args carry no `--`
-      separator (the worker rejects `--` as an unknown flag).
-    - workers off: a one-shot `elide <subcommand> -- <tool_args>` process per
-      target, with the `--` separator the top-level parser expects. This is the
-      supported way to compile without workers (the Bazel-native worker-off
-      path, `elide <tool> @flagfile`, is broken upstream — WHIPLASH #994).
+      delivers `tool_args` as a multiline params-file WorkRequest.
+    - workers off: a one-shot `elide <subcommand> <tool_args>` process per
+      target, with `tool_args` delivered inline. This is the supported way to
+      compile without workers (the Bazel-native worker-off path,
+      `elide <tool> @flagfile`, is broken upstream — WHIPLASH #994).
 
     Args:
         ctx: rule context.
         mnemonic: str. Action mnemonic (also the worker pool key).
         subcommand: str. Elide compile subcommand, e.g. `javac` or `kotlinc`.
-        tool_args: Args. Bare TOOL_ARGS from `_tool_args`.
+        tool_args: Args. Tool args from `_tool_args` (incl. `--` separator).
         inputs: depset[File]. Action inputs.
         outputs: list[File]. Declared action outputs.
         progress_message: str. Bazel progress message.
@@ -163,7 +173,6 @@ def _run_elide_compile(ctx, mnemonic, subcommand, tool_args, inputs, outputs, pr
             execution_requirements = _WORKER_EXEC_REQUIREMENTS,
         )
     else:
-        lead.add("--")
         ctx.actions.run(
             mnemonic = mnemonic,
             executable = elide.binary,
@@ -174,13 +183,16 @@ def _run_elide_compile(ctx, mnemonic, subcommand, tool_args, inputs, outputs, pr
         )
 
 def run_javac(ctx, output_jar):
-    """Runs `elide javac` to compile `.java` sources into `output_jar`.
+    """Runs `elide javac --jar` to compile `.java` sources into `output_jar`.
 
-    Two-action flow:
-      1. `elide javac -- -d <classes_dir> -classpath <cp> <srcs>` writes
-         .class files into a declared classes-dir.
-      2. `elide jar -- cf <output_jar> -C <classes_dir> .` packs the
-         classes-dir into the output JAR.
+    Single-action flow: `elide javac --jar <jar> -- -classpath <cp> <srcs>`
+    compiles and writes the output JAR directly (verified against Elide 1.3.1;
+    `--jar` alone produces the jar, no `-d` scratch dir needed). `--jar`
+    requires the `--` separator that precedes the bare javac TOOL_ARGS.
+
+    When the target carries packaged resources, `--jar` writes an intermediate
+    class jar which `_merge_resources` then folds into `output_jar`; otherwise
+    `--jar` writes `output_jar` directly.
 
     Args:
         ctx: rule context. Must expose srcs/deps/javac_opts/plugins.
@@ -191,11 +203,13 @@ def run_javac(ctx, output_jar):
     plugin_cp = _plugin_classpath(ctx.attr.plugins) if hasattr(ctx.attr, "plugins") else depset()
     sep = ctx.configuration.host_path_separator
 
-    classes_dir = ctx.actions.declare_directory(ctx.label.name + "_classes")
+    has_res = _has_packaged_resources(ctx)
+    class_jar = ctx.actions.declare_file(ctx.label.name + "_classes.jar") if has_res else output_jar
 
-    # Step 1: javac -> classes_dir/ (Bazel persistent worker).
+    # `elide javac --jar <class_jar> -- -classpath <cp> <javac_opts> <srcs>`.
     javac_args = _tool_args(ctx)
-    javac_args.add("-d", classes_dir.path)
+    javac_args.add("--jar", class_jar)
+    javac_args.add("--")
     full_cp = depset(transitive = [classpath, plugin_cp])
     javac_args.add_joined("-classpath", full_cp, join_with = sep)
     for o in ctx.attr.javac_opts:
@@ -208,33 +222,8 @@ def run_javac(ctx, output_jar):
         subcommand = "javac",
         tool_args = javac_args,
         inputs = depset(direct = ctx.files.srcs, transitive = [classpath, plugin_cp, elide.compile_tool_files]),
-        outputs = [classes_dir],
-        progress_message = "Compiling %{label} (elide javac)",
-    )
-
-    # Step 2: `elide jar -- --create --file=<output> --date=... -C <classes_dir> .`
-    # Uses GNU-style options to allow --date for deterministic ZIP entry timestamps.
-    # The traditional `cf` form treats --date as a filename; GNU-style required.
-    has_res = _has_packaged_resources(ctx)
-    class_jar = ctx.actions.declare_file(ctx.label.name + "_classes.jar") if has_res else output_jar
-
-    jar_args = ctx.actions.args()
-    jar_args.add("jar")
-    jar_args.add("--")
-    jar_args.add("--create")
-    jar_args.add("--file", class_jar)
-    jar_args.add("--date=1980-01-01T00:00:02Z")
-    jar_args.add("-C")
-    jar_args.add(classes_dir.path)
-    jar_args.add(".")
-
-    ctx.actions.run(
-        mnemonic = "ElideJavacJar",
-        executable = elide.binary,
-        arguments = [jar_args],
-        inputs = depset(direct = [classes_dir], transitive = [elide.compile_tool_files]),
         outputs = [class_jar],
-        progress_message = "Packing %{label} jar",
+        progress_message = "Compiling %{label} (elide javac)",
     )
 
     if has_res:
@@ -277,6 +266,7 @@ def run_kotlinc(ctx, output_jar):
         kt_jar = output_jar if single_kt_only else ctx.actions.declare_file(ctx.label.name + "_kotlin_classes.jar")
 
         args = _tool_args(ctx)
+        args.add("--")
         args.add("-d", kt_jar)
         full_cp = depset(transitive = [classpath, plugin_cp, friend_jars])
         args.add_joined("-classpath", full_cp, join_with = sep)
@@ -327,14 +317,15 @@ def _compile_java_aux(ctx, java_srcs, kt_jar):
     plugin_cp = _plugin_classpath(ctx.attr.plugins) if hasattr(ctx.attr, "plugins") else depset()
     sep = ctx.configuration.host_path_separator
 
-    classes_dir = ctx.actions.declare_directory(ctx.label.name + "_java_classes")
+    java_jar = ctx.actions.declare_file(ctx.label.name + "_java_classes.jar")
     kt_jars = [kt_jar] if kt_jar else []
     full_cp = depset(direct = kt_jars, transitive = [classpath, plugin_cp, elide.kotlin_stdlib_jars])
 
+    # `elide javac --jar <java_jar> -- -classpath <cp> -proc:none <javac_opts> <srcs>`.
     javac_args = _tool_args(ctx)
-    javac_args.add("-d", classes_dir.path)
+    javac_args.add("--jar", java_jar)
+    javac_args.add("--")
     javac_args.add_joined("-classpath", full_cp, join_with = sep)
-
     javac_args.add("-proc:none")
     for o in ctx.attr.javac_opts:
         javac_args.add(o)
@@ -349,28 +340,8 @@ def _compile_java_aux(ctx, java_srcs, kt_jar):
             direct = java_srcs + kt_jars,
             transitive = [classpath, plugin_cp, elide.kotlin_stdlib_jars, elide.compile_tool_files],
         ),
-        outputs = [classes_dir],
-        progress_message = "Compiling %{label} java sources (elide javac)",
-    )
-
-    java_jar = ctx.actions.declare_file(ctx.label.name + "_java_classes.jar")
-    jar_args = ctx.actions.args()
-    jar_args.add("jar")
-    jar_args.add("--")
-    jar_args.add("--create")
-    jar_args.add("--file", java_jar)
-    jar_args.add("--date=1980-01-01T00:00:02Z")
-    jar_args.add("-C")
-    jar_args.add(classes_dir.path)
-    jar_args.add(".")
-
-    ctx.actions.run(
-        mnemonic = "ElideKotlinJavacJar",
-        executable = elide.binary,
-        arguments = [jar_args],
-        inputs = depset(direct = [classes_dir], transitive = [elide.compile_tool_files]),
         outputs = [java_jar],
-        progress_message = "Packing %{label} java classes jar",
+        progress_message = "Compiling %{label} java sources (elide javac)",
     )
     return java_jar
 

@@ -46,19 +46,26 @@ def _library_action_test_impl(ctx):
     argv = javacs[0].argv
     asserts.true(env, "javac" in argv, "expected `javac` subcommand in argv")
 
-    # Persistent-worker mode: Bazel injects `--persistent_worker` when it spawns
-    # the worker, so the rule must not pass it, and the per-request TOOL_ARGS are
-    # delivered bare (no `--` separator) for the embedded javac to consume.
+    # Single-action `--jar` flow (Elide 1.3.1): one `elide javac --jar <jar> --
+    # -classpath <cp> <srcs>` action writes the output jar directly. The worker
+    # now accepts the leading `--` (and parses `--jar` before it), so worker and
+    # one-shot share the same arg form. Bazel injects `--persistent_worker` when
+    # it spawns the worker, so the rule must not pass it.
     asserts.false(
         env,
         "--persistent_worker" in argv,
         "rule must not pass `--persistent_worker`; Bazel injects it for workers",
     )
-    asserts.false(env, "--" in argv, "worker mode delivers bare TOOL_ARGS with no `--` separator")
-    asserts.true(env, "-d" in argv, "expected `-d <classes_dir>` flag")
+    asserts.true(env, "--jar" in argv, "expected `--jar <output>` leading Elide option")
+    asserts.true(env, "--" in argv, "expected the `--` separator before bare TOOL_ARGS")
     asserts.true(env, "-classpath" in argv, "expected `-classpath` flag passed to javac")
+    asserts.true(
+        env,
+        len([a for a in argv if a.endswith(".java")]) >= 1,
+        "expected `.java` srcs in argv",
+    )
     jars = [a for a in actions if a.mnemonic == "ElideJavacJar"]
-    asserts.equals(env, 1, len(jars), "expected one ElideJavacJar action (singlejar pack)")
+    asserts.equals(env, 0, len(jars), "no separate ElideJavacJar action (collapsed into --jar)")
     return analysistest.end(env)
 
 _library_action_test = analysistest.make(_library_action_test_impl)
@@ -72,10 +79,10 @@ def _library_action_no_worker_test_impl(ctx):
     asserts.true(env, "javac" in argv, "expected `javac` subcommand in argv")
 
     # Workers off (`--@rules_elide//elide:use_workers=false`): one-shot
-    # `elide javac -- <TOOL_ARGS>`, so the `--` separator the top-level parser
-    # expects must be present.
+    # `elide javac --jar <jar> -- <TOOL_ARGS>`, so `--jar` and the `--`
+    # separator the top-level parser expects must be present.
+    asserts.true(env, "--jar" in argv, "one-shot mode must pass the `--jar` option")
     asserts.true(env, "--" in argv, "one-shot mode must pass the `--` separator")
-    asserts.true(env, "-d" in argv, "expected `-d <classes_dir>` flag")
     return analysistest.end(env)
 
 _library_action_no_worker_test = analysistest.make(

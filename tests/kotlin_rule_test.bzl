@@ -37,15 +37,16 @@ def _library_action_test_impl(ctx):
     argv = kotlincs[0].argv
     asserts.true(env, "kotlinc" in argv, "expected `kotlinc` subcommand in argv")
 
-    # Persistent-worker mode: Bazel injects `--persistent_worker` when it spawns
-    # the worker, so the rule must not pass it, and the per-request TOOL_ARGS are
-    # delivered bare (no `--` separator) for the embedded kotlinc to consume.
+    # Both worker and one-shot now share the same arg form: `elide kotlinc --
+    # <TOOL_ARGS>`. As of Elide 1.3.1 the worker accepts the leading `--`, so
+    # it is always present. Bazel injects `--persistent_worker` when it spawns
+    # the worker, so the rule must not pass it.
     asserts.false(
         env,
         "--persistent_worker" in argv,
         "rule must not pass `--persistent_worker`; Bazel injects it for workers",
     )
-    asserts.false(env, "--" in argv, "worker mode delivers bare TOOL_ARGS with no `--` separator")
+    asserts.true(env, "--" in argv, "expected the `--` separator before bare TOOL_ARGS")
     asserts.true(env, "-d" in argv, "expected `-d` output flag passed to kotlinc")
     asserts.true(env, "-classpath" in argv, "expected `-classpath` flag passed to kotlinc")
     asserts.true(env, "-module-name" in argv, "expected `-module-name` flag (set on fixture)")
