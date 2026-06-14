@@ -25,4 +25,4 @@ elide.install(<a href="#elide.install-channel">channel</a>, <a href="#elide.inst
 | <a id="elide.install-channel"></a>channel |  Release channel: nightly, preview, or release.   | String | optional |  `"nightly"`  |
 | <a id="elide.install-repo_prefix"></a>repo_prefix |  Prefix used to name per-platform download repos.   | String | optional |  `"elide"`  |
 | <a id="elide.install-url_template"></a>url_template |  Override release URL template. Tokens: {channel}, {version}, {os}, {cpu}, {ext}.   | String | optional |  `""`  |
-| <a id="elide.install-version"></a>version |  Elide release version tag, e.g. `1.2.0+20260602`. Must match an entry in elide/private/versions.bzl. Defaults to the most-recently verified release.   | String | optional |  `"1.3.0+20260613"`  |
+| <a id="elide.install-version"></a>version |  Elide release version tag, e.g. `1.2.0+20260602`. Must match an entry in elide/private/versions.bzl. Defaults to the most-recently verified release.   | String | optional |  `"1.3.1+20260614"`  |
