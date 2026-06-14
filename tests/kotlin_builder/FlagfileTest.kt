@@ -8,7 +8,7 @@ class FlagfileTest {
     @Test fun parsesScalarAndRepeatedFlags() {
         val req = Flagfile.parse(listOf(
             "--output", "out.jar",
-            "--module_name", "greeter",
+            "--kotlin_module_name", "greeter",
             "--sources", "A.kt", "B.kt",
             "--classpath", "a.jar", "b.jar",
             "--strict_kotlin_deps", "off",

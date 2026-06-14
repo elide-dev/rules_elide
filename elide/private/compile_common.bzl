@@ -390,10 +390,34 @@ def make_elide_info(ctx):
         ),
     )
 
+# Canonical Bazel bash runfiles library boilerplate (v3). Resolves runfiles in
+# both directory- and manifest-based layouts. We need rlocation (rather than raw
+# short_paths) so the launcher works in BOTH invocation modes:
+#   * `bazel run`, where the cwd is the runfiles tree, AND
+#   * as a persistent worker (e.g. when used as a rules_kotlin KotlinBuilder),
+#     where Bazel runs from the execroot and runfiles short_paths do not resolve.
+# https://github.com/bazelbuild/bazel/blob/master/tools/bash/runfiles/runfiles.bash
+_RUNFILES_INIT = """\
+# --- begin runfiles.bash initialization v3 ---
+set -uo pipefail; set +e; f=bazel_tools/tools/bash/runfiles/runfiles.bash
+source "${RUNFILES_DIR:-/dev/null}/$f" 2>/dev/null || \\
+  source "$(grep -sm1 "^$f " "${RUNFILES_MANIFEST_FILE:-/dev/null}" | cut -f2- -d' ')" 2>/dev/null || \\
+  source "$0.runfiles/$f" 2>/dev/null || \\
+  source "$(grep -sm1 "^$f " "$0.runfiles_manifest" | cut -f2- -d' ')" 2>/dev/null || \\
+  source "$(grep -sm1 "^$f " "$0.exe.runfiles_manifest" | cut -f2- -d' ')" 2>/dev/null || \\
+  { echo>&2 "ERROR: cannot find $f"; exit 1; }; f=; set -e
+# --- end runfiles.bash initialization v3 ---
+"""
+
 _LAUNCHER_TEMPLATE_SH = """\
-#!/bin/sh
-set -eu
-exec {elide} java -- {jvm_flags}-cp {classpath} {main_class} "$@"
+#!/usr/bin/env bash
+{runfiles_init}
+cp=""
+for entry in {classpath}; do
+  abs="$(rlocation "$entry")"
+  if [ -z "$cp" ]; then cp="$abs"; else cp="$cp{sep}$abs"; fi
+done
+exec "$(rlocation {elide})" java -- {jvm_flags}-cp "$cp" {main_class} "$@"
 """
 
 _LAUNCHER_TEMPLATE_BAT = """\
@@ -407,6 +431,18 @@ def _is_windows(ctx):
         return False
     constraint = ctx.attr._windows_constraint[platform_common.ConstraintValueInfo]
     return ctx.target_platform_has_constraint(constraint)
+
+def _rlocation_path(ctx, file):
+    """Maps a File's runfiles-relative short_path to its `rlocation` key.
+
+    Repository-rooted short_paths (`../<repo>/...`) are normalized to the
+    canonical `<repo>/...` rlocation form; main-repo paths are prefixed with the
+    workspace name.
+    """
+    sp = file.short_path
+    if sp.startswith("../"):
+        return sp[len("../"):]
+    return ctx.workspace_name + "/" + sp
 
 def build_launcher(ctx, output_jar):
     """Writes a shell launcher running the binary via the elide toolchain.
@@ -424,9 +460,9 @@ def build_launcher(ctx, output_jar):
         transitive = [runtime_classpath(ctx.attr.deps, ctx.attr.runtime_deps), elide.kotlin_stdlib_jars],
     )
     sep = ctx.configuration.host_path_separator
-    classpath_str = sep.join([f.short_path for f in classpath.to_list()])
     is_win = _is_windows(ctx)
     if is_win:
+        classpath_str = sep.join([f.short_path for f in classpath.to_list()])
         jvm_flags = "".join([f + " " for f in ctx.attr.jvm_flags])
         content = _LAUNCHER_TEMPLATE_BAT.format(
             elide = elide.binary.short_path,
@@ -436,11 +472,16 @@ def build_launcher(ctx, output_jar):
         )
         launcher = ctx.actions.declare_file(ctx.label.name + "_launcher.bat")
     else:
+        # Pass each classpath entry as an rlocation key; the launcher resolves
+        # them at runtime via the bash runfiles library and joins with `sep`.
+        cp_keys = " ".join([shell.quote(_rlocation_path(ctx, f)) for f in classpath.to_list()])
         jvm_flags = "".join([shell.quote(f) + " " for f in ctx.attr.jvm_flags])
         content = _LAUNCHER_TEMPLATE_SH.format(
-            elide = shell.quote(elide.binary.short_path),
+            runfiles_init = _RUNFILES_INIT,
+            elide = shell.quote(_rlocation_path(ctx, elide.binary)),
             jvm_flags = jvm_flags,
-            classpath = shell.quote(classpath_str),
+            classpath = cp_keys,
+            sep = sep,
             main_class = shell.quote(ctx.attr.main_class),
         )
         launcher = ctx.actions.declare_file(ctx.label.name + "_launcher.sh")
@@ -448,7 +489,7 @@ def build_launcher(ctx, output_jar):
     runfiles = ctx.runfiles(
         files = [output_jar, launcher],
         transitive_files = depset(transitive = [elide.tool_files, classpath]),
-    )
+    ).merge(ctx.attr._runfiles_library[DefaultInfo].default_runfiles)
     return launcher, runfiles
 
 _TEST_LAUNCHER_TEMPLATE_SH = """\
@@ -615,6 +656,9 @@ COMMON_BINARY_EXTRA_ATTRS = {
     "_windows_constraint": attr.label(
         default = "@platforms//os:windows",
         providers = [[platform_common.ConstraintValueInfo]],
+    ),
+    "_runfiles_library": attr.label(
+        default = "@bazel_tools//tools/bash/runfiles",
     ),
 }
 

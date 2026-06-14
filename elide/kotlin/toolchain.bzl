@@ -15,6 +15,7 @@ rule). To inject the Elide builder shim we:
 See `register_elide_kotlin_toolchain` for the public entry point.
 """
 
+load("@rules_java//java/common:java_common.bzl", "java_common")
 load("@rules_kotlin//kotlin:core.bzl", "define_kt_toolchain")
 
 visibility("public")
@@ -41,9 +42,35 @@ source "${RUNFILES_DIR:-/dev/null}/$f" 2>/dev/null || \\
 # with the leading config args the Elide `Main` entrypoint expects. It MUST NOT
 # write anything to stdout: in persistent-worker mode stdout carries the
 # length-delimited WorkResponse stream consumed by Bazel.
+# Bazel launches persistent workers (and one-shot KotlinCompile actions) with a
+# scrubbed environment (`env -`), so neither PATH nor JAVA_HOME is inherited.
+# `elide java` (the engine driving the shim's fast path) probes for an external
+# JVM via JAVA_HOME, so the launcher exports JAVA_HOME to the rlocation of the
+# Bazel-provided JDK before exec'ing the shim. This keeps the worker hermetic
+# (no reliance on a system JDK or --action_env passthrough).
 _LAUNCHER_TEMPLATE = """\
 #!/usr/bin/env bash
 {runfiles_init}
+# Resolve JAVA_HOME via a concrete file inside the JDK (`bin/java`): in
+# manifest-based runfiles layouts `rlocation` only resolves individual files,
+# not directory roots, so we derive the home from the `java` launcher's path.
+_elide_java_bin="$(rlocation {jdk_java})"
+export JAVA_HOME="$(dirname "$(dirname "$_elide_java_bin")")"
+# Propagate the runfiles location to child processes. The stock rules_kotlin
+# KotlinBuilder (used by the fallback path) is a java_stub that locates its own
+# runfiles via RUNFILES_DIR / JAVA_RUNFILES / RUNFILES_MANIFEST_FILE; under the
+# scrubbed worker env it would otherwise fail with "Cannot locate runfiles
+# directory". The fallback's runfiles are merged into this launcher's runfiles
+# tree, so we point the children at it. (RUNFILES_DIR/RUNFILES_MANIFEST_FILE are
+# set by the runfiles.bash init above when available; export them for children.)
+if [ -n "${{RUNFILES_DIR:-}}" ]; then
+  export RUNFILES_DIR JAVA_RUNFILES="$RUNFILES_DIR"
+elif [ -d "$0.runfiles" ]; then
+  export RUNFILES_DIR="$0.runfiles" JAVA_RUNFILES="$0.runfiles"
+fi
+if [ -n "${{RUNFILES_MANIFEST_FILE:-}}" ]; then
+  export RUNFILES_MANIFEST_FILE
+fi
 exec "$(rlocation {shim})" \\
   --elide="$(rlocation {elide})" \\
   --fallback_builder="$(rlocation {fallback})" \\
@@ -63,8 +90,21 @@ def _elide_kt_builder_launcher_impl(ctx):
             return sp[len("../"):]
         return ctx.workspace_name + "/" + sp
 
+    # JAVA_HOME for `elide java`: the launcher derives it at runtime from the
+    # rlocation of the JDK's `bin/java`. We must rlocation a concrete file (not
+    # the home directory) because manifest-based runfiles layouts only key
+    # individual files. `java_home` is an exec-relative path; map its first
+    # `external/<repo>` segment to the canonical `<repo>/...` rlocation form.
+    jdk = ctx.attr._jdk[java_common.JavaRuntimeInfo]
+    java_home = jdk.java_home
+    if java_home.startswith("external/"):
+        jdk_home_key = java_home[len("external/"):]
+    else:
+        jdk_home_key = ctx.workspace_name + "/" + java_home
+
     content = _LAUNCHER_TEMPLATE.format(
         runfiles_init = _RUNFILES_INIT,
+        jdk_java = jdk_home_key + "/bin/java",
         shim = _rlocation_path(ctx.executable.shim),
         elide = _rlocation_path(ctx.executable.elide),
         fallback = _rlocation_path(ctx.executable.fallback_builder),
@@ -80,6 +120,7 @@ def _elide_kt_builder_launcher_impl(ctx):
             ctx.executable.elide,
             ctx.executable.fallback_builder,
         ],
+        transitive_files = jdk.files,
     ).merge_all([
         ctx.attr.shim[DefaultInfo].default_runfiles,
         ctx.attr.elide[DefaultInfo].default_runfiles,
@@ -119,8 +160,14 @@ _elide_kt_builder_launcher = rule(
         "_runfiles_library": attr.label(
             default = "@bazel_tools//tools/bash/runfiles",
         ),
+        "_jdk": attr.label(
+            default = "@bazel_tools//tools/jdk:current_java_runtime",
+            providers = [java_common.JavaRuntimeInfo],
+            cfg = "exec",
+        ),
     },
     executable = True,
+    toolchains = ["@bazel_tools//tools/jdk:toolchain_type"],
 )
 
 # Fields emitted by rules_kotlin's `_kotlin_toolchain_impl` (the stock

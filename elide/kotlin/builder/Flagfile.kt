@@ -47,7 +47,7 @@ object Flagfile {
             abiJar = first("--abi_jar"),
             jdeps = first("--kotlin_output_jdeps"),
             srcjar = first("--kotlin_output_srcjar"),
-            moduleName = first("--module_name"),
+            moduleName = first("--kotlin_module_name"),
             sources = list("--sources"),
             sourceJars = list("--source_jars"),
             classpath = list("--classpath"),

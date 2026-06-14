@@ -1,4 +1,5 @@
 load("@rules_elide//elide/kotlin:toolchain.bzl", "register_elide_kotlin_toolchain")
+load("@rules_java//java:defs.bzl", "java_library", "java_plugin")
 load("@rules_kotlin//kotlin:jvm.bzl", "kt_jvm_library")
 
 # Smoke-build target for the wrapping Elide Kotlin toolchain. This only
@@ -16,4 +17,26 @@ register_elide_kotlin_toolchain(
 kt_jvm_library(
     name = "greeter",
     srcs = ["sample/Greeter.kt"],
+)
+
+# --- KAPT fallback: an annotation processor forces the shim to delegate to the
+# stock rules_kotlin KotlinBuilder (Router detects --processors). ---
+
+java_library(
+    name = "marker_anno",
+    srcs = ["proc/Marker.java"],
+)
+
+java_plugin(
+    name = "marker_processor",
+    srcs = ["proc/MarkerProcessor.java"],
+    processor_class = "proc.MarkerProcessor",
+    deps = [":marker_anno"],
+)
+
+kt_jvm_library(
+    name = "annotated",
+    srcs = ["sample/Annotated.kt"],
+    plugins = [":marker_processor"],
+    deps = [":marker_anno"],
 )
