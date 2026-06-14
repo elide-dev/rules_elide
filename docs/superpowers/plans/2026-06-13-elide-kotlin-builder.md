@@ -97,6 +97,73 @@ git commit -m "test(kotlin-builder): e2e workspace with stock rules_kotlin contr
 
 ---
 
+## Phase 0b — Dev-only JVM unit-test harness
+
+### Task 0b: kotlin.test + JUnit5 via Maven (dev_dependency), with a smoke test
+
+The shim's unit tests (Tasks 1,2,3,4,5b,5c) use `kotlin.test` run via `elide_kotlin_test`, which launches the JUnit Platform ConsoleLauncher. The main repo has no Maven setup, so add one — **dev-scoped** so it does not propagate to consumers.
+
+**Files:**
+- Modify: `MODULE.bazel` (root)
+- Create: `tests/kotlin_builder/BUILD.bazel` (smoke target only for now)
+- Create: `tests/kotlin_builder/SmokeTest.kt`
+
+- [ ] **Step 1: Add dev-only Maven deps** to root `MODULE.bazel`:
+```python
+bazel_dep(name = "rules_jvm_external", version = "6.7", dev_dependency = True)
+
+maven = use_extension("@rules_jvm_external//:extensions.bzl", "maven", dev_dependency = True)
+maven.install(
+    name = "kt_test_deps",
+    artifacts = [
+        "org.jetbrains.kotlin:kotlin-test:KOTLIN_VERSION",          # match Elide's bundled Kotlin
+        "org.jetbrains.kotlin:kotlin-test-junit5:KOTLIN_VERSION",
+        "org.junit.jupiter:junit-jupiter:5.11.3",
+        "org.junit.platform:junit-platform-console-standalone:1.11.3",
+    ],
+)
+use_repo(maven, "kt_test_deps", dev_dependency = True)
+```
+Determine `KOTLIN_VERSION` to match the Kotlin the Elide toolchain compiles with (inspect the elide kotlin stdlib jar version, or `elide --version` / docs). A mismatch can cause metadata-version warnings/errors.
+
+- [ ] **Step 2: Smoke test** `tests/kotlin_builder/SmokeTest.kt`:
+```kotlin
+package elide.kotlin.builder
+import kotlin.test.Test
+import kotlin.test.assertEquals
+class SmokeTest { @Test fun harnessWorks() { assertEquals(2, 1 + 1) } }
+```
+`tests/kotlin_builder/BUILD.bazel`:
+```python
+load("@rules_elide//elide:defs.bzl", "elide_kotlin_test")
+
+elide_kotlin_test(
+    name = "smoke_test",
+    srcs = ["SmokeTest.kt"],
+    test_class = "elide.kotlin.builder.SmokeTest",
+    # Emit bytecode the test-launcher JVM can load (it is Java 21 / class 65;
+    # Elide defaults to a newer target). Adjust if the launcher JVM differs.
+    kotlinc_opts = ["-jvm-target=21"],
+    deps = ["@kt_test_deps//:org_jetbrains_kotlin_kotlin_test"],
+    runtime_deps = [
+        "@kt_test_deps//:org_jetbrains_kotlin_kotlin_test_junit5",
+        "@kt_test_deps//:org_junit_jupiter_junit_jupiter",
+        "@kt_test_deps//:org_junit_platform_junit_platform_console_standalone",
+    ],
+)
+```
+
+- [ ] **Step 3: Verify** — Run: `bazelisk test //tests/kotlin_builder:smoke_test` → PASS. If it fails with a class-file-version mismatch (e.g. "class file version 69.0 … up to 65.0"), reconcile the `-jvm-target`/launcher JVM; if unresolvable, report BLOCKED with the exact error.
+
+- [ ] **Step 4: Commit**
+
+```bash
+git add MODULE.bazel tests/kotlin_builder
+git commit -m "test(kotlin-builder): dev-only kotlin.test + JUnit5 harness with smoke test"
+```
+
+---
+
 ## Phase 1 — Flagfile parsing (pure, fully unit-testable)
 
 ### Task 1: `CompileRequest` model + flagfile reader
@@ -835,9 +902,13 @@ def register_elide_kotlin_toolchain(
     native.register_toolchains(":" + name)
 ```
 
-- [ ] **Step 3: Generate the config-injecting launcher**
+- [ ] **Step 3: Config-injecting launcher + wrapping toolchain (CHOSEN APPROACH)**
 
-Add to `elide/kotlin/toolchain.bzl` a private launcher rule/genrule producing an executable that runs `<shim> --elide=$(rootpath elide) --fallback_builder=$(rootpath fallback) "$@"`, with both binaries in its runfiles. (Mirror the launcher emission in `compile_common.bzl:build_launcher`.) Confirm `define_kt_toolchain` accepts an overridden `kotlinbuilder` label; if the public macro hardcodes it, define the underlying `_kt_toolchain` rule target directly instead.
+`define_kt_toolchain` does NOT expose `kotlinbuilder` and `_kt_toolchain` is private (verified, rules_kotlin 2.3.20). Chosen path: **vendor a wrapping toolchain rule** that wraps a stock toolchain instance and swaps only `kotlinbuilder`.
+
+- A launcher rule `_elide_kt_builder_launcher` (executable): attrs `shim`/`elide`/`fallback_builder` (all `executable=True, cfg="exec"`); emits a `.sh` that `exec`s the shim with `--elide=$(rlocation elide) --fallback_builder=$(rlocation fallback) "$@"` using the standard Bazel runfiles bash init; runfiles merge all three. (Mirror `compile_common.bzl:build_launcher`; stdout untouched — it carries the worker protocol.)
+- A wrapping rule `_elide_kt_toolchain`: attr `base` (a stock toolchain impl target) + `kotlinbuilder` (our launcher). impl reads `base[platform_common.ToolchainInfo]`, copies all its fields (`dir()`+`getattr`, or explicit field list from `_kotlin_toolchain_impl` if generic copy fails), overrides `kotlinbuilder`, re-emits `platform_common.ToolchainInfo(**fields)`.
+- Macro `register_elide_kotlin_toolchain(name, elide, fallback_builder, **kwargs)`: instantiate the launcher; `define_kt_toolchain(name = name + "_base", **kwargs)` to get a stock impl (do NOT register it); `_elide_kt_toolchain(name = name + "_impl", base = <stock impl target>, kotlinbuilder = ":" + name + "_launcher")`; `native.toolchain(name = name, toolchain_type = "@rules_kotlin//kotlin/internal:kt_toolchain_type", toolchain = ":" + name + "_impl")`; `native.register_toolchains(":" + name)`. (Find the exact impl target name `define_kt_toolchain` produces by reading its body.)
 
 - [ ] **Step 4: Verify the shim builds and unit tests pass**
 
