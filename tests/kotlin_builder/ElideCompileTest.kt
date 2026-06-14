@@ -136,6 +136,20 @@ class ElideCompileTest {
         }
     }
 
+    @Test fun extractSourceJarsRejectsZipSlip() {
+        val jar = File.createTempFile("evil", ".jar")
+        ZipOutputStream(jar.outputStream()).use { zos ->
+            zos.putNextEntry(ZipEntry("../escape.java")); zos.write("class X {}".toByteArray()); zos.closeEntry()
+        }
+        val into = Files.createTempDirectory("extract-slip").toFile()
+        try {
+            assertFailsWith<SecurityException> { ElideCompile.extractSourceJars(listOf(jar.path), into) }
+            assertTrue(!File(into.parentFile, "escape.java").exists(), "escaping entry must not be written")
+        } finally {
+            jar.delete(); into.deleteRecursively()
+        }
+    }
+
     // --- #7: run() surfaces captured output instead of swallowing it ---
 
     @Test fun runReturnsCapturedOutputOnFailure() {

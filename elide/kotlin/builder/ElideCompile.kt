@@ -65,6 +65,7 @@ object ElideCompile {
      */
     fun extractSourceJars(sourceJars: List<String>, into: File): List<String> {
         val extracted = mutableListOf<String>()
+        val intoCanonical = into.canonicalFile
         for (jar in sourceJars) {
             ZipFile(File(jar)).use { zf ->
                 val entries = zf.entries()
@@ -72,7 +73,11 @@ object ElideCompile {
                     val entry = entries.nextElement()
                     if (entry.isDirectory) continue
                     if (!entry.name.endsWith(".kt") && !entry.name.endsWith(".java")) continue
-                    val dest = File(into, entry.name)
+                    // Zip Slip guard: reject entries that escape `into` (e.g. `../`).
+                    val dest = File(into, entry.name).canonicalFile
+                    if (!dest.toPath().startsWith(intoCanonical.toPath())) {
+                        throw SecurityException("source jar entry escapes destination: ${entry.name}")
+                    }
                     dest.parentFile?.mkdirs()
                     zf.getInputStream(entry).use { ins -> dest.outputStream().use(ins::copyTo) }
                     extracted += dest.path
