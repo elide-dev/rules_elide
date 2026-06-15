@@ -107,26 +107,24 @@ the shim produces ABI (header) jars using Elide's embedded `jvm-abi-gen`. The
 ABI jar is used as the `compile_jar` in the emitted `JavaInfo`, enabling
 downstream incremental rebuilds without waiting for the full class jar.
 
-## Dependency tracking (jdeps) — current limitation
+## Dependency tracking (jdeps)
 
-The shim writes a syntactically valid but stub `.jdeps` protobuf for every
-compilation action. The stub contains no per-dependency classification, which
-means:
+As of Elide 1.3.2 the shim writes a **real** `.jdeps` (`Deps.Dependencies`)
+protobuf for every fast-path compile. It passes `--report-used-deps` to
+`elide kotlinc` (which records the classpath entries the output actually
+references — WHIPLASH #998, fixed in #1002/#1005) and classifies each classpath
+entry as `EXPLICIT` (used and a direct dependency), `IMPLICIT` (used transitive
+dependency), or `UNUSED`. This is the data Bazel/`rules_kotlin` consume for
+`unused_deps` reporting and `experimental_reduce_classpath_mode`.
 
-- `strict_kotlin_deps` has no effect (no violation data to enforce).
-- `unused_deps` checking is effectively off.
-- `experimental_reduce_classpath_mode` does not reduce the classpath.
+Notes:
 
-Full jdeps reporting — where Elide introspects which classpath entries were
-actually referenced during compilation — is tracked in **WHIPLASH #998**. Elide
-1.3.1 added a `--report-used-deps` flag for this, but it currently writes an
-**empty** report (the bundled `jdeps` analyzer cannot load its resource bundle in
-the native image — **WHIPLASH #1002**), so the shim keeps the stub. Once #1002 is
-fixed the shim can populate a real `.jdeps` and `strict_kotlin_deps` can be
-enabled. Until then, consuming repositories should continue relying on
-`rules_kotlin`'s own jdeps enforcement for any targets that stay on the fallback
-path, and accept that strict-dep enforcement is relaxed for targets compiled by
-the fast path.
+- When a target has no classpath (or no jdeps output is requested) the shim
+  writes a valid empty `Deps` proto.
+- The accuracy of the classification follows Elide's `--report-used-deps`
+  analysis (`jdeps`-based). The shim does not itself fail the build on
+  strict-deps violations; it emits the data and leaves enforcement to the
+  consuming `rules_kotlin` configuration.
 
 ## Caveats
 

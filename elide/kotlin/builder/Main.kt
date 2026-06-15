@@ -27,12 +27,27 @@ object Main {
         // Unpack generated sources from --source_jars (KAPT/KSP) so the compile can
         // resolve references to generated symbols; clean up the temp dir after.
         val srcJarDir = if (req.sourceJars.isNotEmpty()) Files.createTempDirectory("elide-srcjars").toFile() else null
+        // Ask elide to record used classpath entries so we can write a real .jdeps
+        // (Elide 1.3.2, WHIPLASH #1002/#1005). Only meaningful when there is a
+        // classpath to classify and a jdeps output is requested.
+        val usedReport = if (req.jdeps != null && req.classpath.isNotEmpty()) {
+            File.createTempFile("elide-useddeps", ".txt")
+        } else {
+            null
+        }
         try {
             val extraSources = srcJarDir?.let { ElideCompile.extractSourceJars(req.sourceJars, it) } ?: emptyList()
-            val (code, out) = ElideCompile.run(ElideCompile.plan(req, cfg.elide, extraSources), wd)
-            if (code == 0) req.jdeps?.let { Jdeps.writeStub(it, req.moduleName ?: "") }
+            val (code, out) = ElideCompile.run(ElideCompile.plan(req, cfg.elide, extraSources, usedReport?.path), wd)
+            if (code == 0) req.jdeps?.let { jdeps ->
+                if (usedReport != null && usedReport.exists()) {
+                    Jdeps.write(jdeps, req.moduleName ?: "", req.classpath, req.directDependencies, usedReport)
+                } else {
+                    Jdeps.writeStub(jdeps, req.moduleName ?: "")
+                }
+            }
             return code to out
         } finally {
+            usedReport?.delete()
             srcJarDir?.deleteRecursively()
         }
     }

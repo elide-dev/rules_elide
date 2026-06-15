@@ -21,7 +21,11 @@ data class CompileRequest(
     val processors: List<String> = emptyList(),
     val processorPath: List<String> = emptyList(),
     val compilerPluginClasspath: List<String> = emptyList(),
+    val compilerPluginOptions: List<String> = emptyList(),
     val stubsPluginClasspath: List<String> = emptyList(),
+    val stubsPluginOptions: List<String> = emptyList(),
+    val apiVersion: String? = null,
+    val languageVersion: String? = null,
     val raw: Map<String, List<String>> = emptyMap(),
 )
 
@@ -59,7 +63,11 @@ object Flagfile {
             processors = list("--processors"),
             processorPath = list("--processorpath"),
             compilerPluginClasspath = list("--compiler_plugin_classpath"),
+            compilerPluginOptions = list("--compiler_plugin_options"),
             stubsPluginClasspath = list("--stubs_plugin_classpath"),
+            stubsPluginOptions = list("--stubs_plugin_options"),
+            apiVersion = first("--kotlin_api_version"),
+            languageVersion = first("--kotlin_language_version"),
             raw = map.mapValues { it.value.toList() },
         )
     }

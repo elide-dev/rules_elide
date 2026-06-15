@@ -87,12 +87,22 @@ object ElideCompile {
         return extracted
     }
 
-    fun plan(req: CompileRequest, elidePath: String, extraSources: List<String> = emptyList()): List<List<String>> {
+    fun plan(
+        req: CompileRequest,
+        elidePath: String,
+        extraSources: List<String> = emptyList(),
+        usedDepsReport: String? = null,
+    ): List<List<String>> {
         val cmds = mutableListOf<List<String>>()
         val sep = File.pathSeparator
 
         // --- kotlinc command ---
-        val kt = mutableListOf(elidePath, "kotlinc", "--", "-d", req.output ?: error("--output required"))
+        // Elide top-level options precede the `--` separator; kotlinc TOOL_ARGS follow it.
+        val kt = mutableListOf(elidePath, "kotlinc")
+        // Used-dependency report for real .jdeps (Elide 1.3.2, WHIPLASH #1002/#1005).
+        usedDepsReport?.let { kt += listOf("--report-used-deps", it) }
+        kt += "--"
+        kt += listOf("-d", req.output ?: error("--output required"))
         if (req.classpath.isNotEmpty()) {
             kt += "-classpath"
             kt += req.classpath.joinToString(sep)
@@ -118,6 +128,23 @@ object ElideCompile {
             kt += "-P"
             kt += "plugin:$JVM_ABI_GEN_PLUGIN_ID:outputDir=$abiJarPath"
         }
+        // Compiler plugins (rules_elide #8): rules_kotlin delivers these via
+        // --compiler_plugin_classpath / --compiler_plugin_options; the stock builder
+        // turns them into -Xplugin / -P, which we must replicate on the fast path or
+        // optioned plugins (e.g. Metro) silently lose their options. Skip a jar that
+        // already rides in --kotlin_passthrough_flags to avoid double-loading.
+        for (jar in req.compilerPluginClasspath) {
+            val flag = "-Xplugin=$jar"
+            if (flag !in req.passthroughFlags) kt += flag
+        }
+        for (opt in req.compilerPluginOptions) {
+            kt += "-P"
+            kt += "plugin:$opt"
+        }
+        // Requested Kotlin api/language version (#8); without these elide kotlinc
+        // falls back to its built-in default (warns + can change semantics).
+        req.apiVersion?.let { kt += listOf("-api-version", it) }
+        req.languageVersion?.let { kt += listOf("-language-version", it) }
         kt += req.passthroughFlags
         kt += req.sources
         // Generated sources unpacked from --source_jars (KAPT/KSP), for resolution.

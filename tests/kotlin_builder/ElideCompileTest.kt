@@ -108,6 +108,47 @@ class ElideCompileTest {
         assertTrue(!kotlinc.contains("-P"), "no -P when abiJar not set")
     }
 
+    // --- #8: compiler-plugin options + Kotlin api/language version ---
+
+    @Test fun compilerPluginOptionsForwardedAsDashP() {
+        val opt = "dev.zacsweers.metro.compiler:interop-include-jakarta-annotations=true"
+        val req = CompileRequest(
+            output = "out.jar", sources = listOf("A.kt"),
+            compilerPluginClasspath = listOf("/m/metro.jar"),
+            compilerPluginOptions = listOf(opt))
+        val kt = ElideCompile.plan(req, elidePath = "/bin/elide").first { it.contains("kotlinc") }
+        assertTrue(kt.contains("-Xplugin=/m/metro.jar"), "plugin jar must load via -Xplugin")
+        assertTrue(kt.contains("plugin:$opt"), "plugin option must be forwarded as -P plugin:<id>:<k>=<v>")
+    }
+
+    @Test fun compilerPluginNotDoubleLoadedWhenAlreadyInPassthrough() {
+        val req = CompileRequest(
+            output = "out.jar", sources = listOf("A.kt"),
+            compilerPluginClasspath = listOf("/m/metro.jar"),
+            passthroughFlags = listOf("-Xplugin=/m/metro.jar"))
+        val kt = ElideCompile.plan(req, elidePath = "/bin/elide").first { it.contains("kotlinc") }
+        assertEquals(1, kt.count { it == "-Xplugin=/m/metro.jar" }, "must not double-load the plugin")
+    }
+
+    @Test fun kotlinApiAndLanguageVersionForwarded() {
+        val req = CompileRequest(output = "out.jar", sources = listOf("A.kt"), apiVersion = "2.1", languageVersion = "2.1")
+        val kt = ElideCompile.plan(req, elidePath = "/bin/elide").first { it.contains("kotlinc") }
+        val a = kt.indexOf("-api-version"); assertTrue(a >= 0 && kt[a + 1] == "2.1", "-api-version 2.1 expected")
+        val l = kt.indexOf("-language-version"); assertTrue(l >= 0 && kt[l + 1] == "2.1", "-language-version 2.1 expected")
+    }
+
+    // --- jdeps: --report-used-deps is an elide option, before the `--` separator ---
+
+    @Test fun usedDepsReportFlagPrecedesSeparator() {
+        val req = CompileRequest(output = "out.jar", sources = listOf("A.kt"))
+        val kt = ElideCompile.plan(req, elidePath = "/bin/elide", usedDepsReport = "/tmp/used.txt")
+            .first { it.contains("kotlinc") }
+        val r = kt.indexOf("--report-used-deps")
+        val sep = kt.indexOf("--")
+        assertTrue(r in 0 until sep, "--report-used-deps must precede the -- separator (it is an Elide option)")
+        assertEquals("/tmp/used.txt", kt[r + 1])
+    }
+
     // --- #6: generated sources from --source_jars ---
 
     @Test fun extraSourcesAddedToKotlincSourceSet() {
