@@ -8,6 +8,17 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- `elide.use` module-extension tag for bring-your-own Elide — test against a
+  custom or local build without waiting for a release in `versions.bzl`. It
+  takes precedence over `elide.install` in the root module:
+  - Custom tarballs + hashes: `elide.use(version = "1.3.x-mybuild",
+    url_template = "https://host/elide.{os}-{cpu}.{ext}", integrity =
+    {"linux_amd64": "sha256-…"})`. `integrity` is authoritative (no
+    `versions.bzl` entry needed) and only its platforms get a toolchain;
+    hashes are still enforced.
+  - Local distribution: `elide.use(local_path = "/abs/path/to/elide")` wires the
+    host-platform toolchain straight from an already-extracted Elide dir with no
+    download (build is then non-reproducible).
 - `rules_kotlin` KotlinBuilder interop via `register_elide_kotlin_toolchain`
   (load from `@rules_elide//elide/kotlin:toolchain.bzl`). Existing
   `kt_jvm_library` / `kt_jvm_binary` / `kt_jvm_test` targets compile through

@@ -101,6 +101,46 @@ def _elide_download_impl(ctx):
         bin_ext = bin_ext,
     ))
 
+def _elide_local_impl(ctx):
+    src = ctx.path(ctx.attr.local_path)
+    if not src.exists:
+        fail(
+            "elide.use(local_path = ...) points at a path that does not exist: {}\n".format(ctx.attr.local_path) +
+            "It must be an already-extracted Elide distribution directory (containing bin/elide, lib/, ...).",
+        )
+
+    # Surface each top-level entry of the local distribution at the repo root so
+    # the BUILD globs (bin/**, lib/**, include/**) and `bin/elide` resolve, exactly
+    # as for a downloaded+extracted archive — but without copying or downloading.
+    for child in src.readdir():
+        ctx.symlink(child, child.basename)
+
+    bin_ext = binary_ext(ctx.attr.os)
+    binary_path = ctx.attr.binary_path or ("bin/elide" + bin_ext)
+    ctx.file("BUILD.bazel", _BUILD_TEMPLATE.format(
+        binary_path = binary_path,
+        bin_ext = bin_ext,
+    ))
+
+# Wires a locally-extracted Elide distribution as a toolchain repo (no download).
+# `local = True`: re-evaluated each build so edits to the distribution are picked
+# up. Used by `elide.use(local_path = ...)` for fast local iteration.
+elide_local = repository_rule(
+    implementation = _elide_local_impl,
+    local = True,
+    attrs = {
+        "binary_path": attr.string(
+            doc = "Path to the elide executable within the distribution. " +
+                  "Defaults to bin/elide(.exe on windows).",
+        ),
+        "local_path": attr.string(
+            mandatory = True,
+            doc = "Absolute path to an already-extracted Elide distribution directory.",
+        ),
+        "os": attr.string(mandatory = True),
+    },
+)
+
 elide_download = repository_rule(
     implementation = _elide_download_impl,
     attrs = {
