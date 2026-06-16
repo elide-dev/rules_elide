@@ -12,17 +12,29 @@ bazel build //... --nobuild
 
 Used in CI and as a default sanity check during development.
 
-## Execution mode with a locally-built elide binary
+By default the workspace registers a no-op stub toolchain (`//:smoke_elide_toolchain`),
+so analysis succeeds without a real Elide release.
 
-Wires a locally-built elide binary into the smoke toolchain through the
-`ELIDE_DEV_BIN` env var. The action wrapper execs into that binary when
-`--config=dev` propagates the var into the action environment.
+## Execution mode with a local Elide build
 
-```bash
-ELIDE_DEV_BIN=/abs/path/to/elide bazel build //... --config=dev
-ELIDE_DEV_BIN=/abs/path/to/elide bazel test  //... --config=dev
+Point the extension at an already-extracted Elide distribution with the
+first-class `elide.use(local_path = ...)` tag — no env vars, no action wrapper.
+In `MODULE.bazel`, replace the stub registration with:
+
+```python
+elide = use_extension("@rules_elide//elide:extensions.bzl", "elide")
+elide.use(local_path = "/abs/path/to/elide")   # already-extracted distribution
+use_repo(elide, "elide_toolchains")
+register_toolchains("@elide_toolchains//:all")
 ```
 
-When `ELIDE_DEV_BIN` is unset or not executable, the wrapper falls back to a
-no-op (exit 0), so the workspace stays analysis-clean without any
-elide-side support.
+Then run for real:
+
+```bash
+bazel build //...
+bazel test  //...
+```
+
+`elide.use` also accepts a custom release (`version` + `url_template` +
+per-platform `integrity`) — see `docs/extensions.md`. (This replaces the old
+`ELIDE_DEV_BIN` / `--config=dev` wrapper.)
