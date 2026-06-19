@@ -112,7 +112,7 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   not itself enforce `strict_kotlin_deps` (it leaves enforcement to the
   consuming `rules_kotlin` config, which reads the emitted dependency data).
   Windows workers not supported (POSIX launcher only). `elide native-image`
-  still requires an external GraalVM via `JAVA_HOME` (WHIPLASH #1016 not yet
-  effective in 1.3.2), so native-image targets aren't hermetic.
+  still requires an external GraalVM via `JAVA_HOME` (WHIPLASH #1016/#1042 not
+  yet effective as of 1.3.3), so native-image targets aren't hermetic.
 
 [Unreleased]: https://github.com/elide-dev/rules_elide/compare/HEAD
