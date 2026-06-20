@@ -21,6 +21,9 @@ bool_flag(
     build_setting_default = True,
 )
 
+# Note: incremental Kotlin compilation is gated by
+# `//config/kotlinc:incremental` (see //config/kotlinc/BUILD.bazel).
+
 exports_files(
     [
         "defs.bzl",

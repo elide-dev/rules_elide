@@ -261,13 +261,35 @@ def run_kotlinc(ctx, output_jar):
     has_res = _has_packaged_resources(ctx)
 
     single_kt_only = has_kt and not has_java and not has_res
+
+    # Incremental compilation (opt-in via //config/kotlinc:incremental). kotlinc IC tracks
+    # per-class files, so it requires a classes *directory* output (`-d <dir>`),
+    # not a jar. When enabled we compile to a tree-artifact dir with a stable,
+    # per-target, undeclared cache dir, then pack the dir into `kt_jar` below.
+    incremental = ctx.attr._incremental[BuildSettingInfo].value and has_kt
+
     kt_jar = None
     if has_kt:
         kt_jar = output_jar if single_kt_only else ctx.actions.declare_file(ctx.label.name + "_kotlin_classes.jar")
 
+        # In IC mode kotlinc writes classes here and `kt_jar` is produced by a
+        # follow-on pack action; otherwise kotlinc writes `kt_jar` directly.
+        kt_classes = ctx.actions.declare_directory(ctx.label.name + "_kt_classes") if incremental else None
+        compile_out = kt_classes if incremental else kt_jar
+
         args = _tool_args(ctx)
+        if incremental:
+            # Undeclared worker-scoped scratch (sibling of the classes dir);
+            # relative to the worker cwd (exec root), so it persists across
+            # persistent-worker requests when unsandboxed. Elide options precede
+            # the `--` separator (same slot as --report-used-deps).
+            args.add("--incremental")
+            args.add("--incremental-cache-dir", kt_classes.path + "_iccache")
         args.add("--")
-        args.add("-d", kt_jar)
+
+        # A directory output must be passed as a plain path (Args#add rejects
+        # directory Files); a jar output is a regular File.
+        args.add("-d", compile_out.path if incremental else compile_out)
         full_cp = depset(transitive = [classpath, plugin_cp, friend_jars])
         args.add_joined("-classpath", full_cp, join_with = sep)
         if ctx.attr.module_name:
@@ -293,9 +315,29 @@ def run_kotlinc(ctx, output_jar):
                 direct = ctx.files.srcs,
                 transitive = [classpath, plugin_cp, friend_jars, elide.compile_tool_files],
             ),
-            outputs = [kt_jar],
+            outputs = [compile_out],
             progress_message = "Compiling %{label} (elide kotlinc)",
         )
+
+        # IC compiled to a directory; pack it into `kt_jar` (the form the rest of
+        # the pipeline — resource merge, JavaInfo — expects). One-shot, not a
+        # worker: `elide jar -- --create --file <jar> -C <classesdir> .`.
+        if incremental:
+            pack = ctx.actions.args()
+            pack.add("jar")
+            pack.add("--")
+            pack.add("--create")
+            pack.add("--file", kt_jar)
+            pack.add("-C", kt_classes.path)
+            pack.add(".")
+            ctx.actions.run(
+                mnemonic = "ElideKotlincPack",
+                executable = elide.binary,
+                arguments = [pack],
+                inputs = depset(direct = [kt_classes], transitive = [elide.compile_tool_files]),
+                outputs = [kt_jar],
+                progress_message = "Packing %{label} (elide jar)",
+            )
 
     if single_kt_only:
         return
@@ -690,6 +732,12 @@ COMMON_LIBRARY_ATTRS = {
         providers = [BuildSettingInfo],
         doc = "Build setting toggling Bazel persistent workers for the elide " +
               "javac/kotlinc compile actions.",
+    ),
+    "_incremental": attr.label(
+        default = "@rules_elide//config/kotlinc:incremental",
+        providers = [BuildSettingInfo],
+        doc = "Build setting opting kotlinc compiles into incremental " +
+              "compilation (compile-to-dir + cache-dir + pack-to-jar).",
     ),
 }
 
