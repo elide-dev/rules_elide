@@ -46,7 +46,10 @@ class ElideWorker(
     @Synchronized
     private fun ensureStarted(): Process {
         process?.let { if (it.isAlive) return it }
-        val p = ProcessBuilder(elidePath, "kotlinc", "--persistent_worker")
+        // `--safe-close` (top-level) guarantees a clean shutdown on stdin EOF,
+        // which is what flushes a `--pgo-instrument` build's `default.iprof`. It
+        // is harmless otherwise, so we always pass it.
+        val p = ProcessBuilder(elidePath, "--safe-close", "kotlinc", "--persistent_worker")
             // stdout is the WorkResponse stream (piped); stderr is diagnostics.
             .redirectError(ProcessBuilder.Redirect.INHERIT)
             .start()

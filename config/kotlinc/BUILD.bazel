@@ -17,3 +17,11 @@ bool_flag(
     name = "incremental",
     build_setting_default = False,
 )
+
+# Matches when `--@rules_elide//config/kotlinc:incremental=True`. Lets the Kotlin
+# toolchain default resident persistent-worker forwarding on whenever incremental
+# compilation is enabled (IC is only useful with a warm resident worker).
+config_setting(
+    name = "incremental_enabled",
+    flag_values = {":incremental": "True"},
+)

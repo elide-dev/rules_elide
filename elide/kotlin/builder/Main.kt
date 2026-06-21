@@ -9,21 +9,29 @@ import java.nio.file.Paths
 object Main {
     // `resident` opts into forwarding kotlinc to a resident `elide kotlinc
     // --persistent_worker` (keeping the native image + incremental caches warm)
-    // instead of one-shotting elide per compile. It is gated by the
-    // `--resident_worker` startup flag rather than an env var: Bazel launches
-    // workers with a scrubbed environment (`env -`), so an env toggle never
-    // reaches the worker; the toolchain launcher injects this flag instead.
-    class Config(val elide: String, val fallback: String, val resident: Boolean = false)
+    // instead of one-shotting elide per compile. `record` is a path to tee the
+    // forwarded WorkRequest stream into, for offline PGO replay. Both are gated
+    // by startup flags rather than env vars: Bazel launches workers with a
+    // scrubbed environment (`env -`), so an env toggle never reaches the worker;
+    // the toolchain launcher injects these flags instead.
+    class Config(
+        val elide: String,
+        val fallback: String,
+        val resident: Boolean = false,
+        val record: String = "",
+    )
 
     fun splitConfig(argv: List<String>): Pair<Config, List<String>> {
-        var elide = ""; var fallback = ""; var resident = false; val rest = mutableListOf<String>()
+        var elide = ""; var fallback = ""; var resident = false; var record = ""
+        val rest = mutableListOf<String>()
         for (a in argv) when {
             a.startsWith("--elide=") -> elide = a.substringAfter("=")
             a.startsWith("--fallback_builder=") -> fallback = a.substringAfter("=")
             a == "--resident_worker" -> resident = true
+            a.startsWith("--worker_record=") -> record = a.substringAfter("=")
             else -> rest += a
         }
-        return Config(elide, fallback, resident) to rest
+        return Config(elide, fallback, resident, record) to rest
     }
 
     /** Handle one unit of work. Returns (exitCode, capturedOutput). */
@@ -113,9 +121,13 @@ object Main {
                         cfg2.elide.ifEmpty { cfg.elide },
                         cfg2.fallback.ifEmpty { cfg.fallback },
                         cfg.resident || cfg2.resident,
+                        cfg.record.ifEmpty { cfg2.record },
                     )
                     if (resident == null && merged.resident && merged.elide.isNotEmpty()) {
-                        val rec = System.getenv("ELIDE_WORKER_RECORD")?.let { FileOutputStream(it) }
+                        // Record path: the `--worker_record=` startup flag (reaches the
+                        // worker), falling back to the env var for direct/replay runs.
+                        val recPath = merged.record.ifEmpty { System.getenv("ELIDE_WORKER_RECORD") ?: "" }
+                        val rec = if (recPath.isNotEmpty()) FileOutputStream(recPath) else null
                         resident = ElideWorker(merged.elide, rec)
                     }
                     val (code, out) = runCatching { handle(merged, r, resident, wr.inputsList) }

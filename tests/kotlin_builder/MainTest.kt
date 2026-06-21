@@ -23,4 +23,11 @@ class MainTest {
         assertFalse("--resident_worker" in rest, "--resident_worker must not leak into rest")
         assertEquals(listOf("--flagfile=/tmp/f"), rest)
     }
+
+    @Test fun workerRecordFlagCapturesPath() {
+        val (cfg, rest) = Main.splitConfig(listOf(
+            "--elide=/bin/elide", "--worker_record=/tmp/cap.bin", "--flagfile=/tmp/f"))
+        assertEquals("/tmp/cap.bin", cfg.record, "--worker_record=<path> must set Config.record")
+        assertEquals(listOf("--flagfile=/tmp/f"), rest, "--worker_record must not leak into rest")
+    }
 }
