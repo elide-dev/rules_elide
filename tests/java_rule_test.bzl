@@ -66,9 +66,36 @@ def _library_action_test_impl(ctx):
     )
     jars = [a for a in actions if a.mnemonic == "ElideJavacJar"]
     asserts.equals(env, 0, len(jars), "no separate ElideJavacJar action (collapsed into --jar)")
+    asserts.false(env, "--classpath-cache" in argv, "--classpath-cache must be off by default")
     return analysistest.end(env)
 
 _library_action_test = analysistest.make(_library_action_test_impl)
+
+def _classpath_cache_test_impl(ctx):
+    env = analysistest.begin(ctx)
+    actions = analysistest.target_actions(env)
+    javacs = [a for a in actions if a.mnemonic == "ElideJavac"]
+    asserts.equals(env, 1, len(javacs), "expected one ElideJavac action")
+    argv = javacs[0].argv
+    asserts.true(
+        env,
+        "--classpath-cache" in argv,
+        "--classpath-cache must be passed when //config/javac:classpath_cache=True",
+    )
+
+    # `--classpath-cache` is an Elide option, so it must precede the `--` separator.
+    asserts.true(
+        env,
+        argv.index("--classpath-cache") < argv.index("--"),
+        "--classpath-cache must come before the `--` separator",
+    )
+    return analysistest.end(env)
+
+_classpath_cache_test = analysistest.make(
+    _classpath_cache_test_impl,
+    # See _library_action_no_worker_test re: the @@ canonical root ref.
+    config_settings = {"@@//config/javac:classpath_cache": True},  # buildifier: disable=canonical-repository
+)
 
 def _library_action_no_worker_test_impl(ctx):
     env = analysistest.begin(ctx)
@@ -174,6 +201,10 @@ def java_rule_test_suite(name):
         name = "library_action_no_worker_test",
         target_under_test = ":_lib_fixture",
     )
+    _classpath_cache_test(
+        name = "library_classpath_cache_test",
+        target_under_test = ":_lib_fixture",
+    )
     _binary_executable_test(
         name = "binary_executable_test",
         target_under_test = ":_bin_fixture",
@@ -188,6 +219,7 @@ def java_rule_test_suite(name):
             ":library_providers_test",
             ":library_action_test",
             ":library_action_no_worker_test",
+            ":library_classpath_cache_test",
             ":binary_executable_test",
             ":test_rule_executable_test",
         ],

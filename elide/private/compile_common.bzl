@@ -206,9 +206,11 @@ def run_javac(ctx, output_jar):
     has_res = _has_packaged_resources(ctx)
     class_jar = ctx.actions.declare_file(ctx.label.name + "_classes.jar") if has_res else output_jar
 
-    # `elide javac --jar <class_jar> -- -classpath <cp> <javac_opts> <srcs>`.
+    # `elide javac --jar <class_jar> [--classpath-cache] -- -classpath <cp> <javac_opts> <srcs>`.
     javac_args = _tool_args(ctx)
     javac_args.add("--jar", class_jar)
+    if ctx.attr._classpath_cache[BuildSettingInfo].value:
+        javac_args.add("--classpath-cache")
     javac_args.add("--")
     full_cp = depset(transitive = [classpath, plugin_cp])
     javac_args.add_joined("-classpath", full_cp, join_with = sep)
@@ -371,9 +373,11 @@ def _compile_java_aux(ctx, java_srcs, kt_jar):
     kt_jars = [kt_jar] if kt_jar else []
     full_cp = depset(direct = kt_jars, transitive = [classpath, plugin_cp, elide.kotlin_stdlib_jars])
 
-    # `elide javac --jar <java_jar> -- -classpath <cp> -proc:none <javac_opts> <srcs>`.
+    # `elide javac --jar <java_jar> [--classpath-cache] -- -classpath <cp> -proc:none <javac_opts> <srcs>`.
     javac_args = _tool_args(ctx)
     javac_args.add("--jar", java_jar)
+    if ctx.attr._classpath_cache[BuildSettingInfo].value:
+        javac_args.add("--classpath-cache")
     javac_args.add("--")
     javac_args.add_joined("-classpath", full_cp, join_with = sep)
     javac_args.add("-proc:none")
@@ -746,6 +750,12 @@ COMMON_LIBRARY_ATTRS = {
         providers = [BuildSettingInfo],
         doc = "Build setting opting kotlinc compiles into incremental " +
               "compilation (compile-to-dir + cache-dir + pack-to-jar).",
+    ),
+    "_classpath_cache": attr.label(
+        default = "@rules_elide//config/javac:classpath_cache",
+        providers = [BuildSettingInfo],
+        doc = "Build setting opting `elide javac` worker compiles into the " +
+              "digest-keyed classpath cache (`--classpath-cache`).",
     ),
 }
 
