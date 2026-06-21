@@ -285,6 +285,14 @@ def run_kotlinc(ctx, output_jar):
             # the `--` separator (same slot as --report-used-deps).
             args.add("--incremental")
             args.add("--incremental-cache-dir", kt_classes.path + "_iccache")
+
+        # Builtin compiler plugins enabled by name (elide option, before `--`).
+        # Forces the named plugins on — robust for plugins the classpath
+        # heuristic may miss (notably Metro). Exclusion of unlisted-but-detected
+        # plugins is not yet fully honored upstream (WHIPLASH#1119).
+        builtin_plugins = getattr(ctx.attr, "builtin_plugins", [])
+        if builtin_plugins:
+            args.add_joined(builtin_plugins, join_with = ",", format_joined = "--plugins=%s")
         args.add("--")
 
         # A directory output must be passed as a plain path (Args#add rejects

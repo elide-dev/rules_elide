@@ -56,6 +56,13 @@ _LIBRARY_ATTRS["kotlinc_opts"] = attr.string_list(
 _LIBRARY_ATTRS["module_name"] = attr.string(
     doc = "Kotlin module name (`-module-name`).",
 )
+_LIBRARY_ATTRS["builtin_plugins"] = attr.string_list(
+    doc = "Builtin Kotlin compiler plugins to enable by name via `elide kotlinc " +
+          "--plugins` (e.g. \"serialization\", \"metro\", \"atomicfu\", " +
+          "\"power-assert\"). Use to force on plugins the classpath heuristic may " +
+          "miss (notably Metro). Note: an explicit suite does not yet fully " +
+          "disable heuristic-detected plugins it omits (WHIPLASH#1119).",
+)
 
 elide_kotlin_library = rule(
     implementation = _elide_kotlin_library_impl,
