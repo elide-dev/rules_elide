@@ -6,7 +6,7 @@
 # `sample`, kotlin-stdlib only — no classpath/maven needed). Each case drives a
 # PGO-INSTRUMENTED elide binary in a distinct mode, in its own clean CWD, and
 # collects the flushed `default.iprof` into `profiles/<case>.iprof`. Each profile
-# is also copied to the WHIPLASH tree under a unique name for use as a
+# is also copied to the Elide tree under a unique name for use as a
 # `--pgo` input.
 #
 # `--safe-close` (top-level) is ALWAYS passed: empirically it is what flushes
@@ -22,7 +22,7 @@
 # Usage:
 #   ELIDE=/abs/path/to/instrumented/elide benchmarks/pgo/collect.sh [cases...]
 #   (default cases: oneshot jvmabigen karbine worker)
-#   WHIPLASH_PROFILES=<dir>  overrides the copy destination.
+#   ELIDE_PROFILES=<dir>  overrides the copy destination.
 
 set -euo pipefail
 
@@ -37,10 +37,10 @@ mapfile -t SRCS < <(ls "$SAMPLE"/*.kt)
 [ "${#SRCS[@]}" -gt 0 ] || { echo "no sources under $SAMPLE" >&2; exit 2; }
 
 PROFILES="$HERE/profiles"; mkdir -p "$PROFILES"
-# Optional: set WHIPLASH_PROFILES=<dir> to also copy each profile there as
-# kotlinc-<case>.iprof (e.g. a WHIPLASH checkout's tools/profiles). Left unset by
+# Optional: set ELIDE_PROFILES=<dir> to also copy each profile there as
+# kotlinc-<case>.iprof (e.g. an Elide checkout's tools/profiles). Left unset by
 # default so the harness assumes nothing about the surrounding layout.
-WHIPLASH_PROFILES="${WHIPLASH_PROFILES:-}"
+ELIDE_PROFILES="${ELIDE_PROFILES:-}"
 WARM_ROUNDS="${WARM_ROUNDS:-3}" # worker requests, to exercise the warm loop
 WORK="$(mktemp -d "${TMPDIR:-/tmp}/pgo-collect.XXXXXX")"
 trap 'rm -rf "$WORK"' EXIT
@@ -59,9 +59,9 @@ _harvest() { # $1=case-name $2=cwd
   if [ -z "$prof" ]; then echo "  ✗ $case: no .iprof flushed" >&2; return 1; fi
   cp "$prof" "$PROFILES/$case.iprof"
   local sz; sz="$(stat -c %s "$prof")"
-  if [ -n "$WHIPLASH_PROFILES" ] && [ -d "$WHIPLASH_PROFILES" ]; then
-    cp "$prof" "$WHIPLASH_PROFILES/kotlinc-$case.iprof"
-    echo "  ✓ $case: $sz bytes → profiles/$case.iprof, $WHIPLASH_PROFILES/kotlinc-$case.iprof"
+  if [ -n "$ELIDE_PROFILES" ] && [ -d "$ELIDE_PROFILES" ]; then
+    cp "$prof" "$ELIDE_PROFILES/kotlinc-$case.iprof"
+    echo "  ✓ $case: $sz bytes → profiles/$case.iprof, $ELIDE_PROFILES/kotlinc-$case.iprof"
   else
     echo "  ✓ $case: $sz bytes → profiles/$case.iprof"
   fi
@@ -112,7 +112,7 @@ CASES=("$@")
 
 echo "PGO collect  (elide: $("$ELIDE" --version 2>/dev/null | head -1))"
 echo "  workload: ${#SRCS[@]} files under $SAMPLE"
-echo "  copy dest: ${WHIPLASH_PROFILES:-<none; set WHIPLASH_PROFILES to also copy>}"
+echo "  copy dest: ${ELIDE_PROFILES:-<none; set ELIDE_PROFILES to also copy>}"
 echo "================================================================"
 rc=0
 for c in "${CASES[@]}"; do

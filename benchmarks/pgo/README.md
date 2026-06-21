@@ -1,20 +1,20 @@
 # Kotlinc PGO profile collection
 
 Collects Native Image PGO profiles for the Elide `kotlinc` compile paths, to feed
-a `--pgo` rebuild of the Elide image on the WHIPLASH side.
+a `--pgo` rebuild of the Elide image on the Elide side.
 
 `collect.sh` drives a **PGO-instrumented** elide binary over the 50-file,
 self-contained `benchmarks/sources/kotlin/sample` workload (package `sample`,
 kotlin-stdlib only — no classpath needed). Each case runs in its own clean CWD
 and the flushed `default.iprof` is collected to `profiles/<case>.iprof`. Set
-`WHIPLASH_PROFILES=<dir>` to also copy each profile there as
-`kotlinc-<case>.iprof` (e.g. a WHIPLASH checkout's `tools/profiles`, the input
+`ELIDE_PROFILES=<dir>` to also copy each profile there as
+`kotlinc-<case>.iprof` (e.g. an Elide checkout's `tools/profiles`, the input
 for a `--pgo` rebuild).
 
 ```bash
 ELIDE=/abs/path/to/instrumented/elide benchmarks/pgo/collect.sh           # all cases
 ELIDE=... benchmarks/pgo/collect.sh worker                                # one case
-WHIPLASH_PROFILES=/path/to/tools/profiles ELIDE=... benchmarks/pgo/collect.sh  # + copy
+ELIDE_PROFILES=/path/to/tools/profiles ELIDE=... benchmarks/pgo/collect.sh  # + copy
 ```
 
 ## Cases
