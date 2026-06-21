@@ -41,12 +41,16 @@ Default 16×32 ≈ 545 files/lang, 18 targets/lang.
 
 Clean build: kotlin ~9.3s, java ~1.2s (same topology; kotlinc is the heavy one).
 
-- **Kotlin compile-avoidance is broken**: a `core` *body* edit (ABI-stable)
-  re-runs **all 18 kotlin compile actions** (the whole graph), vs **3** for the
-  identical Java edit (Java prunes correctly). A signature edit re-runs 36 (full,
-  expected). Discrepancy to root-cause: `core-ijar.jar` appears byte-stable in
-  isolation, yet dependents (which key only on that ijar) still re-run — so
-  Bazel's output-change pruning isn't taking effect for the kotlin path.
+- **Kotlin compile-avoidance is broken**: a `core` *body* edit re-runs **all 18
+  kotlin compile actions** (the whole graph), vs **3** for the identical Java
+  edit (Java prunes correctly). A signature edit re-runs 36 (full, expected).
+  ROOT CAUSE: the Kotlin `compile_jar` is derived with `java_common.run_ijar`,
+  which does NOT produce a body-stable ABI for Kotlin bytecode — a method-body
+  change alters the ijar, so every dependent (keyed on it) recompiles. Java's
+  ijar *is* body-stable. FIX: the embedded jvm-abi-gen produces a byte-identical
+  ABI jar across the same body edit (verified) — use it as the Kotlin
+  `compile_jar` instead of `run_ijar`. This is the cross-target 10x for graph
+  builds.
 - **Within-target IC is net-negative** here: a 1-file edit rebuild of a 32-file
   module took ~653ms with IC on vs ~518ms off. The native rules declare the
   classes **directory** as an output, which Bazel wipes before each run, forcing
