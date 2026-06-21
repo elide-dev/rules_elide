@@ -51,11 +51,17 @@ Clean build: kotlin ~9.3s, java ~1.2s (same topology; kotlinc is the heavy one).
   ABI jar across the same body edit (verified) — use it as the Kotlin
   `compile_jar` instead of `run_ijar`. This is the cross-target 10x for graph
   builds.
-- **Within-target IC is net-negative** here: a 1-file edit rebuild of a 32-file
-  module took ~653ms with IC on vs ~518ms off. The native rules declare the
-  classes **directory** as an output, which Bazel wipes before each run, forcing
-  IC to re-emit every `.class` (plus IC/pack overhead) — so it skips re-analysis
-  but not re-emission, and nets slower on small modules.
+- **Within-target IC is net-negative — and it's the Elide IC *engine*, not the
+  Bazel wiring.** Measured standalone (no Bazel): a 1-file edit in an
+  inference-heavy 12-file module with `elide kotlinc --incremental` is **~2x
+  slower than a full compile** (~5.1s vs ~2.6s), with EITHER a persistent or a
+  wiped `-d` and a persistent cache dir. So IC does full-compile-equivalent work
+  plus IC overhead — it does not prune to the changed file. (An earlier apparent
+  "617→241ms IC win" was a process/page-cache warming artifact on trivial files,
+  not incrementality.) Fix is upstream in Elide's IC engine; rules_elide
+  correctly keeps IC opt-in / off-by-default (`//config/kotlinc:incremental`)
+  until it beats a full compile. The "persistent worker directory" approach does
+  not help (verified: persistent `-d` is still ~2x slower).
 
 These are the candidate **10x** levers: fixing kotlin body-edit pruning (graph
 builds) and making IC not re-emit the world (edit loop). See the session notes /
