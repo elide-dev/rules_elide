@@ -160,6 +160,20 @@ object ElideCompile {
     }
 
     /**
+     * Worker-form kotlinc args for a resident `elide kotlinc --persistent_worker`.
+     *
+     * Takes a kotlinc command produced by [plan] (always `cmds[0]`) and strips
+     * the leading `elide kotlinc` process identity — that prefix IS the resident
+     * process, so each WorkRequest carries only the per-compile args. The `--`
+     * separator is KEPT: the worker uses it to split elide-options (e.g.
+     * `--report-used-deps`) from the kotlinc tool-args, exactly as the native
+     * `_run_elide_compile` worker path delivers them. This is the stream the
+     * offline PGO replay captures (see the persistent-worker PGO spec).
+     */
+    fun kotlincWorkerArgs(kotlincCmd: List<String>): List<String> =
+        kotlincCmd.drop(2) // drop [elidePath, "kotlinc"]; keep the `--` and the rest
+
+    /**
      * Executes each command from [plan] sequentially, capturing merged stdout+stderr to a temp
      * file (avoids deadlocking on the OS pipe buffer; never writes to this process's stdout,
      * which carries the Bazel persistent-worker WorkResponse protocol).
