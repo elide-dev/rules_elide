@@ -74,7 +74,7 @@ fi
 exec "$(rlocation {shim})" \\
   --elide="$(rlocation {elide})" \\
   --fallback_builder="$(rlocation {fallback})" \\
-  "$@"
+{resident_line}  "$@"
 """
 
 def _elide_kt_builder_launcher_impl(ctx):
@@ -108,6 +108,10 @@ def _elide_kt_builder_launcher_impl(ctx):
         shim = _rlocation_path(ctx.executable.shim),
         elide = _rlocation_path(ctx.executable.elide),
         fallback = _rlocation_path(ctx.executable.fallback_builder),
+        # Inject the shim's `--resident_worker` startup flag when enabled. A
+        # startup flag (not an env var) is required: Bazel scrubs the worker
+        # environment, so an env toggle would never reach the shim.
+        resident_line = "  --resident_worker \\\n" if ctx.attr.resident_worker else "",
     )
     ctx.actions.write(output = launcher, content = content, is_executable = True)
 
@@ -156,6 +160,12 @@ _elide_kt_builder_launcher = rule(
             mandatory = True,
             executable = True,
             cfg = "exec",
+        ),
+        "resident_worker": attr.bool(
+            default = False,
+            doc = "Inject the shim's `--resident_worker` flag so kotlinc compiles " +
+                  "are forwarded to one warm `elide kotlinc --persistent_worker` " +
+                  "(keeping the native image + incremental caches hot).",
         ),
         "_jdk": attr.label(
             default = "@bazel_tools//tools/jdk:current_java_runtime",
@@ -237,7 +247,7 @@ _elide_kt_toolchain = rule(
     provides = [platform_common.ToolchainInfo],
 )
 
-def register_elide_kotlin_toolchain(name, elide, fallback_builder, **kwargs):
+def register_elide_kotlin_toolchain(name, elide, fallback_builder, resident_worker = False, **kwargs):
     """Defines an Elide-backed Kotlin toolchain.
 
     Materializes a stock rules_kotlin toolchain, then re-emits its
@@ -259,6 +269,10 @@ def register_elide_kotlin_toolchain(name, elide, fallback_builder, **kwargs):
         fallback_builder: Label of the stock rules_kotlin KotlinBuilder
             (e.g. `@rules_kotlin//src/main/kotlin:build`), passed as
             --fallback_builder.
+        resident_worker: If True, the launcher passes `--resident_worker` so the
+            shim forwards kotlinc compiles to a warm
+            `elide kotlinc --persistent_worker` (keeping the native image +
+            Elide's incremental caches hot across compiles). Default False.
         **kwargs: Forwarded to `define_kt_toolchain` (language_version,
             api_version, jvm_target, etc.).
     """
@@ -267,6 +281,7 @@ def register_elide_kotlin_toolchain(name, elide, fallback_builder, **kwargs):
         shim = Label("//elide/kotlin/builder:elide_kotlin_builder"),
         elide = elide,
         fallback_builder = fallback_builder,
+        resident_worker = resident_worker,
     )
 
     # Materialize a stock toolchain. This creates `<name>_base_impl` (the

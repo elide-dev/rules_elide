@@ -7,23 +7,23 @@ import java.nio.file.Files
 import java.nio.file.Paths
 
 object Main {
-    class Config(val elide: String, val fallback: String)
-
-    // Opt-in: forward kotlinc compiles to a resident `elide kotlinc
-    // --persistent_worker` instead of one-shotting elide per compile, keeping
-    // the native image and its incremental caches warm. Default off until
-    // validated; flips to default once proven. `ELIDE_WORKER_RECORD=<path>` tees
-    // forwarded requests for offline PGO replay.
-    private fun residentEnabled(): Boolean = System.getenv("ELIDE_RESIDENT_WORKER") != "0"
+    // `resident` opts into forwarding kotlinc to a resident `elide kotlinc
+    // --persistent_worker` (keeping the native image + incremental caches warm)
+    // instead of one-shotting elide per compile. It is gated by the
+    // `--resident_worker` startup flag rather than an env var: Bazel launches
+    // workers with a scrubbed environment (`env -`), so an env toggle never
+    // reaches the worker; the toolchain launcher injects this flag instead.
+    class Config(val elide: String, val fallback: String, val resident: Boolean = false)
 
     fun splitConfig(argv: List<String>): Pair<Config, List<String>> {
-        var elide = ""; var fallback = ""; val rest = mutableListOf<String>()
+        var elide = ""; var fallback = ""; var resident = false; val rest = mutableListOf<String>()
         for (a in argv) when {
             a.startsWith("--elide=") -> elide = a.substringAfter("=")
             a.startsWith("--fallback_builder=") -> fallback = a.substringAfter("=")
+            a == "--resident_worker" -> resident = true
             else -> rest += a
         }
-        return Config(elide, fallback) to rest
+        return Config(elide, fallback, resident) to rest
     }
 
     /** Handle one unit of work. Returns (exitCode, capturedOutput). */
@@ -102,15 +102,19 @@ object Main {
             val stdin = System.`in`; val stdout = System.out
             // Singleplex worker: requests are handled serially; we intentionally do not
             // support multiplex or honor WorkRequest.cancel (rules_kotlin drives KotlinCompile singleplex).
-            // When ELIDE_RESIDENT_WORKER=1, kotlinc compiles are forwarded to one warm
+            // With `--resident_worker`, kotlinc compiles are forwarded to one warm
             // `elide kotlinc --persistent_worker` (lazily created with the resolved elide path).
             var resident: ElideWorker? = null
             try {
                 while (true) {
                     val wr = Worker.readRequest(stdin) ?: break
                     val (cfg2, r) = splitConfig(wr.argumentsList)
-                    val merged = Config(cfg2.elide.ifEmpty { cfg.elide }, cfg2.fallback.ifEmpty { cfg.fallback })
-                    if (resident == null && residentEnabled() && merged.elide.isNotEmpty()) {
+                    val merged = Config(
+                        cfg2.elide.ifEmpty { cfg.elide },
+                        cfg2.fallback.ifEmpty { cfg.fallback },
+                        cfg.resident || cfg2.resident,
+                    )
+                    if (resident == null && merged.resident && merged.elide.isNotEmpty()) {
                         val rec = System.getenv("ELIDE_WORKER_RECORD")?.let { FileOutputStream(it) }
                         resident = ElideWorker(merged.elide, rec)
                     }
