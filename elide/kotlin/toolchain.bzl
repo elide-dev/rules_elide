@@ -71,6 +71,10 @@ fi
 if [ -n "${{RUNFILES_MANIFEST_FILE:-}}" ]; then
   export RUNFILES_MANIFEST_FILE
 fi
+# Signal Bazel context to elide (WHIPLASH#1131): suppress decorative output,
+# project-relative diagnostics, etc. Propagates to the shim, its resident
+# `elide kotlinc --persistent_worker`, and the fallback builder.
+export ELIDE_BAZEL=1
 exec "$(rlocation {shim})" \\
   --elide="$(rlocation {elide})" \\
   --fallback_builder="$(rlocation {fallback})" \\

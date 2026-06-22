@@ -67,6 +67,12 @@ def _library_action_test_impl(ctx):
     jars = [a for a in actions if a.mnemonic == "ElideJavacJar"]
     asserts.equals(env, 0, len(jars), "no separate ElideJavacJar action (collapsed into --jar)")
     asserts.false(env, "--classpath-cache" in argv, "--classpath-cache must be off by default")
+    asserts.equals(
+        env,
+        "1",
+        javacs[0].env.get("ELIDE_BAZEL", ""),
+        "ElideJavac must run with ELIDE_BAZEL=1 (Bazel signal for elide output; WHIPLASH#1131)",
+    )
     return analysistest.end(env)
 
 _library_action_test = analysistest.make(_library_action_test_impl)

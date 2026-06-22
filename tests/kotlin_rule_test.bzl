@@ -50,6 +50,12 @@ def _library_action_test_impl(ctx):
     asserts.true(env, "-d" in argv, "expected `-d` output flag passed to kotlinc")
     asserts.true(env, "-classpath" in argv, "expected `-classpath` flag passed to kotlinc")
     asserts.true(env, "-module-name" in argv, "expected `-module-name` flag (set on fixture)")
+    asserts.equals(
+        env,
+        "1",
+        kotlincs[0].env.get("ELIDE_BAZEL", ""),
+        "ElideKotlinc must run with ELIDE_BAZEL=1 (Bazel signal for elide output; WHIPLASH#1131)",
+    )
     return analysistest.end(env)
 
 _library_action_test = analysistest.make(_library_action_test_impl)

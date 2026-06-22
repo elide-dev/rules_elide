@@ -116,6 +116,13 @@ _WORKER_EXEC_REQUIREMENTS = {
     "supports-workers": "1",
 }
 
+# Signals to elide that it is running under Bazel, so it can adjust output
+# (suppress emoji/decorative status lines, drop color, project-relative paths,
+# `[warning]`-prefix diagnostics) — Elide-side, tracked in WHIPLASH#1131. Set on
+# elide compile actions; reaches persistent workers too (it is part of the
+# action env, not the scrubbed ambient env).
+_ELIDE_BAZEL_ENV = {"ELIDE_BAZEL": "1"}
+
 def _tool_args(ctx):
     """Begins a buffer for a compile action's tool args.
 
@@ -171,6 +178,7 @@ def _run_elide_compile(ctx, mnemonic, subcommand, tool_args, inputs, outputs, pr
             outputs = outputs,
             progress_message = progress_message,
             execution_requirements = _WORKER_EXEC_REQUIREMENTS,
+            env = _ELIDE_BAZEL_ENV,
         )
     else:
         ctx.actions.run(
@@ -180,6 +188,7 @@ def _run_elide_compile(ctx, mnemonic, subcommand, tool_args, inputs, outputs, pr
             inputs = inputs,
             outputs = outputs,
             progress_message = progress_message,
+            env = _ELIDE_BAZEL_ENV,
         )
 
 def run_javac(ctx, output_jar):
@@ -347,6 +356,7 @@ def run_kotlinc(ctx, output_jar):
                 inputs = depset(direct = [kt_classes], transitive = [elide.compile_tool_files]),
                 outputs = [kt_jar],
                 progress_message = "Packing %{label} (elide jar)",
+                env = _ELIDE_BAZEL_ENV,
             )
 
     if single_kt_only:
