@@ -38,10 +38,11 @@ jobs:
     permissions:
       contents: read
       id-token: write  # OIDC auth to CodSpeed (no upload token needed)
-    # Self-hosted, fast, *exclusive* AMD64 pool. Walltime needs an unshared
-    # machine to be reliable; this pool provides that on x86_64 (CodSpeed's
-    # managed macro runners are ARM64-only, which we do not want here).
-    runs-on: linux-amd64-cipool
+    # Dedicated single AMD64 bench instance (the `linux-amd64-bench` label is
+    # applied to exactly one machine) so walltime is measured on consistent
+    # hardware. Walltime needs an unshared machine to be reliable, on x86_64
+    # (CodSpeed's managed macro runners are ARM64-only, which we do not want).
+    runs-on: linux-amd64-bench
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5  # v4
       - uses: astral-sh/setup-uv@fac544c07dec837d0ccb6301d7b5580bf5edae39  # v8.2.0

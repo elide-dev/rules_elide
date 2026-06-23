@@ -1,7 +1,7 @@
 # Static linter metadata only — this file runs nothing and assigns no work. It
-# just tells the `actionlint` hook that `linux-amd64-cipool` is a valid runner
+# just tells the `actionlint` hook that `linux-amd64-bench` is a valid runner
 # label so it isn't flagged as unknown. The only job that actually targets that
-# pool is the `walltime` job in benchmarks.yml.
+# instance is the `walltime` job in benchmarks.yml.
 self-hosted-runner:
   labels:
-    - linux-amd64-cipool
+    - linux-amd64-bench
