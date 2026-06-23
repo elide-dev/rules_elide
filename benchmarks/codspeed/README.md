@@ -50,10 +50,9 @@ whole-build hyperfine suite on a schedule.)
 ## One-time setup (manual, outside this repo)
 
 1. Install the **CodSpeed GitHub App** on the `elide-dev` org and grant it the
-   `rules_elide` repo (this is what posts the PR performance report).
-2. Add the repo's CodSpeed upload token as the **`CODSPEED_TOKEN`** Actions
-   secret (Settings → Secrets and variables → Actions). Public repos can use
-   OIDC instead (`permissions: id-token: write` + drop the `token:` input).
+   `rules_elide` repo (this is what posts the PR performance report). *(Done.)*
+2. Authentication is via **OIDC** — the `walltime` job grants `id-token: write`,
+   so no upload token/secret is needed.
 3. Ensure the `linux-amd64-cipool` self-hosted runners have `curl`, `tar`, and
    `sha256sum` available. Python and the benchmark deps are provisioned by `uv`
    (installed by `astral-sh/setup-uv`), so no system Python is required.

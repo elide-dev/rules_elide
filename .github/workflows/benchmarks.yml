@@ -30,6 +30,9 @@ jobs:
   walltime:
     name: compile benchmarks (walltime)
     if: github.event_name == 'pull_request' || github.event_name == 'push'
+    permissions:
+      contents: read
+      id-token: write  # OIDC auth to CodSpeed (no upload token needed)
     # Self-hosted, fast, *exclusive* AMD64 pool. Walltime needs an unshared
     # machine to be reliable; this pool provides that on x86_64 (CodSpeed's
     # managed macro runners are ARM64-only, which we do not want here).
@@ -65,7 +68,6 @@ jobs:
           # uv provisions the deps ephemerally for this one invocation; the
           # requirements file is the source of truth (also used for local runs).
           run: uv run --no-project --with-requirements benchmarks/codspeed/requirements.txt pytest benchmarks/codspeed --codspeed
-          token: ${{ secrets.CODSPEED_TOKEN }}
 
   # Weekly whole-build hyperfine suite (rules_elide vs vanilla), kept as an
   # artifact for trend-watching; too heavy for per-PR.
