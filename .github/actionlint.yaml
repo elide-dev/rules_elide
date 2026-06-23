@@ -1,0 +1,6 @@
+# Custom self-hosted runner labels used in our workflows, declared so actionlint
+# does not flag them as unknown. `linux-amd64-cipool` is the fast, exclusive
+# AMD64 pool used by the Benchmarks workflow for reliable walltime measurements.
+self-hosted-runner:
+  labels:
+    - linux-amd64-cipool

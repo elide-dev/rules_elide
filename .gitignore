@@ -11,6 +11,10 @@ MODULE.bazel.lock
 benchmarks/sources/
 benchmarks/results/
 
+# Python bytecode (CodSpeed benchmark harness runs under pytest).
+__pycache__/
+*.pyc
+
 # Editors / IDEs
 .idea/
 *.iml

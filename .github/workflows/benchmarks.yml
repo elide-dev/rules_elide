@@ -1,6 +1,10 @@
-name: benchmarks
+name: Benchmarks
 
 on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
   schedule:
     - cron: "0 5 * * 1"  # weekly: Monday 05:00 UTC
   workflow_dispatch:
@@ -14,12 +18,60 @@ on:
         default: "3"
         required: false
 
+concurrency:
+  group: benchmarks-${{ github.ref }}-${{ github.event_name }}
+  cancel-in-progress: true
+
 permissions:
   contents: read
 
 jobs:
+  # Per-PR (and main-baseline) compile-speed tracking via CodSpeed walltime.
+  walltime:
+    name: compile benchmarks (walltime)
+    if: github.event_name == 'pull_request' || github.event_name == 'push'
+    # Self-hosted, fast, *exclusive* AMD64 pool. Walltime needs an unshared
+    # machine to be reliable; this pool provides that on x86_64 (CodSpeed's
+    # managed macro runners are ARM64-only, which we do not want here).
+    runs-on: linux-amd64-cipool
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5  # v4
+      - uses: astral-sh/setup-uv@fac544c07dec837d0ccb6301d7b5580bf5edae39  # v8.2.0
+        with:
+          python-version: "3.12"
+
+      - name: Download pinned Elide release (linux-amd64)
+        # Benchmarks invoke `elide` directly (no Bazel), so fetch the same
+        # release the repo pins in versions.bzl. Pinning the version keeps the
+        # signal a function of rules_elide changes (and deliberate Elide bumps),
+        # not nightly drift between runs.
+        run: |
+          set -euo pipefail
+          ver="$(grep -oP 'DEFAULT_VERSION = "\K[^"]+' elide/private/versions.bzl)"
+          echo "Elide version: $ver"
+          base="https://github.com/elide-dev/elide/releases/download/$ver"
+          curl -fsSL -o elide.tgz "$base/elide.linux-amd64.tgz"
+          curl -fsSL -o elide.tgz.sha256 "$base/elide.linux-amd64.tgz.sha256"
+          echo "$(awk '{print $1}' elide.tgz.sha256)  elide.tgz" | sha256sum -c -
+          mkdir -p "$RUNNER_TEMP/elide"
+          tar -xzf elide.tgz -C "$RUNNER_TEMP/elide"
+          echo "ELIDE=$RUNNER_TEMP/elide/bin/elide" >> "$GITHUB_ENV"
+          "$RUNNER_TEMP/elide/bin/elide" --version || true
+
+      - name: Run walltime benchmarks
+        uses: CodSpeedHQ/action@63f3e98b61959fe67f146a3ff022e4136fe9bb9c  # v4.17.6
+        with:
+          mode: walltime
+          # uv provisions the deps ephemerally for this one invocation; the
+          # requirements file is the source of truth (also used for local runs).
+          run: uv run --no-project --with-requirements benchmarks/codspeed/requirements.txt pytest benchmarks/codspeed --codspeed
+          token: ${{ secrets.CODSPEED_TOKEN }}
+
+  # Weekly whole-build hyperfine suite (rules_elide vs vanilla), kept as an
+  # artifact for trend-watching; too heavy for per-PR.
   bench:
     name: rules_elide vs vanilla
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5  # v4
