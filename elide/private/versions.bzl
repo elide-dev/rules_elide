@@ -49,6 +49,7 @@ DEFAULT_CHANNEL = "nightly"
 # Hashes verified 2026-06-15 against GitHub release tag 1.3.2+20260615.
 # Hashes verified 2026-06-16 against GitHub release tag 1.3.3+20260619.
 # Hashes verified 2026-06-22 against GitHub release tag 1.3.4+20260622.
+# Hashes verified 2026-06-23 against GitHub release tag 1.3.4+20260623.
 ELIDE_VERSIONS = {
     "1.2.0+20260602": {
         ("linux", "amd64"): "sha256-yIQZwU4nM0SN19Zj2rdikdWBpj9d+fVlJK0d10p3DRA=",
@@ -92,11 +93,17 @@ ELIDE_VERSIONS = {
         ("macos", "arm64"): "sha256-Hs8fx481MzyQp7XhOAzFCJ0m7yUadLG6tNDU8UfLvdw=",
         ("windows", "amd64"): "sha256-n0zb+aCyeQcvIXqC2DbSXVlqfu2/OKCloN6HDiCQRns=",
     },
+    "1.3.4+20260623": {
+        ("linux", "amd64"): "sha256-bpTATZwNpgUfDE35uLOSRIh07m+XVH7zlNu3jVzqkug=",
+        ("linux", "arm64"): "sha256-ysQj8ZBR/gY89sicy19/3TvrJ3yYtooqwP1N8xqIqfE=",
+        ("macos", "arm64"): "sha256-d9bWfO/J/Ph5QjrsQJG58sQIOiDjS2+GZveS0drZJLA=",
+        ("windows", "amd64"): "sha256-HM6XeDnJ+QlWDjz9NSXVhsIwWwWtReUsLIuYpdl/eXs=",
+    },
 }
 
 # Default version used when consumers call elide.install() without a version.
 # Points at the most-recently verified entry in ELIDE_VERSIONS above.
-DEFAULT_VERSION = "1.3.4+20260622"
+DEFAULT_VERSION = "1.3.4+20260623"
 
 # GitHub releases serve each tag as an immutable artifact. The {channel} token
 # is accepted but unused here; it remains available for consumers who override
