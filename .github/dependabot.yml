@@ -1,0 +1,25 @@
+# Dependency update automation. Satisfies the OpenSSF Scorecard
+# Dependency-Update-Tool check and keeps pinned action SHAs / Python benchmark
+# deps current. Note: Dependabot has no bzlmod support, so Bazel module
+# versions in MODULE.bazel (protobuf, rules_kotlin, rules_jvm_external, …) are
+# still bumped manually.
+version: 2
+updates:
+  # GitHub Actions across all workflows. Actions are pinned by commit SHA;
+  # Dependabot bumps the SHA and the trailing `# vX` version comment together.
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: weekly
+    groups:
+      github-actions:
+        patterns: ["*"]
+
+  # Python deps for the CodSpeed walltime benchmark harness.
+  - package-ecosystem: pip
+    directory: "/benchmarks/codspeed"
+    schedule:
+      interval: weekly
+    groups:
+      benchmark-deps:
+        patterns: ["*"]
