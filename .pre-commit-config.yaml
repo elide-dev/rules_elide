@@ -32,22 +32,22 @@ repos:
         args: *bzlargs
 
   - repo: https://github.com/commitizen-tools/commitizen
-    rev: v4.9.1
+    rev: v4.16.4
     hooks:
       - id: commitizen
         stages: [commit-msg]
 
   - repo: https://github.com/crate-ci/typos
-    rev: v1.28.4
+    rev: v1.47.2
     hooks:
       - id: typos
 
   - repo: https://github.com/rhysd/actionlint
-    rev: v1.7.4
+    rev: v1.7.12
     hooks:
       - id: actionlint
 
   - repo: https://github.com/gitleaks/gitleaks
-    rev: v8.21.2
+    rev: v8.30.0
     hooks:
       - id: gitleaks
