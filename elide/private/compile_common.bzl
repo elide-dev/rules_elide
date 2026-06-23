@@ -749,11 +749,11 @@ COMMON_LIBRARY_ATTRS = {
         doc = "Runtime-only dependencies (excluded from compile classpath).",
         providers = [[JavaInfo]],
     ),
-    "_use_workers": attr.label(
-        default = "@rules_elide//elide:use_workers",
+    "_classpath_cache": attr.label(
+        default = "@rules_elide//config/javac:classpath_cache",
         providers = [BuildSettingInfo],
-        doc = "Build setting toggling Bazel persistent workers for the elide " +
-              "javac/kotlinc compile actions.",
+        doc = "Build setting opting `elide javac` worker compiles into the " +
+              "digest-keyed classpath cache (`--classpath-cache`).",
     ),
     "_incremental": attr.label(
         default = "@rules_elide//config/kotlinc:incremental",
@@ -761,11 +761,11 @@ COMMON_LIBRARY_ATTRS = {
         doc = "Build setting opting kotlinc compiles into incremental " +
               "compilation (compile-to-dir + cache-dir + pack-to-jar).",
     ),
-    "_classpath_cache": attr.label(
-        default = "@rules_elide//config/javac:classpath_cache",
+    "_use_workers": attr.label(
+        default = "@rules_elide//elide:use_workers",
         providers = [BuildSettingInfo],
-        doc = "Build setting opting `elide javac` worker compiles into the " +
-              "digest-keyed classpath cache (`--classpath-cache`).",
+        doc = "Build setting toggling Bazel persistent workers for the elide " +
+              "javac/kotlinc compile actions.",
     ),
 }
 

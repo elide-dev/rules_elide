@@ -162,17 +162,17 @@ _elide_kt_builder_launcher = rule(
             cfg = "exec",
             allow_files = True,
         ),
-        "shim": attr.label(
-            doc = "The elide_kotlin_builder persistent-worker shim to exec.",
-            mandatory = True,
-            executable = True,
-            cfg = "exec",
-        ),
         "resident_worker": attr.bool(
             default = False,
             doc = "Inject the shim's `--resident_worker` flag so kotlinc compiles " +
                   "are forwarded to one warm `elide kotlinc --persistent_worker` " +
                   "(keeping the native image + incremental caches hot).",
+        ),
+        "shim": attr.label(
+            doc = "The elide_kotlin_builder persistent-worker shim to exec.",
+            mandatory = True,
+            executable = True,
+            cfg = "exec",
         ),
         "worker_record": attr.string(
             default = "",
