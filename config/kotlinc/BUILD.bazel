@@ -25,3 +25,18 @@ config_setting(
     name = "incremental_enabled",
     flag_values = {":incremental": "True"},
 )
+
+# Opt-in (default off): Karbine ABI compile-avoidance (WHIPLASH#1111, rules
+# issue #11). When true, a Kotlin-only target's `JavaInfo.compile_jar` is a
+# header jar produced by a dedicated `elide kotlinc --abi-only` action instead
+# of the `java_common.run_ijar`-derived jar. A method-*body* edit yields a
+# byte-identical header (same digest), so Bazel prunes every dependent rebuild;
+# dependents also key on the fast codegen-free header action rather than the
+# full compile. `const`/`inline`/signature changes still change the header, so
+# pruning stays sound. Scoped to kt-only targets: `elide kotlinc --abi-only`
+# emits Kotlin ABI only, so mixed kt+java targets fall back to run_ijar. Verify
+# soundness with //e2e/abi_avoidance. Experimental.
+bool_flag(
+    name = "abi_compile_avoidance",
+    build_setting_default = False,
+)
