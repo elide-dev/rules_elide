@@ -197,7 +197,8 @@ _elide_kt_builder_launcher = rule(
 # override only `kotlinbuilder`. Mirrors the `toolchain` dict in
 # rules_kotlin/kotlin/internal/toolchains.bzl. If rules_kotlin adds or renames
 # a field, this list must be updated in lockstep (a missing field would drop it
-# from the re-emitted ToolchainInfo).
+# from the re-emitted ToolchainInfo, breaking rules_kotlin's own kt_jvm_* rules
+# that read it). Currently reconciled against rules_kotlin 2.4.0.
 _TOOLCHAIN_INFO_FIELDS = [
     "language_version",
     "api_version",
@@ -216,6 +217,8 @@ _TOOLCHAIN_INFO_FIELDS = [
     "experimental_treat_internal_as_private_in_abi_jars",
     "experimental_remove_private_classes_in_abi_jars",
     "experimental_remove_debug_info_in_abi_jars",
+    "experimental_preserve_declaration_order",  # added in rules_kotlin 2.4.0
+    "experimental_remove_data_class_copy_if_constructor_is_private",  # added in 2.4.0
     "experimental_strict_kotlin_deps",
     "experimental_report_unused_deps",
     "experimental_reduce_classpath_mode",
@@ -227,6 +230,7 @@ _TOOLCHAIN_INFO_FIELDS = [
     "jacocorunner",
     "experimental_prune_transitive_deps",
     "experimental_strict_associate_dependencies",
+    "experimental_ksp2_psi_resolution",  # added in rules_kotlin 2.4.0
 ]
 
 def _elide_kt_toolchain_impl(ctx):
