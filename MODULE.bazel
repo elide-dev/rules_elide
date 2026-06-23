@@ -11,7 +11,7 @@ bazel_dep(name = "protobuf", version = "33.4")
 
 # Needed by //elide/kotlin:toolchain.bzl, which wraps a stock rules_kotlin
 # toolchain (via define_kt_toolchain) and swaps in the Elide KotlinBuilder shim.
-bazel_dep(name = "rules_kotlin", version = "2.3.20")
+bazel_dep(name = "rules_kotlin", version = "2.4.0")
 
 bazel_dep(name = "stardoc", version = "0.8.1", dev_dependency = True)
 bazel_dep(name = "rules_jvm_external", version = "6.7", dev_dependency = True)

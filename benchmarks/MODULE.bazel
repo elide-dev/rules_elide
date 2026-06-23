@@ -7,7 +7,7 @@ local_path_override(
 )
 
 bazel_dep(name = "rules_java", version = "9.6.1")
-bazel_dep(name = "rules_kotlin", version = "2.3.20")
+bazel_dep(name = "rules_kotlin", version = "2.4.0")
 
 # Elide toolchain (nightly via CDN).
 elide = use_extension("@rules_elide//elide:extensions.bzl", "elide")
