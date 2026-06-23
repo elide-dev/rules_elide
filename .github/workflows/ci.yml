@@ -20,7 +20,9 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        bazel: ["7.x", "8.x", "9.x"]
+        # Bazel 8+ only (protobuf 35.x requires >=8.0.0; see MODULE.bazel
+        # bazel_compatibility).
+        bazel: ["8.x", "9.x"]
         os: [ubuntu-24.04, macos-14]
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5  # v4

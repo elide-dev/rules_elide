@@ -2,60 +2,65 @@ load("@stardoc//stardoc:stardoc.bzl", "stardoc")
 
 package(default_visibility = ["//visibility:public"])
 
+# rules_java / rules_kotlin (on Bazel 8+) transitively load
+# @bazel_features//:features.bzl. `starlark_doc_extract` requires a bzl_library
+# covering every transitively loaded module, so each doc target carries it.
+_DOC_DEPS = ["@bazel_features//:features"]
+
 stardoc(
     name = "defs_doc",
     out = "defs.md",
     input = "//elide:defs.bzl",
-    deps = ["//elide:defs"],
+    deps = ["//elide:defs"] + _DOC_DEPS,
 )
 
 stardoc(
     name = "providers_doc",
     out = "providers.md",
     input = "//elide:providers.bzl",
-    deps = ["//elide:providers"],
+    deps = ["//elide:providers"] + _DOC_DEPS,
 )
 
 stardoc(
     name = "extensions_doc",
     out = "extensions.md",
     input = "//elide:extensions.bzl",
-    deps = ["//elide:extensions"],
+    deps = ["//elide:extensions"] + _DOC_DEPS,
 )
 
 stardoc(
     name = "toolchain_doc",
     out = "toolchain.md",
     input = "//elide:toolchain.bzl",
-    deps = ["//elide:toolchain"],
+    deps = ["//elide:toolchain"] + _DOC_DEPS,
 )
 
 stardoc(
     name = "java_doc",
     out = "java.md",
     input = "//elide/rules:java.bzl",
-    deps = ["//elide/rules:java"],
+    deps = ["//elide/rules:java"] + _DOC_DEPS,
 )
 
 stardoc(
     name = "kotlin_doc",
     out = "kotlin.md",
     input = "//elide/rules:kotlin.bzl",
-    deps = ["//elide/rules:kotlin"],
+    deps = ["//elide/rules:kotlin"] + _DOC_DEPS,
 )
 
 stardoc(
     name = "native_image_doc",
     out = "native_image.md",
     input = "//elide/rules:native_image.bzl",
-    deps = ["//elide/rules:native_image"],
+    deps = ["//elide/rules:native_image"] + _DOC_DEPS,
 )
 
 stardoc(
     name = "format_doc",
     out = "format.md",
     input = "//elide/rules:format.bzl",
-    deps = ["//elide/rules:format"],
+    deps = ["//elide/rules:format"] + _DOC_DEPS,
 )
 
 filegroup(

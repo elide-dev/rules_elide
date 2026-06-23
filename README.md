@@ -198,7 +198,7 @@ See [`e2e/smoke/README.md`](e2e/smoke/README.md) for the full flow.
 
 | Layer                       | Status                                                                  |
 |-----------------------------|-------------------------------------------------------------------------|
-| Bazel                       | 7.4.0+ (Bzlmod-only; legacy `WORKSPACE` is not supported)               |
+| Bazel                       | 8.0.0+ (Bzlmod-only; legacy `WORKSPACE` is not supported)               |
 | `rules_kotlin` interop      | Drop-in builder for non-AP targets; AP targets via fallback; jdeps/strict-deps pending WHIPLASH #998 |
 
 ## Versioning
