@@ -258,6 +258,11 @@ def run_kotlinc(ctx, output_jar):
         ctx: rule context. Must expose srcs/deps/kotlinc_opts/javac_opts/module_name/
             plugins/associates.
         output_jar: File. Declared output JAR.
+
+    Returns:
+        File or None. The `--abi-only` header jar when ABI compile-avoidance is
+        enabled for a kt-only target (pass to make_java_info as
+        compile_jar_override); otherwise None.
     """
     elide = ctx.toolchains[TOOLCHAIN_TYPE].elide_info
     classpath = compile_classpath(ctx.attr.deps)
@@ -278,6 +283,52 @@ def run_kotlinc(ctx, output_jar):
     # not a jar. When enabled we compile to a tree-artifact dir with a stable,
     # per-target, undeclared cache dir, then pack the dir into `kt_jar` below.
     incremental = ctx.attr._incremental[BuildSettingInfo].value and has_kt
+
+    # Karbine ABI compile-avoidance (opt-in via //config/kotlinc:abi_compile_avoidance,
+    # rules issue #11). A dedicated codegen-free `elide kotlinc --abi-only` pass
+    # emits a header jar used as JavaInfo.compile_jar (see make_java_info): a
+    # body-only edit yields a byte-identical header (same digest) so Bazel prunes
+    # every dependent rebuild, and dependents key on this fast action rather than
+    # the full compile. const/inline/signature changes still change the header,
+    # keeping pruning sound (verified by //e2e/abi_avoidance). `--abi-only` emits
+    # Kotlin ABI only, so this is scoped to kt-only targets; mixed kt+java keeps
+    # the run_ijar compile jar.
+    abi_avoidance = ctx.attr._abi_compile_avoidance[BuildSettingInfo].value and has_kt and not has_java
+
+    abi_jar = None
+    if abi_avoidance:
+        abi_jar = ctx.actions.declare_file(ctx.label.name + "_abi.jar")
+        abi_args = _tool_args(ctx)
+        abi_builtin_plugins = getattr(ctx.attr, "builtin_plugins", [])
+        if abi_builtin_plugins:
+            abi_args.add_joined(abi_builtin_plugins, join_with = ",", format_joined = "--plugins=%s")
+        abi_args.add("--abi-only")
+        abi_args.add("--")
+        abi_args.add("-d", abi_jar)
+        abi_cp = depset(transitive = [classpath, plugin_cp, friend_jars])
+        abi_args.add_joined("-classpath", abi_cp, join_with = sep)
+        if ctx.attr.module_name:
+            abi_args.add("-module-name", ctx.attr.module_name)
+        if friend_path_strs:
+            abi_args.add("-Xfriend-paths=" + ",".join(friend_path_strs))
+        for plugin in ctx.attr.plugins:
+            for f in plugin[JavaInfo].transitive_runtime_jars.to_list():
+                abi_args.add("-Xplugin=" + f.path)
+        for o in ctx.attr.kotlinc_opts:
+            abi_args.add(o)
+        abi_args.add_all(kt_srcs)
+        _run_elide_compile(
+            ctx,
+            mnemonic = "ElideKotlincAbi",
+            subcommand = "kotlinc",
+            tool_args = abi_args,
+            inputs = depset(
+                direct = kt_srcs,
+                transitive = [classpath, plugin_cp, friend_jars, elide.compile_tool_files],
+            ),
+            outputs = [abi_jar],
+            progress_message = "Generating %{label} ABI header (elide kotlinc --abi-only)",
+        )
 
     kt_jar = None
     if has_kt:
@@ -360,7 +411,7 @@ def run_kotlinc(ctx, output_jar):
             )
 
     if single_kt_only:
-        return
+        return abi_jar
 
     class_jars = []
     if has_kt:
@@ -369,6 +420,7 @@ def run_kotlinc(ctx, output_jar):
         class_jars.append(_compile_java_aux(ctx, java_srcs, kt_jar))
 
     _merge_resources(ctx, class_jars, output_jar)
+    return abi_jar
 
 def _compile_java_aux(ctx, java_srcs, kt_jar):
     if _has_exported_processors(ctx.attr.deps):
@@ -428,24 +480,32 @@ def _compile_java_processed(ctx, java_srcs, kt_jar):
     )
     return java_jar
 
-def make_java_info(ctx, output_jar, source_jar = None):
+def make_java_info(ctx, output_jar, source_jar = None, compile_jar_override = None):
     """Builds the JavaInfo emitted by elide compile rules.
 
     Args:
         ctx: rule context.
         output_jar: File. Compiled classes jar.
         source_jar: File or None. Optional sources jar (sets JavaInfo.source_jar).
+        compile_jar_override: File or None. When set (the Karbine `--abi-only`
+            header jar from run_kotlinc, under ABI compile-avoidance), it is used
+            verbatim as `compile_jar` instead of deriving one with run_ijar. The
+            header is body-stable, so dependents prune on body-only edits.
 
     Returns:
-        JavaInfo carrying output_jar + ijar-derived compile jar + merged deps.
+        JavaInfo carrying output_jar + compile jar (ijar-derived, or the
+        body-stable ABI header when overridden) + merged deps.
     """
-    java_toolchain = ctx.toolchains["@bazel_tools//tools/jdk:toolchain_type"].java
-    compile_jar = java_common.run_ijar(
-        actions = ctx.actions,
-        jar = output_jar,
-        target_label = ctx.label,
-        java_toolchain = java_toolchain,
-    )
+    if compile_jar_override != None:
+        compile_jar = compile_jar_override
+    else:
+        java_toolchain = ctx.toolchains["@bazel_tools//tools/jdk:toolchain_type"].java
+        compile_jar = java_common.run_ijar(
+            actions = ctx.actions,
+            jar = output_jar,
+            target_label = ctx.label,
+            java_toolchain = java_toolchain,
+        )
     return JavaInfo(
         output_jar = output_jar,
         compile_jar = compile_jar,
@@ -748,6 +808,13 @@ COMMON_LIBRARY_ATTRS = {
     "runtime_deps": attr.label_list(
         doc = "Runtime-only dependencies (excluded from compile classpath).",
         providers = [[JavaInfo]],
+    ),
+    "_abi_compile_avoidance": attr.label(
+        default = Label("//config/kotlinc:abi_compile_avoidance"),
+        providers = [BuildSettingInfo],
+        doc = "Build setting: derive a kt-only target's compile_jar from a " +
+              "dedicated `elide kotlinc --abi-only` header action (body-stable " +
+              "ABI) instead of run_ijar. See //config/kotlinc:abi_compile_avoidance.",
     ),
     "_classpath_cache": attr.label(
         default = Label("//config/javac:classpath_cache"),

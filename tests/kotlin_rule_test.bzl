@@ -60,6 +60,69 @@ def _library_action_test_impl(ctx):
 
 _library_action_test = analysistest.make(_library_action_test_impl)
 
+def _abi_avoidance_test_impl(ctx):
+    # With //config/kotlinc:abi_compile_avoidance=True, a kt-only target emits a
+    # dedicated `elide kotlinc --abi-only` header action, and its JavaInfo
+    # compile_jar is that header jar (not the run_ijar-derived jar) — so a
+    # body-only edit yields a byte-identical header and dependents prune.
+    env = analysistest.begin(ctx)
+    actions = analysistest.target_actions(env)
+    abis = [a for a in actions if a.mnemonic == "ElideKotlincAbi"]
+    asserts.equals(env, 1, len(abis), "expected one ElideKotlincAbi (--abi-only) action")
+    argv = abis[0].argv
+    asserts.true(env, "--abi-only" in argv, "abi action must pass `--abi-only`")
+    asserts.true(
+        env,
+        argv.index("--abi-only") < argv.index("--"),
+        "`--abi-only` is an elide option; must precede the `--` separator",
+    )
+    abi_out = abis[0].outputs.to_list()
+    asserts.true(
+        env,
+        len(abi_out) == 1 and abi_out[0].basename.endswith("_abi.jar"),
+        "abi action must output a single `_abi.jar`",
+    )
+
+    # compile_jar is wired to the header jar, not an ijar.
+    compile_jars = analysistest.target_under_test(env)[JavaInfo].compile_jars.to_list()
+    asserts.true(
+        env,
+        any([j.basename.endswith("_abi.jar") for j in compile_jars]),
+        "compile_jar must be the `--abi-only` header jar when avoidance is on",
+    )
+    return analysistest.end(env)
+
+_abi_avoidance_test = analysistest.make(
+    _abi_avoidance_test_impl,
+    # See _library_action_no_worker_test re: the @@ canonical root ref.
+    config_settings = {"@@//config/kotlinc:abi_compile_avoidance": True},  # buildifier: disable=canonical-repository
+)
+
+def _abi_avoidance_mixed_fallback_test_impl(ctx):
+    # `elide kotlinc --abi-only` emits Kotlin ABI only, so mixed kt+java targets
+    # must NOT take the abi path (a Kotlin-only header would drop the Java ABI
+    # and break dependents). They fall back to the run_ijar compile jar.
+    env = analysistest.begin(ctx)
+    actions = analysistest.target_actions(env)
+    asserts.equals(
+        env,
+        0,
+        len([a for a in actions if a.mnemonic == "ElideKotlincAbi"]),
+        "mixed kt+java must not emit an --abi-only action (Kotlin-only ABI)",
+    )
+    compile_jars = analysistest.target_under_test(env)[JavaInfo].compile_jars.to_list()
+    asserts.true(
+        env,
+        not any([j.basename.endswith("_abi.jar") for j in compile_jars]),
+        "mixed target compile_jar must be the run_ijar jar, not an `_abi.jar`",
+    )
+    return analysistest.end(env)
+
+_abi_avoidance_mixed_fallback_test = analysistest.make(
+    _abi_avoidance_mixed_fallback_test_impl,
+    config_settings = {"@@//config/kotlinc:abi_compile_avoidance": True},  # buildifier: disable=canonical-repository
+)
+
 def _builtin_plugins_test_impl(ctx):
     env = analysistest.begin(ctx)
     actions = analysistest.target_actions(env)
@@ -410,6 +473,14 @@ def kotlin_rule_test_suite(name):
         name = "kt_test_rule_executable_test",
         target_under_test = ":_kt_test_fixture",
     )
+    _abi_avoidance_test(
+        name = "kt_abi_avoidance_test",
+        target_under_test = ":_kt_lib_fixture",
+    )
+    _abi_avoidance_mixed_fallback_test(
+        name = "kt_abi_avoidance_mixed_fallback_test",
+        target_under_test = ":_kt_mixed_fixture",
+    )
     native.test_suite(
         name = name,
         tests = [
@@ -423,5 +494,7 @@ def kotlin_rule_test_suite(name):
             ":kt_annotation_processor_test",
             ":kt_binary_executable_test",
             ":kt_test_rule_executable_test",
+            ":kt_abi_avoidance_test",
+            ":kt_abi_avoidance_mixed_fallback_test",
         ],
     )
