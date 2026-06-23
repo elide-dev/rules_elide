@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 # SPDX-License-Identifier: Apache-2.0
 """CodSpeed walltime benchmarks for the Elide compilers.
 
@@ -6,7 +5,8 @@ These mirror the pure-compiler workloads of the in-repo shell benchmarks
 (`compile_modes.sh`, `javac_cache.sh`) but expressed as pytest-codspeed
 benchmarks so CodSpeed can track wall-clock per PR. Each benchmark times a real
 `elide` subprocess over a generated N-file fixture; CodSpeed runs it many times
-on a dedicated, exclusive runner (see `.github/workflows/codspeed.yml`).
+on a dedicated, exclusive runner (the `walltime` job in
+`.github/workflows/benchmarks.yml`).
 
 Local smoke run (executes each workload once, no measurement):
     ELIDE=/abs/path/to/elide pytest benchmarks/codspeed
@@ -39,8 +39,12 @@ _nonce = itertools.count()
 @pytest.fixture(scope="session")
 def workload(tmp_path_factory) -> dict:
     """Generates N self-contained Kotlin + Java sources; returns paths + outdir."""
-    if shutil.which(ELIDE) is None and not Path(ELIDE).is_file():
-        pytest.skip(f"elide binary not found (set ELIDE=...): {ELIDE}")
+    # Require an *executable* elide: a non-executable path would otherwise turn a
+    # clean skip into a confusing subprocess failure deep in a benchmark.
+    on_path = shutil.which(ELIDE) is not None
+    runnable_file = Path(ELIDE).is_file() and os.access(ELIDE, os.X_OK)
+    if not (on_path or runnable_file):
+        pytest.skip(f"elide binary not found or not executable (set ELIDE=...): {ELIDE}")
     root = tmp_path_factory.mktemp("elide_bench")
     kt_dir = root / "kotlin" / "sample"
     java_dir = root / "java" / "sample"
@@ -72,11 +76,14 @@ def workload(tmp_path_factory) -> dict:
 
 
 def _run(args: list[str]) -> None:
-    proc = subprocess.run(args, capture_output=True, text=True)
+    # Capture as bytes and decode only on failure: decoding stdout/stderr on
+    # every successful run would add Python-side overhead to the walltime signal
+    # we are trying to attribute to the compiler.
+    proc = subprocess.run(args, capture_output=True)
     if proc.returncode != 0:
-        raise AssertionError(
-            f"elide exited {proc.returncode}: {' '.join(args)}\n{proc.stderr}\n{proc.stdout}"
-        )
+        err = proc.stderr.decode("utf-8", "replace")
+        out = proc.stdout.decode("utf-8", "replace")
+        raise AssertionError(f"elide exited {proc.returncode}: {' '.join(args)}\n{err}\n{out}")
 
 
 def test_kotlinc_full(benchmark, workload):

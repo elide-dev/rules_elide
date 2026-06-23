@@ -29,7 +29,12 @@ jobs:
   # Per-PR (and main-baseline) compile-speed tracking via CodSpeed walltime.
   walltime:
     name: compile benchmarks (walltime)
-    if: github.event_name == 'pull_request' || github.event_name == 'push'
+    # Self-hosted infra must not run untrusted fork code: gate to same-repo PRs
+    # (and main pushes). Fork PRs are skipped here.
+    if: >-
+      github.event_name == 'push' ||
+      (github.event_name == 'pull_request' &&
+       github.event.pull_request.head.repo.full_name == github.repository)
     permissions:
       contents: read
       id-token: write  # OIDC auth to CodSpeed (no upload token needed)
@@ -50,7 +55,7 @@ jobs:
         # not nightly drift between runs.
         run: |
           set -euo pipefail
-          ver="$(grep -oP 'DEFAULT_VERSION = "\K[^"]+' elide/private/versions.bzl)"
+          ver="$(awk -F'"' '/^DEFAULT_VERSION = /{print $2}' elide/private/versions.bzl)"
           echo "Elide version: $ver"
           base="https://github.com/elide-dev/elide/releases/download/$ver"
           curl -fsSL -o elide.tgz "$base/elide.linux-amd64.tgz"
