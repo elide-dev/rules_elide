@@ -11,9 +11,10 @@ MODULE.bazel.lock
 benchmarks/sources/
 benchmarks/results/
 
-# Python bytecode (CodSpeed benchmark harness runs under pytest).
+# Python bytecode + CodSpeed local run artifacts (benchmark harness).
 __pycache__/
 *.pyc
+.codspeed/
 
 # Editors / IDEs
 .idea/
