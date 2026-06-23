@@ -26,4 +26,18 @@ class FlagfileTest {
         assertEquals(listOf("com.example.P"), req.processors)
         assertEquals(listOf("p.jar"), req.processorPath)
     }
+
+    @Test fun parsesTargetLabelForJdepsRuleLabel() {
+        // `.jdeps` rule_label is the Bazel target label, distinct from the module name.
+        val req = Flagfile.parse(listOf(
+            "--target_label", "//pkg:greeter",
+            "--kotlin_module_name", "greeter",
+        ))
+        assertEquals("//pkg:greeter", req.targetLabel)
+        assertEquals("greeter", req.moduleName)
+    }
+
+    @Test fun targetLabelAbsentIsNull() {
+        assertEquals(null, Flagfile.parse(listOf("--kotlin_module_name", "greeter")).targetLabel)
+    }
 }

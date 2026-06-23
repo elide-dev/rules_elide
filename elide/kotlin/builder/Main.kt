@@ -62,10 +62,14 @@ object Main {
             val cmds = ElideCompile.plan(req, cfg.elide, extraSources, usedReport?.path)
             val (code, out) = compileCmds(cmds, resident, inputs, wd)
             if (code == 0) req.jdeps?.let { jdeps ->
+                // Deps.Dependencies.rule_label is the Bazel rule label (`--target_label`),
+                // not the Kotlin module name. Leave empty when absent rather than emit an
+                // incorrect value (WHIPLASH#1131 review follow-up).
+                val ruleLabel = req.targetLabel ?: ""
                 if (usedReport != null && usedReport.exists()) {
-                    Jdeps.write(jdeps, req.moduleName ?: "", req.classpath, req.directDependencies, usedReport)
+                    Jdeps.write(jdeps, ruleLabel, req.classpath, req.directDependencies, usedReport)
                 } else {
-                    Jdeps.writeStub(jdeps, req.moduleName ?: "")
+                    Jdeps.writeStub(jdeps, ruleLabel)
                 }
             }
             return code to out

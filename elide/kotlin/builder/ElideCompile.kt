@@ -9,7 +9,9 @@ import java.util.zip.ZipFile
  * The command form mirrors how rules_elide invokes elide in compile_common.bzl:
  *   elide kotlinc -- -d <out> -classpath <cp> [-module-name <m>] [-Xfriend-paths=...] <passthrough> <srcs>
  *
- * The `--` separator is required for one-shot invocations (worker mode omits it).
+ * The `--` separator precedes the bare tool args and is present in both one-shot
+ * and worker invocations; [kotlincWorkerArgs] keeps it when forwarding to the
+ * resident `elide kotlinc --persistent_worker`.
  */
 object ElideCompile {
     /**
@@ -38,19 +40,6 @@ object ElideCompile {
         return versionDir.resolve("lib/jvm-abi-gen.jar").takeIf { it.isFile }
     }
 
-    /**
-     * Returns the list of subprocess argv lists to execute for the given [req].
-     * Pure — no side effects; safe to unit-test without a real Elide binary.
-     *
-     * Emits:
-     *  1. An `elide kotlinc` command to compile sources to [CompileRequest.output].
-     *     When [CompileRequest.abiJar] is set AND `jvm-abi-gen.jar` is discoverable
-     *     in the Elide distribution, injects `-Xplugin=<jar>` and
-     *     `-P plugin:org.jetbrains.kotlin.jvm.abi:outputDir=<abiJar>` into the
-     *     kotlinc flags so both the full jar and the ABI-stripped jar are produced
-     *     in one compiler pass. Verified against Elide 1.3.0 / Kotlin 2.4.0.
-     *  2. An `elide jar` command to pack sources into [CompileRequest.srcjar], if set.
-     */
     /**
      * Unpacks the given source jars into [into] and returns the paths of the
      * extracted `.kt`/`.java` files.
@@ -87,6 +76,19 @@ object ElideCompile {
         return extracted
     }
 
+    /**
+     * Returns the list of subprocess argv lists to execute for the given [req].
+     * Pure — no side effects; safe to unit-test without a real Elide binary.
+     *
+     * Emits:
+     *  1. An `elide kotlinc` command to compile sources to [CompileRequest.output].
+     *     When [CompileRequest.abiJar] is set AND `jvm-abi-gen.jar` is discoverable
+     *     in the Elide distribution, injects `-Xplugin=<jar>` and
+     *     `-P plugin:org.jetbrains.kotlin.jvm.abi:outputDir=<abiJar>` into the
+     *     kotlinc flags so both the full jar and the ABI-stripped jar are produced
+     *     in one compiler pass. Verified against Elide 1.3.0 / Kotlin 2.4.0.
+     *  2. An `elide jar` command to pack sources into [CompileRequest.srcjar], if set.
+     */
     fun plan(
         req: CompileRequest,
         elidePath: String,

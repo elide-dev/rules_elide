@@ -750,19 +750,19 @@ COMMON_LIBRARY_ATTRS = {
         providers = [[JavaInfo]],
     ),
     "_classpath_cache": attr.label(
-        default = "@rules_elide//config/javac:classpath_cache",
+        default = Label("//config/javac:classpath_cache"),
         providers = [BuildSettingInfo],
         doc = "Build setting opting `elide javac` worker compiles into the " +
               "digest-keyed classpath cache (`--classpath-cache`).",
     ),
     "_incremental": attr.label(
-        default = "@rules_elide//config/kotlinc:incremental",
+        default = Label("//config/kotlinc:incremental"),
         providers = [BuildSettingInfo],
         doc = "Build setting opting kotlinc compiles into incremental " +
               "compilation (compile-to-dir + cache-dir + pack-to-jar).",
     ),
     "_use_workers": attr.label(
-        default = "@rules_elide//elide:use_workers",
+        default = Label("//elide:use_workers"),
         providers = [BuildSettingInfo],
         doc = "Build setting toggling Bazel persistent workers for the elide " +
               "javac/kotlinc compile actions.",
