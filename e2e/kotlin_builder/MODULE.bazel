@@ -1,0 +1,19 @@
+module(name = "rules_elide_kotlin_builder_e2e")
+
+bazel_dep(name = "rules_elide", version = "0.0.0")
+local_path_override(
+    module_name = "rules_elide",
+    path = "../..",
+)
+
+bazel_dep(name = "rules_kotlin", version = "2.3.20")
+bazel_dep(name = "rules_java", version = "9.6.1")
+
+elide = use_extension("@rules_elide//elide:extensions.bzl", "elide")
+elide.install(channel = "nightly")
+use_repo(elide, "elide_linux_amd64", "elide_toolchains")
+
+register_toolchains("@elide_toolchains//:all")
+
+# Elide-backed Kotlin toolchain (smoke test; see //:elide_kt in BUILD.bazel).
+register_toolchains("//:elide_kt")

@@ -1,5 +1,5 @@
 load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
-load("@bazel_skylib//rules:common_settings.bzl", "string_flag")
+load("@bazel_skylib//rules:common_settings.bzl", "bool_flag", "string_flag")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -9,6 +9,20 @@ string_flag(
     name = "graalvm_home",
     build_setting_default = "",
 )
+
+# Toggles Bazel persistent workers for the elide javac/kotlinc compile actions.
+# Default (true): actions advertise `supports-workers` and Bazel reuses a warm
+# compiler process. Set false to compile each target as a one-shot
+# `elide <tool> -- <args>` process instead (no worker). The one-shot form also
+# sidesteps the non-worker fallback gap in WHIPLASH #994, so it is the
+# supported way to run elide compiles without workers (e.g. remote execution).
+bool_flag(
+    name = "use_workers",
+    build_setting_default = True,
+)
+
+# Note: incremental Kotlin compilation is gated by
+# `//config/kotlinc:incremental` (see //config/kotlinc/BUILD.bazel).
 
 exports_files(
     [

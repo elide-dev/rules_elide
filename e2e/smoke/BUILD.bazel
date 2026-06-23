@@ -13,18 +13,16 @@ load(
 
 package(default_visibility = ["//visibility:public"])
 
-# --- toolchain (env-aware wrapper) ------------------------------------------
-# Defaults to a no-op (analysis-only smoke). When invoked with
-# `--config=dev` and the ELIDE_DEV_BIN env var set to a locally-built elide
-# binary, the wrapper execs into it for real action execution.
+# --- toolchain (analysis-only stub) -----------------------------------------
+# A no-op `elide` stub so the elide_* rules resolve a toolchain and the rule
+# graph analyzes (`bazel build //... --nobuild`) without a real release. For
+# real action execution, point the extension at a local Elide build with
+# `elide.use(local_path = "...")` in MODULE.bazel (see README) — no env vars.
 write_file(
-    name = "_wrapper_src",
-    out = "elide_wrapper.sh",
+    name = "_stub_src",
+    out = "elide_stub.sh",
     content = [
         "#!/bin/sh",
-        "if [ -n \"${ELIDE_DEV_BIN-}\" ] && [ -x \"${ELIDE_DEV_BIN}\" ]; then",
-        "  exec \"${ELIDE_DEV_BIN}\" \"$@\"",
-        "fi",
         "exit 0",
         "",
     ],
@@ -33,8 +31,8 @@ write_file(
 
 native_binary(
     name = "_stub_elide",
-    src = ":_wrapper_src",
-    out = "elide_wrapper_bin",
+    src = ":_stub_src",
+    out = "elide_stub_bin",
 )
 
 elide_toolchain(

@@ -1,0 +1,27 @@
+load("@bazel_skylib//rules:common_settings.bzl", "bool_flag")
+
+package(default_visibility = ["//visibility:public"])
+
+# Tunables for the elide kotlinc compile path, flippable on the command line,
+# e.g. `--@rules_elide//config/kotlinc:incremental=true`.
+
+# Opt-in (default off): incremental Kotlin compilation. When true, the elide
+# kotlinc action compiles to a classes directory with `--incremental
+# --incremental-cache-dir <per-target>` and packs the result into the output
+# jar, so a warm rebuild after a small edit recompiles only the dirty subset.
+# The cache is undeclared worker-scoped scratch under bazel-out: it persists
+# across persistent-worker requests when unsandboxed, and degrades to a correct
+# cold compile under `--worker_sandboxing`/remote execution (where it cannot
+# persist). javac is unaffected (no IC support upstream). Experimental.
+bool_flag(
+    name = "incremental",
+    build_setting_default = False,
+)
+
+# Matches when `--@rules_elide//config/kotlinc:incremental=True`. Lets the Kotlin
+# toolchain default resident persistent-worker forwarding on whenever incremental
+# compilation is enabled (IC is only useful with a warm resident worker).
+config_setting(
+    name = "incremental_enabled",
+    flag_values = {":incremental": "True"},
+)

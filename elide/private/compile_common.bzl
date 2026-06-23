@@ -3,6 +3,7 @@
 """Shared helpers for elide compile rules (Java, Kotlin, native-image)."""
 
 load("@bazel_skylib//lib:shell.bzl", "shell")
+load("@bazel_skylib//rules:common_settings.bzl", "BuildSettingInfo")
 load("@rules_java//java/common:java_common.bzl", "java_common")
 load("@rules_java//java/common:java_info.bzl", "JavaInfo")
 load("//elide:providers.bzl", "ElideInfo")
@@ -101,14 +102,106 @@ def _merge_resources(ctx, class_jars, output_jar):
         progress_message = "Packing %{label} jar",
     )
 
-def run_javac(ctx, output_jar):
-    """Runs `elide javac` to compile `.java` sources into `output_jar`.
+# Execution requirements opting compile actions into Bazel persistent workers.
+# Elide's embedded javac/kotlinc workers speak the length-delimited protobuf
+# WorkRequest protocol, so we advertise `proto`. Multiplex workers are verified
+# working in Elide 1.3.1 (one process serves concurrent WorkRequests with
+# isolated, correct outputs — WHIPLASH #1004), so we advertise
+# `supports-multiplex-workers`. Bazel uses workers by default for actions
+# carrying these tags; users retain the standard kill-switches
+# (`--strategy=ElideJavac=local`, `--worker_max_instances=0`).
+_WORKER_EXEC_REQUIREMENTS = {
+    "requires-worker-protocol": "proto",
+    "supports-multiplex-workers": "1",
+    "supports-workers": "1",
+}
 
-    Two-action flow:
-      1. `elide javac -- -d <classes_dir> -classpath <cp> <srcs>` writes
-         .class files into a declared classes-dir.
-      2. `elide jar -- cf <output_jar> -C <classes_dir> .` packs the
-         classes-dir into the output JAR.
+# Signals to elide that it is running under Bazel, so it can adjust output
+# (suppress emoji/decorative status lines, drop color, project-relative paths,
+# `[warning]`-prefix diagnostics) — Elide-side, tracked in WHIPLASH#1131. Set on
+# elide compile actions; reaches persistent workers too (it is part of the
+# action env, not the scrubbed ambient env).
+_ELIDE_BAZEL_ENV = {"ELIDE_BAZEL": "1"}
+
+def _tool_args(ctx):
+    """Begins a buffer for a compile action's tool args.
+
+    Holds the args destined for the embedded tool (javac/kotlinc), including
+    any leading Elide options (e.g. `--jar`) and the `--` separator that
+    precedes the bare TOOL_ARGS. Callers are responsible for adding `--`
+    themselves; `_run_elide_compile` delivers this buffer verbatim, deciding
+    only how it is transported (worker params-file WorkRequest vs one-shot
+    inline).
+    """
+    return ctx.actions.args()
+
+def _run_elide_compile(ctx, mnemonic, subcommand, tool_args, inputs, outputs, progress_message):
+    """Runs `elide <subcommand>` to compile, as a worker or a one-shot process.
+
+    Both modes use the same arg form: `elide <subcommand> <tool_args>`, where
+    `tool_args` already carries any leading Elide options and the `--`
+    separator (callers add these). As of Elide 1.3.1 the persistent worker
+    accepts the leading `--` (it rejected it in 1.3.0) and parses Elide options
+    like `--jar`, so worker and one-shot share one arg form.
+
+    Selected by the `//elide:use_workers` build setting:
+
+    - workers on (default): the action advertises `supports-workers`; Bazel
+      appends `--persistent_worker` when it spawns the reusable process and
+      delivers `tool_args` as a multiline params-file WorkRequest.
+    - workers off: a one-shot `elide <subcommand> <tool_args>` process per
+      target, with `tool_args` delivered inline. This is the supported way to
+      compile without workers (the Bazel-native worker-off path,
+      `elide <tool> @flagfile`, is broken upstream — WHIPLASH #994).
+
+    Args:
+        ctx: rule context.
+        mnemonic: str. Action mnemonic (also the worker pool key).
+        subcommand: str. Elide compile subcommand, e.g. `javac` or `kotlinc`.
+        tool_args: Args. Tool args from `_tool_args` (incl. `--` separator).
+        inputs: depset[File]. Action inputs.
+        outputs: list[File]. Declared action outputs.
+        progress_message: str. Bazel progress message.
+    """
+    elide = ctx.toolchains[TOOLCHAIN_TYPE].elide_info
+    lead = ctx.actions.args()
+    lead.add(subcommand)
+
+    if ctx.attr._use_workers[BuildSettingInfo].value:
+        tool_args.use_param_file("@%s", use_always = True)
+        tool_args.set_param_file_format("multiline")
+        ctx.actions.run(
+            mnemonic = mnemonic,
+            executable = elide.binary,
+            arguments = [lead, tool_args],
+            inputs = inputs,
+            outputs = outputs,
+            progress_message = progress_message,
+            execution_requirements = _WORKER_EXEC_REQUIREMENTS,
+            env = _ELIDE_BAZEL_ENV,
+        )
+    else:
+        ctx.actions.run(
+            mnemonic = mnemonic,
+            executable = elide.binary,
+            arguments = [lead, tool_args],
+            inputs = inputs,
+            outputs = outputs,
+            progress_message = progress_message,
+            env = _ELIDE_BAZEL_ENV,
+        )
+
+def run_javac(ctx, output_jar):
+    """Runs `elide javac --jar` to compile `.java` sources into `output_jar`.
+
+    Single-action flow: `elide javac --jar <jar> -- -classpath <cp> <srcs>`
+    compiles and writes the output JAR directly (verified against Elide 1.3.1;
+    `--jar` alone produces the jar, no `-d` scratch dir needed). `--jar`
+    requires the `--` separator that precedes the bare javac TOOL_ARGS.
+
+    When the target carries packaged resources, `--jar` writes an intermediate
+    class jar which `_merge_resources` then folds into `output_jar`; otherwise
+    `--jar` writes `output_jar` directly.
 
     Args:
         ctx: rule context. Must expose srcs/deps/javac_opts/plugins.
@@ -119,51 +212,29 @@ def run_javac(ctx, output_jar):
     plugin_cp = _plugin_classpath(ctx.attr.plugins) if hasattr(ctx.attr, "plugins") else depset()
     sep = ctx.configuration.host_path_separator
 
-    classes_dir = ctx.actions.declare_directory(ctx.label.name + "_classes")
+    has_res = _has_packaged_resources(ctx)
+    class_jar = ctx.actions.declare_file(ctx.label.name + "_classes.jar") if has_res else output_jar
 
-    # Step 1: javac -> classes_dir/
-    javac_args = ctx.actions.args()
-    javac_args.add("javac")
+    # `elide javac --jar <class_jar> [--classpath-cache] -- -classpath <cp> <javac_opts> <srcs>`.
+    javac_args = _tool_args(ctx)
+    javac_args.add("--jar", class_jar)
+    if ctx.attr._classpath_cache[BuildSettingInfo].value:
+        javac_args.add("--classpath-cache")
     javac_args.add("--")
-    javac_args.add("-d", classes_dir.path)
     full_cp = depset(transitive = [classpath, plugin_cp])
     javac_args.add_joined("-classpath", full_cp, join_with = sep)
     for o in ctx.attr.javac_opts:
         javac_args.add(o)
     javac_args.add_all(ctx.files.srcs)
 
-    ctx.actions.run(
+    _run_elide_compile(
+        ctx,
         mnemonic = "ElideJavac",
-        executable = elide.binary,
-        arguments = [javac_args],
+        subcommand = "javac",
+        tool_args = javac_args,
         inputs = depset(direct = ctx.files.srcs, transitive = [classpath, plugin_cp, elide.compile_tool_files]),
-        outputs = [classes_dir],
-        progress_message = "Compiling %{label} (elide javac)",
-    )
-
-    # Step 2: `elide jar -- --create --file=<output> --date=... -C <classes_dir> .`
-    # Uses GNU-style options to allow --date for deterministic ZIP entry timestamps.
-    # The traditional `cf` form treats --date as a filename; GNU-style required.
-    has_res = _has_packaged_resources(ctx)
-    class_jar = ctx.actions.declare_file(ctx.label.name + "_classes.jar") if has_res else output_jar
-
-    jar_args = ctx.actions.args()
-    jar_args.add("jar")
-    jar_args.add("--")
-    jar_args.add("--create")
-    jar_args.add("--file", class_jar)
-    jar_args.add("--date=1980-01-01T00:00:02Z")
-    jar_args.add("-C")
-    jar_args.add(classes_dir.path)
-    jar_args.add(".")
-
-    ctx.actions.run(
-        mnemonic = "ElideJavacJar",
-        executable = elide.binary,
-        arguments = [jar_args],
-        inputs = depset(direct = [classes_dir], transitive = [elide.compile_tool_files]),
         outputs = [class_jar],
-        progress_message = "Packing %{label} jar",
+        progress_message = "Compiling %{label} (elide javac)",
     )
 
     if has_res:
@@ -201,14 +272,43 @@ def run_kotlinc(ctx, output_jar):
     has_res = _has_packaged_resources(ctx)
 
     single_kt_only = has_kt and not has_java and not has_res
+
+    # Incremental compilation (opt-in via //config/kotlinc:incremental). kotlinc IC tracks
+    # per-class files, so it requires a classes *directory* output (`-d <dir>`),
+    # not a jar. When enabled we compile to a tree-artifact dir with a stable,
+    # per-target, undeclared cache dir, then pack the dir into `kt_jar` below.
+    incremental = ctx.attr._incremental[BuildSettingInfo].value and has_kt
+
     kt_jar = None
     if has_kt:
         kt_jar = output_jar if single_kt_only else ctx.actions.declare_file(ctx.label.name + "_kotlin_classes.jar")
 
-        args = ctx.actions.args()
-        args.add("kotlinc")
+        # In IC mode kotlinc writes classes here and `kt_jar` is produced by a
+        # follow-on pack action; otherwise kotlinc writes `kt_jar` directly.
+        kt_classes = ctx.actions.declare_directory(ctx.label.name + "_kt_classes") if incremental else None
+        compile_out = kt_classes if incremental else kt_jar
+
+        args = _tool_args(ctx)
+        if incremental:
+            # Undeclared worker-scoped scratch (sibling of the classes dir);
+            # relative to the worker cwd (exec root), so it persists across
+            # persistent-worker requests when unsandboxed. Elide options precede
+            # the `--` separator (same slot as --report-used-deps).
+            args.add("--incremental")
+            args.add("--incremental-cache-dir", kt_classes.path + "_iccache")
+
+        # Builtin compiler plugins enabled by name (elide option, before `--`).
+        # Forces the named plugins on — robust for plugins the classpath
+        # heuristic may miss (notably Metro). Exclusion of unlisted-but-detected
+        # plugins is not yet fully honored upstream (WHIPLASH#1119).
+        builtin_plugins = getattr(ctx.attr, "builtin_plugins", [])
+        if builtin_plugins:
+            args.add_joined(builtin_plugins, join_with = ",", format_joined = "--plugins=%s")
         args.add("--")
-        args.add("-d", kt_jar)
+
+        # A directory output must be passed as a plain path (Args#add rejects
+        # directory Files); a jar output is a regular File.
+        args.add("-d", compile_out.path if incremental else compile_out)
         full_cp = depset(transitive = [classpath, plugin_cp, friend_jars])
         args.add_joined("-classpath", full_cp, join_with = sep)
         if ctx.attr.module_name:
@@ -225,17 +325,39 @@ def run_kotlinc(ctx, output_jar):
 
         args.add_all(ctx.files.srcs)
 
-        ctx.actions.run(
+        _run_elide_compile(
+            ctx,
             mnemonic = "ElideKotlinc",
-            executable = elide.binary,
-            arguments = [args],
+            subcommand = "kotlinc",
+            tool_args = args,
             inputs = depset(
                 direct = ctx.files.srcs,
                 transitive = [classpath, plugin_cp, friend_jars, elide.compile_tool_files],
             ),
-            outputs = [kt_jar],
+            outputs = [compile_out],
             progress_message = "Compiling %{label} (elide kotlinc)",
         )
+
+        # IC compiled to a directory; pack it into `kt_jar` (the form the rest of
+        # the pipeline — resource merge, JavaInfo — expects). One-shot, not a
+        # worker: `elide jar -- --create --file <jar> -C <classesdir> .`.
+        if incremental:
+            pack = ctx.actions.args()
+            pack.add("jar")
+            pack.add("--")
+            pack.add("--create")
+            pack.add("--file", kt_jar)
+            pack.add("-C", kt_classes.path)
+            pack.add(".")
+            ctx.actions.run(
+                mnemonic = "ElideKotlincPack",
+                executable = elide.binary,
+                arguments = [pack],
+                inputs = depset(direct = [kt_classes], transitive = [elide.compile_tool_files]),
+                outputs = [kt_jar],
+                progress_message = "Packing %{label} (elide jar)",
+                env = _ELIDE_BAZEL_ENV,
+            )
 
     if single_kt_only:
         return
@@ -257,51 +379,33 @@ def _compile_java_aux(ctx, java_srcs, kt_jar):
     plugin_cp = _plugin_classpath(ctx.attr.plugins) if hasattr(ctx.attr, "plugins") else depset()
     sep = ctx.configuration.host_path_separator
 
-    classes_dir = ctx.actions.declare_directory(ctx.label.name + "_java_classes")
+    java_jar = ctx.actions.declare_file(ctx.label.name + "_java_classes.jar")
     kt_jars = [kt_jar] if kt_jar else []
     full_cp = depset(direct = kt_jars, transitive = [classpath, plugin_cp, elide.kotlin_stdlib_jars])
 
-    javac_args = ctx.actions.args()
-    javac_args.add("javac")
+    # `elide javac --jar <java_jar> [--classpath-cache] -- -classpath <cp> -proc:none <javac_opts> <srcs>`.
+    javac_args = _tool_args(ctx)
+    javac_args.add("--jar", java_jar)
+    if ctx.attr._classpath_cache[BuildSettingInfo].value:
+        javac_args.add("--classpath-cache")
     javac_args.add("--")
-    javac_args.add("-d", classes_dir.path)
     javac_args.add_joined("-classpath", full_cp, join_with = sep)
-
     javac_args.add("-proc:none")
     for o in ctx.attr.javac_opts:
         javac_args.add(o)
     javac_args.add_all(java_srcs)
 
-    ctx.actions.run(
+    _run_elide_compile(
+        ctx,
         mnemonic = "ElideKotlinJavac",
-        executable = elide.binary,
-        arguments = [javac_args],
+        subcommand = "javac",
+        tool_args = javac_args,
         inputs = depset(
             direct = java_srcs + kt_jars,
             transitive = [classpath, plugin_cp, elide.kotlin_stdlib_jars, elide.compile_tool_files],
         ),
-        outputs = [classes_dir],
-        progress_message = "Compiling %{label} java sources (elide javac)",
-    )
-
-    java_jar = ctx.actions.declare_file(ctx.label.name + "_java_classes.jar")
-    jar_args = ctx.actions.args()
-    jar_args.add("jar")
-    jar_args.add("--")
-    jar_args.add("--create")
-    jar_args.add("--file", java_jar)
-    jar_args.add("--date=1980-01-01T00:00:02Z")
-    jar_args.add("-C")
-    jar_args.add(classes_dir.path)
-    jar_args.add(".")
-
-    ctx.actions.run(
-        mnemonic = "ElideKotlinJavacJar",
-        executable = elide.binary,
-        arguments = [jar_args],
-        inputs = depset(direct = [classes_dir], transitive = [elide.compile_tool_files]),
         outputs = [java_jar],
-        progress_message = "Packing %{label} java classes jar",
+        progress_message = "Compiling %{label} java sources (elide javac)",
     )
     return java_jar
 
@@ -390,10 +494,34 @@ def make_elide_info(ctx):
         ),
     )
 
+# Canonical Bazel bash runfiles library boilerplate (v3). Resolves runfiles in
+# both directory- and manifest-based layouts. We need rlocation (rather than raw
+# short_paths) so the launcher works in BOTH invocation modes:
+#   * `bazel run`, where the cwd is the runfiles tree, AND
+#   * as a persistent worker (e.g. when used as a rules_kotlin KotlinBuilder),
+#     where Bazel runs from the execroot and runfiles short_paths do not resolve.
+# https://github.com/bazelbuild/bazel/blob/master/tools/bash/runfiles/runfiles.bash
+_RUNFILES_INIT = """\
+# --- begin runfiles.bash initialization v3 ---
+set -uo pipefail; set +e; f=bazel_tools/tools/bash/runfiles/runfiles.bash
+source "${RUNFILES_DIR:-/dev/null}/$f" 2>/dev/null || \\
+  source "$(grep -sm1 "^$f " "${RUNFILES_MANIFEST_FILE:-/dev/null}" | cut -f2- -d' ')" 2>/dev/null || \\
+  source "$0.runfiles/$f" 2>/dev/null || \\
+  source "$(grep -sm1 "^$f " "$0.runfiles_manifest" | cut -f2- -d' ')" 2>/dev/null || \\
+  source "$(grep -sm1 "^$f " "$0.exe.runfiles_manifest" | cut -f2- -d' ')" 2>/dev/null || \\
+  { echo>&2 "ERROR: cannot find $f"; exit 1; }; f=; set -e
+# --- end runfiles.bash initialization v3 ---
+"""
+
 _LAUNCHER_TEMPLATE_SH = """\
-#!/bin/sh
-set -eu
-exec {elide} java -- {jvm_flags}-cp {classpath} {main_class} "$@"
+#!/usr/bin/env bash
+{runfiles_init}
+cp=""
+for entry in {classpath}; do
+  abs="$(rlocation "$entry")"
+  if [ -z "$cp" ]; then cp="$abs"; else cp="$cp{sep}$abs"; fi
+done
+exec "$(rlocation {elide})" java -- {jvm_flags}-cp "$cp" {main_class} "$@"
 """
 
 _LAUNCHER_TEMPLATE_BAT = """\
@@ -407,6 +535,18 @@ def _is_windows(ctx):
         return False
     constraint = ctx.attr._windows_constraint[platform_common.ConstraintValueInfo]
     return ctx.target_platform_has_constraint(constraint)
+
+def _rlocation_path(ctx, file):
+    """Maps a File's runfiles-relative short_path to its `rlocation` key.
+
+    Repository-rooted short_paths (`../<repo>/...`) are normalized to the
+    canonical `<repo>/...` rlocation form; main-repo paths are prefixed with the
+    workspace name.
+    """
+    sp = file.short_path
+    if sp.startswith("../"):
+        return sp[len("../"):]
+    return ctx.workspace_name + "/" + sp
 
 def build_launcher(ctx, output_jar):
     """Writes a shell launcher running the binary via the elide toolchain.
@@ -424,9 +564,9 @@ def build_launcher(ctx, output_jar):
         transitive = [runtime_classpath(ctx.attr.deps, ctx.attr.runtime_deps), elide.kotlin_stdlib_jars],
     )
     sep = ctx.configuration.host_path_separator
-    classpath_str = sep.join([f.short_path for f in classpath.to_list()])
     is_win = _is_windows(ctx)
     if is_win:
+        classpath_str = sep.join([f.short_path for f in classpath.to_list()])
         jvm_flags = "".join([f + " " for f in ctx.attr.jvm_flags])
         content = _LAUNCHER_TEMPLATE_BAT.format(
             elide = elide.binary.short_path,
@@ -436,11 +576,16 @@ def build_launcher(ctx, output_jar):
         )
         launcher = ctx.actions.declare_file(ctx.label.name + "_launcher.bat")
     else:
+        # Pass each classpath entry as an rlocation key; the launcher resolves
+        # them at runtime via the bash runfiles library and joins with `sep`.
+        cp_keys = " ".join([shell.quote(_rlocation_path(ctx, f)) for f in classpath.to_list()])
         jvm_flags = "".join([shell.quote(f) + " " for f in ctx.attr.jvm_flags])
         content = _LAUNCHER_TEMPLATE_SH.format(
-            elide = shell.quote(elide.binary.short_path),
+            runfiles_init = _RUNFILES_INIT,
+            elide = shell.quote(_rlocation_path(ctx, elide.binary)),
             jvm_flags = jvm_flags,
-            classpath = shell.quote(classpath_str),
+            classpath = cp_keys,
+            sep = sep,
             main_class = shell.quote(ctx.attr.main_class),
         )
         launcher = ctx.actions.declare_file(ctx.label.name + "_launcher.sh")
@@ -448,9 +593,11 @@ def build_launcher(ctx, output_jar):
     runfiles = ctx.runfiles(
         files = [output_jar, launcher],
         transitive_files = depset(transitive = [elide.tool_files, classpath]),
-    )
+    ).merge(ctx.attr._runfiles_library[DefaultInfo].default_runfiles)
     return launcher, runfiles
 
+# Unlike build_launcher, test launchers keep short_path (no rlocation): they only
+# run under `bazel test` (cwd = runfiles tree), never as a persistent worker.
 _TEST_LAUNCHER_TEMPLATE_SH = """\
 #!/bin/sh
 set -eu
@@ -602,6 +749,24 @@ COMMON_LIBRARY_ATTRS = {
         doc = "Runtime-only dependencies (excluded from compile classpath).",
         providers = [[JavaInfo]],
     ),
+    "_classpath_cache": attr.label(
+        default = Label("//config/javac:classpath_cache"),
+        providers = [BuildSettingInfo],
+        doc = "Build setting opting `elide javac` worker compiles into the " +
+              "digest-keyed classpath cache (`--classpath-cache`).",
+    ),
+    "_incremental": attr.label(
+        default = Label("//config/kotlinc:incremental"),
+        providers = [BuildSettingInfo],
+        doc = "Build setting opting kotlinc compiles into incremental " +
+              "compilation (compile-to-dir + cache-dir + pack-to-jar).",
+    ),
+    "_use_workers": attr.label(
+        default = Label("//elide:use_workers"),
+        providers = [BuildSettingInfo],
+        doc = "Build setting toggling Bazel persistent workers for the elide " +
+              "javac/kotlinc compile actions.",
+    ),
 }
 
 COMMON_BINARY_EXTRA_ATTRS = {
@@ -611,6 +776,9 @@ COMMON_BINARY_EXTRA_ATTRS = {
     "main_class": attr.string(
         doc = "Fully qualified main class.",
         mandatory = True,
+    ),
+    "_runfiles_library": attr.label(
+        default = "@bazel_tools//tools/bash/runfiles",
     ),
     "_windows_constraint": attr.label(
         default = "@platforms//os:windows",

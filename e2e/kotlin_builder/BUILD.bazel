@@ -1,0 +1,42 @@
+load("@rules_elide//elide/kotlin:toolchain.bzl", "register_elide_kotlin_toolchain")
+load("@rules_java//java:defs.bzl", "java_library", "java_plugin")
+load("@rules_kotlin//kotlin:jvm.bzl", "kt_jvm_library")
+
+# Smoke-build target for the wrapping Elide Kotlin toolchain. This only
+# exercises analysis (macro expansion, rule resolution, ToolchainInfo re-emit);
+# actually compiling a kt_jvm_library through it is the next (e2e) task.
+register_elide_kotlin_toolchain(
+    name = "elide_kt",
+    # TODO(e2e): platform-pinned label. The elide binary is exposed per-platform
+    # by @elide_toolchains as @elide_<os>_<cpu>//:bin/elide. This smoke test runs
+    # on linux/amd64. The e2e task should make this select() on the exec platform.
+    elide = "@elide_linux_amd64//:bin/elide",
+    fallback_builder = "@rules_kotlin//src/main/kotlin:build",
+)
+
+kt_jvm_library(
+    name = "greeter",
+    srcs = ["sample/Greeter.kt"],
+)
+
+# --- KAPT fallback: an annotation processor forces the shim to delegate to the
+# stock rules_kotlin KotlinBuilder (Router detects --processors). ---
+
+java_library(
+    name = "marker_anno",
+    srcs = ["proc/Marker.java"],
+)
+
+java_plugin(
+    name = "marker_processor",
+    srcs = ["proc/MarkerProcessor.java"],
+    processor_class = "proc.MarkerProcessor",
+    deps = [":marker_anno"],
+)
+
+kt_jvm_library(
+    name = "annotated",
+    srcs = ["sample/Annotated.kt"],
+    plugins = [":marker_processor"],
+    deps = [":marker_anno"],
+)

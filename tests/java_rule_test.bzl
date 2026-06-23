@@ -45,14 +45,86 @@ def _library_action_test_impl(ctx):
     asserts.equals(env, 1, len(javacs), "expected one ElideJavac action")
     argv = javacs[0].argv
     asserts.true(env, "javac" in argv, "expected `javac` subcommand in argv")
-    asserts.true(env, "--" in argv, "expected `--` separator before native javac flags")
-    asserts.true(env, "-d" in argv, "expected `-d <classes_dir>` flag")
+
+    # Single-action `--jar` flow (Elide 1.3.1): one `elide javac --jar <jar> --
+    # -classpath <cp> <srcs>` action writes the output jar directly. The worker
+    # now accepts the leading `--` (and parses `--jar` before it), so worker and
+    # one-shot share the same arg form. Bazel injects `--persistent_worker` when
+    # it spawns the worker, so the rule must not pass it.
+    asserts.false(
+        env,
+        "--persistent_worker" in argv,
+        "rule must not pass `--persistent_worker`; Bazel injects it for workers",
+    )
+    asserts.true(env, "--jar" in argv, "expected `--jar <output>` leading Elide option")
+    asserts.true(env, "--" in argv, "expected the `--` separator before bare TOOL_ARGS")
     asserts.true(env, "-classpath" in argv, "expected `-classpath` flag passed to javac")
+    asserts.true(
+        env,
+        len([a for a in argv if a.endswith(".java")]) >= 1,
+        "expected `.java` srcs in argv",
+    )
     jars = [a for a in actions if a.mnemonic == "ElideJavacJar"]
-    asserts.equals(env, 1, len(jars), "expected one ElideJavacJar action (singlejar pack)")
+    asserts.equals(env, 0, len(jars), "no separate ElideJavacJar action (collapsed into --jar)")
+    asserts.false(env, "--classpath-cache" in argv, "--classpath-cache must be off by default")
+    asserts.equals(
+        env,
+        "1",
+        javacs[0].env.get("ELIDE_BAZEL", ""),
+        "ElideJavac must run with ELIDE_BAZEL=1 (Bazel signal for elide output; WHIPLASH#1131)",
+    )
     return analysistest.end(env)
 
 _library_action_test = analysistest.make(_library_action_test_impl)
+
+def _classpath_cache_test_impl(ctx):
+    env = analysistest.begin(ctx)
+    actions = analysistest.target_actions(env)
+    javacs = [a for a in actions if a.mnemonic == "ElideJavac"]
+    asserts.equals(env, 1, len(javacs), "expected one ElideJavac action")
+    argv = javacs[0].argv
+    asserts.true(
+        env,
+        "--classpath-cache" in argv,
+        "--classpath-cache must be passed when //config/javac:classpath_cache=True",
+    )
+
+    # `--classpath-cache` is an Elide option, so it must precede the `--` separator.
+    asserts.true(
+        env,
+        argv.index("--classpath-cache") < argv.index("--"),
+        "--classpath-cache must come before the `--` separator",
+    )
+    return analysistest.end(env)
+
+_classpath_cache_test = analysistest.make(
+    _classpath_cache_test_impl,
+    # See _library_action_no_worker_test re: the @@ canonical root ref.
+    config_settings = {"@@//config/javac:classpath_cache": True},  # buildifier: disable=canonical-repository
+)
+
+def _library_action_no_worker_test_impl(ctx):
+    env = analysistest.begin(ctx)
+    actions = analysistest.target_actions(env)
+    javacs = [a for a in actions if a.mnemonic == "ElideJavac"]
+    asserts.equals(env, 1, len(javacs), "expected one ElideJavac action")
+    argv = javacs[0].argv
+    asserts.true(env, "javac" in argv, "expected `javac` subcommand in argv")
+
+    # Workers off (`--@rules_elide//elide:use_workers=false`): one-shot
+    # `elide javac --jar <jar> -- <TOOL_ARGS>`, so `--jar` and the `--`
+    # separator the top-level parser expects must be present.
+    asserts.true(env, "--jar" in argv, "one-shot mode must pass the `--jar` option")
+    asserts.true(env, "--" in argv, "one-shot mode must pass the `--` separator")
+    return analysistest.end(env)
+
+_library_action_no_worker_test = analysistest.make(
+    _library_action_no_worker_test_impl,
+    # analysis_test_transition resolves these labels from bazel_skylib's context,
+    # where neither //elide nor @rules_elide is visible; the canonical root ref
+    # (@@, this module when it is the root) is the only form that resolves.
+    config_settings = {"@@//elide:use_workers": False},  # buildifier: disable=canonical-repository
+)
 
 def _binary_executable_test_impl(ctx):
     env = analysistest.begin(ctx)
@@ -131,6 +203,14 @@ def java_rule_test_suite(name):
         name = "library_action_test",
         target_under_test = ":_lib_fixture",
     )
+    _library_action_no_worker_test(
+        name = "library_action_no_worker_test",
+        target_under_test = ":_lib_fixture",
+    )
+    _classpath_cache_test(
+        name = "library_classpath_cache_test",
+        target_under_test = ":_lib_fixture",
+    )
     _binary_executable_test(
         name = "binary_executable_test",
         target_under_test = ":_bin_fixture",
@@ -144,6 +224,8 @@ def java_rule_test_suite(name):
         tests = [
             ":library_providers_test",
             ":library_action_test",
+            ":library_action_no_worker_test",
+            ":library_classpath_cache_test",
             ":binary_executable_test",
             ":test_rule_executable_test",
         ],

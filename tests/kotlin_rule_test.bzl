@@ -36,13 +36,55 @@ def _library_action_test_impl(ctx):
     asserts.equals(env, 1, len(kotlincs), "expected one ElideKotlinc action")
     argv = kotlincs[0].argv
     asserts.true(env, "kotlinc" in argv, "expected `kotlinc` subcommand in argv")
-    asserts.true(env, "--" in argv, "expected `--` separator before native kotlinc flags")
+
+    # Both worker and one-shot now share the same arg form: `elide kotlinc --
+    # <TOOL_ARGS>`. As of Elide 1.3.1 the worker accepts the leading `--`, so
+    # it is always present. Bazel injects `--persistent_worker` when it spawns
+    # the worker, so the rule must not pass it.
+    asserts.false(
+        env,
+        "--persistent_worker" in argv,
+        "rule must not pass `--persistent_worker`; Bazel injects it for workers",
+    )
+    asserts.true(env, "--" in argv, "expected the `--` separator before bare TOOL_ARGS")
     asserts.true(env, "-d" in argv, "expected `-d` output flag passed to kotlinc")
     asserts.true(env, "-classpath" in argv, "expected `-classpath` flag passed to kotlinc")
     asserts.true(env, "-module-name" in argv, "expected `-module-name` flag (set on fixture)")
+    asserts.equals(
+        env,
+        "1",
+        kotlincs[0].env.get("ELIDE_BAZEL", ""),
+        "ElideKotlinc must run with ELIDE_BAZEL=1 (Bazel signal for elide output; WHIPLASH#1131)",
+    )
     return analysistest.end(env)
 
 _library_action_test = analysistest.make(_library_action_test_impl)
+
+def _builtin_plugins_test_impl(ctx):
+    env = analysistest.begin(ctx)
+    actions = analysistest.target_actions(env)
+    kotlincs = [a for a in actions if a.mnemonic == "ElideKotlinc"]
+    asserts.equals(env, 1, len(kotlincs), "expected one ElideKotlinc action")
+    argv = kotlincs[0].argv
+    plugins = [a for a in argv if a.startswith("--plugins=")]
+    asserts.equals(env, 1, len(plugins), "expected exactly one `--plugins=` arg")
+    asserts.equals(
+        env,
+        "--plugins=serialization,metro",
+        plugins[0],
+        "builtin_plugins must be comma-joined into a single --plugins= value",
+    )
+
+    # `--plugins` is an Elide option, so it must precede the `--` separator that
+    # introduces the bare kotlinc TOOL_ARGS.
+    asserts.true(
+        env,
+        argv.index(plugins[0]) < argv.index("--"),
+        "`--plugins` must come before the `--` separator",
+    )
+    return analysistest.end(env)
+
+_builtin_plugins_test = analysistest.make(_builtin_plugins_test_impl)
 
 def _associates_test_impl(ctx):
     env = analysistest.begin(ctx)
@@ -221,6 +263,14 @@ def kotlin_rule_test_suite(name):
         tags = ["manual"],
     )
     elide_kotlin_library(
+        name = "_kt_plugins_fixture",
+        srcs = [":_kt_hello_src"],
+        module_name = "plugins",
+        builtin_plugins = ["serialization", "metro"],
+        testonly = True,
+        tags = ["manual"],
+    )
+    elide_kotlin_library(
         name = "_kt_associate_fixture",
         srcs = [":_kt_hello_src"],
         module_name = "associate",
@@ -328,6 +378,10 @@ def kotlin_rule_test_suite(name):
         name = "kt_library_action_test",
         target_under_test = ":_kt_lib_fixture",
     )
+    _builtin_plugins_test(
+        name = "kt_builtin_plugins_test",
+        target_under_test = ":_kt_plugins_fixture",
+    )
     _associates_test(
         name = "kt_associates_test",
         target_under_test = ":_kt_associate_fixture",
@@ -361,6 +415,7 @@ def kotlin_rule_test_suite(name):
         tests = [
             ":kt_library_providers_test",
             ":kt_library_action_test",
+            ":kt_builtin_plugins_test",
             ":kt_associates_test",
             ":kt_resources_test",
             ":kt_mixed_sources_test",

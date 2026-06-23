@@ -7,8 +7,9 @@ bazel-*
 # share a single committed lockfile; each runner regenerates its own.
 MODULE.bazel.lock
 
-# Benchmark workspace: gen.sh emits these per run.
+# Benchmark workspace: gen.sh emits these per run; bench_suite.sh exports here.
 benchmarks/sources/
+benchmarks/results/
 
 # Editors / IDEs
 .idea/

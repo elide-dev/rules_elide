@@ -1,0 +1,23 @@
+load("@bazel_skylib//rules:common_settings.bzl", "bool_flag")
+
+package(default_visibility = ["//visibility:public"])
+
+# Tunables for the elide javac compile path, flippable on the command line,
+# e.g. `--@rules_elide//config/javac:classpath_cache=true`.
+
+# Opt-in (default off, matching upstream's correctness-first stance): pass
+# `--classpath-cache` so a persistent `elide javac` worker reuses parsed
+# classpath state across warm compiles, keyed by input digests — unchanged
+# dependency jars are not re-indexed on every request. Worker-only (no effect
+# without persistent workers); honored for every request as a constant-per-worker
+# setting, so it participates in the Bazel worker key.
+bool_flag(
+    name = "classpath_cache",
+    build_setting_default = False,
+)
+
+# Matches when `--@rules_elide//config/javac:classpath_cache=True`.
+config_setting(
+    name = "classpath_cache_enabled",
+    flag_values = {":classpath_cache": "True"},
+)

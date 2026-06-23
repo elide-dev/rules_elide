@@ -1,0 +1,122 @@
+load("@rules_elide//elide:defs.bzl", "elide_kotlin_test")
+
+elide_kotlin_test(
+    name = "smoke_test",
+    srcs = ["SmokeTest.kt"],
+    kotlinc_opts = ["-jvm-target=21"],
+    test_class = "elide.kotlin.builder.SmokeTest",
+    runtime_deps = [
+        "@kt_test_deps//:org_junit_platform_junit_platform_console_standalone",
+    ],
+    deps = [
+        "@kt_test_deps//:org_jetbrains_kotlin_kotlin_test",
+        "@kt_test_deps//:org_jetbrains_kotlin_kotlin_test_junit5",
+    ],
+)
+
+elide_kotlin_test(
+    name = "flagfile_test",
+    srcs = ["FlagfileTest.kt"],
+    kotlinc_opts = ["-jvm-target=21"],
+    test_class = "elide.kotlin.builder.FlagfileTest",
+    runtime_deps = [
+        "@kt_test_deps//:org_junit_platform_junit_platform_console_standalone",
+    ],
+    deps = [
+        "//elide/kotlin/builder:lib",
+        "@kt_test_deps//:org_jetbrains_kotlin_kotlin_test",
+        "@kt_test_deps//:org_jetbrains_kotlin_kotlin_test_junit5",
+    ],
+)
+
+elide_kotlin_test(
+    name = "router_test",
+    srcs = ["RouterTest.kt"],
+    kotlinc_opts = ["-jvm-target=21"],
+    test_class = "elide.kotlin.builder.RouterTest",
+    runtime_deps = [
+        "@kt_test_deps//:org_junit_platform_junit_platform_console_standalone",
+    ],
+    deps = [
+        "//elide/kotlin/builder:lib",
+        "@kt_test_deps//:org_jetbrains_kotlin_kotlin_test",
+        "@kt_test_deps//:org_jetbrains_kotlin_kotlin_test_junit5",
+    ],
+)
+
+elide_kotlin_test(
+    name = "elide_compile_test",
+    srcs = ["ElideCompileTest.kt"],
+    kotlinc_opts = ["-jvm-target=21"],
+    test_class = "elide.kotlin.builder.ElideCompileTest",
+    runtime_deps = [
+        "@kt_test_deps//:org_junit_platform_junit_platform_console_standalone",
+    ],
+    deps = [
+        "//elide/kotlin/builder:lib",
+        "@kt_test_deps//:org_jetbrains_kotlin_kotlin_test",
+        "@kt_test_deps//:org_jetbrains_kotlin_kotlin_test_junit5",
+    ],
+)
+
+elide_kotlin_test(
+    name = "fallback_test",
+    srcs = ["FallbackTest.kt"],
+    kotlinc_opts = ["-jvm-target=21"],
+    test_class = "elide.kotlin.builder.FallbackTest",
+    runtime_deps = [
+        "@kt_test_deps//:org_junit_platform_junit_platform_console_standalone",
+    ],
+    deps = [
+        "//elide/kotlin/builder:lib",
+        "@kt_test_deps//:org_jetbrains_kotlin_kotlin_test",
+        "@kt_test_deps//:org_jetbrains_kotlin_kotlin_test_junit5",
+    ],
+)
+
+elide_kotlin_test(
+    name = "worker_test",
+    srcs = ["WorkerTest.kt"],
+    kotlinc_opts = ["-jvm-target=21"],
+    test_class = "elide.kotlin.builder.WorkerTest",
+    runtime_deps = [
+        "@kt_test_deps//:org_junit_platform_junit_platform_console_standalone",
+    ],
+    deps = [
+        "//elide/kotlin/builder:lib",
+        "//elide/kotlin/builder/proto:worker_protocol_java_proto",
+        "@kt_test_deps//:org_jetbrains_kotlin_kotlin_test",
+        "@kt_test_deps//:org_jetbrains_kotlin_kotlin_test_junit5",
+    ],
+)
+
+elide_kotlin_test(
+    name = "main_test",
+    srcs = ["MainTest.kt"],
+    kotlinc_opts = ["-jvm-target=21"],
+    test_class = "elide.kotlin.builder.MainTest",
+    runtime_deps = [
+        "@kt_test_deps//:org_junit_platform_junit_platform_console_standalone",
+    ],
+    deps = [
+        "//elide/kotlin/builder:lib",
+        "@kt_test_deps//:org_jetbrains_kotlin_kotlin_test",
+        "@kt_test_deps//:org_jetbrains_kotlin_kotlin_test_junit5",
+    ],
+)
+
+elide_kotlin_test(
+    name = "jdeps_test",
+    srcs = ["JdepsTest.kt"],
+    kotlinc_opts = ["-jvm-target=21"],
+    test_class = "elide.kotlin.builder.JdepsTest",
+    runtime_deps = [
+        "@kt_test_deps//:org_junit_platform_junit_platform_console_standalone",
+    ],
+    deps = [
+        "//elide/kotlin/builder:lib",
+        "//elide/kotlin/builder/proto:deps_java_proto",
+        "@kt_test_deps//:org_jetbrains_kotlin_kotlin_test",
+        "@kt_test_deps//:org_jetbrains_kotlin_kotlin_test_junit5",
+    ],
+)
