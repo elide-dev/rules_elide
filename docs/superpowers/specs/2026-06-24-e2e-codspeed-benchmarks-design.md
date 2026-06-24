@@ -19,9 +19,13 @@ gain eroding over time, and catches our own regressions, on an actual
   - `e2e/integration` — the same project through the Elide toolchain.
   Separate workspaces (own output bases, only their own toolchains registered) so
   no Bazel state or toolchain bleeds between baseline and Elide.
-- **Build set:** the compile graph common to both, target-for-target
-  (`//:lib //:app //:kt_lib //:kt_app //:HelloTest`). Elide-only targets
-  (`native_app`, `format`) are excluded so the A/B is apples-to-apples.
+- **Build set:** a large committed generated fixture — `gen_kt` (200 `.kt`) +
+  `gen_java` (200 `.java`), identical in both workspaces, produced by
+  `e2e/gen_fixture.py`. Real compile volume is required: on the small `sample/`
+  demo the cold gain collapses to a fixed startup delta (~1.6×); at volume it
+  reflects the true compiler gain (validated: cold ~4.2×, in line with
+  `bench_suite.sh`). The `sample/` demo targets and Elide-only targets
+  (`native_app`, `format`) are left out of the benchmark.
 - **Regimes:** both **cold** (full recompile) and **incremental** (1-file edit)
   → four benchmarks: `{cold,incremental} × [vanilla,integration]`.
 - **Reporting:** CodSpeed walltime, in the existing `walltime` job of
@@ -53,10 +57,14 @@ run **untimed** between rounds (confirmed supported in pytest-codspeed 5.0.3).
   `test_cold[integration]`, `test_incremental[vanilla]`, `test_incremental[integration]`.
 - **`test_cold`:** `setup = bazel clean`, `target = bazel build`. Each round
   recompiles from scratch.
-- **`test_incremental`:** `setup` edits a method body in `sample/Greeter.kt`
-  (a unique trailing comment guarantees a recompile of the dirtied target +
-  dependents each round), `target = bazel build`, `teardown` restores the file.
-  Models the 1-file dev rebuild; leaves the workspace pristine.
+- **`test_incremental`:** `setup` edits one file in the `gen_kt` module
+  (`gen/kotlin/Gen000.kt`; a unique trailing comment guarantees a recompile each
+  round), `target = bazel build`, `teardown` restores it. Models the 1-file dev
+  rebuild; leaves the workspace pristine. Note: with the default config neither
+  side uses incremental compilation, so a 1-file edit recompiles the whole
+  module both ways and the result is ~parity today (vanilla's warm worker matches
+  Elide's native one-shot). It is kept as an honest signal that will show the
+  gain once IC (issue #10) lands and is enabled — CodSpeed will capture the jump.
 - **Rounds:** small (≈3–5); Bazel builds take seconds. Tunable via pytest-codspeed
   markers (`max_rounds`/`max_time`) if needed.
 

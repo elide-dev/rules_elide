@@ -44,3 +44,16 @@ java_test(
         "@maven//:org_junit_jupiter_junit_jupiter_api",
     ],
 )
+
+# Large generated fixture (e2e/gen_fixture.py) — the compile-volume workload for
+# the CodSpeed e2e benchmarks. Independent sources; compile in parallel.
+kt_jvm_library(
+    name = "gen_kt",
+    srcs = glob(["gen/kotlin/*.kt"]),
+    module_name = "gen",
+)
+
+java_library(
+    name = "gen_java",
+    srcs = glob(["gen/java/*.java"]),
+)

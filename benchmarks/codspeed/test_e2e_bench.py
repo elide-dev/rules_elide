@@ -42,9 +42,12 @@ E2E = Path(__file__).resolve().parents[2] / "e2e"
 # same project through the Elide toolchain.
 PROJECTS = {"vanilla": E2E / "vanilla", "integration": E2E / "integration"}
 
-# The compile graph present in BOTH projects, target-for-target (Elide-only
-# targets like native_app/format are excluded so the A/B is apples-to-apples).
-TARGETS = ["//:lib", "//:app", "//:kt_lib", "//:kt_app", "//:HelloTest"]
+# The large generated fixture (200 .kt + 200 .java, identical in both
+# workspaces) — real compile volume so the timing reflects compiler throughput,
+# not fixed Bazel/toolchain overhead. The small sample/ demo targets are left
+# out: on a 1-file workload the gain collapses to a fixed startup delta (~1.6x);
+# at volume it reflects the true compiler gain (cf. benchmarks/bench_suite.sh).
+TARGETS = ["//:gen_kt", "//:gen_java"]
 
 # Force honest compile work: no remote cache/exec, no local disk action cache.
 # Empty values also override anything in the workspace .bazelrc. Repository cache
@@ -109,7 +112,7 @@ def test_cold(benchmark, project):
 def test_incremental(benchmark, project):
     """Rebuild after a 1-file edit: edit a source (untimed), build (timed), restore."""
     bazel, wd = project
-    src = wd / "sample" / "Greeter.kt"
+    src = wd / "gen" / "kotlin" / "Gen000.kt"  # one file in the gen_kt module
     original = src.read_text()
 
     def edit():

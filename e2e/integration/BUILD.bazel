@@ -58,3 +58,16 @@ elide_format(
     name = "format",
     srcs = ["sample/format_demo.java"],
 )
+
+# Large generated fixture (e2e/gen_fixture.py) — the compile-volume workload for
+# the CodSpeed e2e benchmarks. Independent sources; compile in parallel.
+elide_kotlin_library(
+    name = "gen_kt",
+    srcs = glob(["gen/kotlin/*.kt"]),
+    module_name = "gen",
+)
+
+elide_java_library(
+    name = "gen_java",
+    srcs = glob(["gen/java/*.java"]),
+)
