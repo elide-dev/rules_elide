@@ -1,9 +1,23 @@
 actions:
   - name: "build //docs/..."
     container_image: "ubuntu-24.04"
+    triggers:
+      push:
+        branches:
+          - "main"
+      pull_request:
+        branches:
+          - "*"
     steps:
       - run: "bazel build //docs/..."
   - name: "test //tests/..."
     container_image: "ubuntu-24.04"
+    triggers:
+      push:
+        branches:
+          - "main"
+      pull_request:
+        branches:
+          - "*"
     steps:
       - run: "bazel test //tests/..."
