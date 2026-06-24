@@ -9,18 +9,22 @@ CodSpeed can measure and compare them automatically.
 
 ## What runs
 
-`test_compile_bench.py` times three real `elide` subprocess workloads over a
-generated N-file fixture (default 50 files/language):
+`test_compile_bench.py` times pure-compiler workloads over a generated N-file
+fixture (default 50/language), comparing **Elide vs the stock compilers** on the
+same sources (the gain is the gap):
 
-| Benchmark               | Command                                          |
-| ----------------------- | ------------------------------------------------ |
-| `test_kotlinc_full`     | `elide kotlinc -- -d <out> <N .kt>`              |
-| `test_kotlinc_abi_only` | `elide kotlinc --abi-only -- -d <out> <N .kt>`   |
-| `test_javac_full`       | `elide javac --jar <out.jar> -- <N .java>`       |
+| Benchmark                    | Elide                              | vanilla baseline                |
+| ---------------------------- | ---------------------------------- | ------------------------------- |
+| `test_kotlinc_full[*]`       | `elide kotlinc -- -d <out> <.kt>`  | stock `kotlinc 2.4.0 -d <out>`  |
+| `test_javac_full[*]`         | `elide javac --jar <jar> -- <.java>` | stock `javac -d <out> <.java>` |
+| `test_kotlinc_abi_only`      | `elide kotlinc --abi-only …`       | — (Elide-only; no equivalent)   |
 
 Each timed compile targets a fresh output path so no incremental short-circuit
-hides real work. These isolate compiler wall-clock — not Bazel analysis or
-caching — so the signal tracks Elide/rules_elide compile speed directly.
+hides real work. These isolate compiler wall-clock — not Bazel analysis — so the
+signal tracks compile speed directly. Tools are resolved from `ELIDE`, `JAVAC`,
+and `KOTLINC` (each benchmark skips if its tool is absent); CI provides stock
+`javac` via `actions/setup-java` and stock `kotlinc 2.4.0` via the npm
+`kotlin-compiler` package installed with bun.
 
 `test_e2e_bench.py` shows the **build-speed gain of Elide over a no-Elide
 baseline** by building two sibling workspaces with identical sources/targets and

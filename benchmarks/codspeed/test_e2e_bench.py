@@ -96,6 +96,9 @@ def project(request, bazel):
     _run(bazel, wd, *_BUILD)  # warm up (untimed): fetch toolchains/deps, prime analysis
     yield bazel, wd
     _run(bazel, wd, "clean")  # leave no build outputs behind
+    # Stop the bazel server so no idle daemon (default 3h) or Elide worker lingers
+    # on the dedicated runner after the run.
+    subprocess.run([bazel, "shutdown"], cwd=str(wd), capture_output=True)
 
 
 def test_cold(benchmark, project):
@@ -124,14 +127,15 @@ def test_incremental(benchmark, project):
         src.write_text(original)
 
     try:
-        # More rounds + a warm-up round than the cold case: the warm-worker
-        # module recompile is noisier (JVM GC/JIT), so extra samples tighten it.
+        # The warm-worker module recompile is noisy (JVM GC/JIT), so use extra
+        # warm-up rounds (untimed) to stabilize the worker before timing, plus
+        # more timed rounds.
         benchmark.pedantic(
             lambda: _run(bazel, wd, *_BUILD),
             setup=edit,
             teardown=restore,
             rounds=7,
-            warmup_rounds=1,
+            warmup_rounds=3,
             iterations=1,
         )
     finally:
