@@ -22,6 +22,24 @@ Each timed compile targets a fresh output path so no incremental short-circuit
 hides real work. These isolate compiler wall-clock — not Bazel analysis or
 caching — so the signal tracks Elide/rules_elide compile speed directly.
 
+`test_e2e_bench.py` times an end-to-end `bazel build` of the `e2e/integration`
+consumer workspace through the Elide toolchain, in two regimes:
+
+| Benchmark                      | Regime                                          |
+| ------------------------------ | ----------------------------------------------- |
+| `test_integration_cold`        | full recompile (`bazel clean` between rounds)   |
+| `test_integration_incremental` | rebuild after a 1-file edit (`sample/Greeter.kt`) |
+
+The build runs `bazel build -- //... -//:native_app` with `--disk_cache=
+--remote_cache= --remote_executor= --noremote_accept_cached` so timings reflect
+real compile work (no action-result cache); the repository cache is kept so the
+pinned Elide download is reused. `clean`/edit/restore happen in untimed
+`pedantic` setup/teardown, and a warm-up build (untimed) keeps the one-time Elide
++ maven download out of the measured rounds. Needs `bazelisk`/`bazel` on PATH
+(or `$BAZELISK`); skips cleanly otherwise. Elide is pinned via the e2e
+workspace's `elide.install()` → `DEFAULT_VERSION`, advancing as we bump
+`versions.bzl`.
+
 ## Running locally
 
 ```sh
