@@ -1,0 +1,46 @@
+common --enable_bzlmod
+common --lockfile_mode=update
+build --incompatible_strict_action_env
+build --cxxopt=-std=c++17
+build --host_cxxopt=-std=c++17
+test --test_output=errors
+
+# Pin to hermetic remote JDK; the system JDK (GraalVM 25 etc.) lacks files
+# Bazel's local_jdk autodetection expects. Shipped to the RBE executor as well.
+build --java_runtime_version=remotejdk_21
+build --tool_java_runtime_version=remotejdk_21
+build --java_language_version=21
+
+# CI fragment; activate with `--config=ci`.
+common:ci --color=yes
+common:ci --terminal_columns=120
+build:ci --noshow_progress
+build:ci --show_timestamps
+test:ci --test_output=errors
+test:ci --test_summary=detailed
+
+# --- Remote build: BuildBuddy RBE + cache + Build Event Stream ----------------
+# Same profiles as the root //.bazelrc. The API key is injected via user.bazelrc
+# (never committed). Usual entrypoint: `bazel test //... --config=remote`.
+#
+#   --config=buildbuddy   BES + remote cache (no remote execution)
+#   --config=rbe          the above + remote execution on the RBE platform
+#   --config=remote       alias for --config=rbe
+
+common:buildbuddy --bes_results_url=https://elide-dev.buildbuddy.io/invocation/
+common:buildbuddy --bes_backend=grpcs://elide-dev.buildbuddy.io
+common:buildbuddy --remote_cache=grpcs://elide-dev.buildbuddy.io
+common:buildbuddy --remote_cache_compression
+common:buildbuddy --remote_upload_local_results
+common:buildbuddy --remote_timeout=3h
+
+common:rbe --config=buildbuddy
+common:rbe --remote_executor=grpcs://elide-dev.buildbuddy.io
+common:rbe --host_platform=//tools/platforms:rbe_linux_amd64
+common:rbe --extra_execution_platforms=//tools/platforms:rbe_linux_amd64
+common:rbe --jobs=50
+
+common:remote --config=rbe
+
+# Local user overrides (incl. the BuildBuddy API key — keep out of git).
+try-import %workspace%/user.bazelrc

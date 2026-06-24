@@ -1,0 +1,45 @@
+load(
+    "@rules_elide//elide:defs.bzl",
+    "elide_java_library",
+    "elide_java_test",
+    "elide_kotlin_binary",
+    "elide_kotlin_library",
+)
+
+package(default_visibility = ["//visibility:public"])
+
+# Minimal cross-language graph, exercised end-to-end on BuildBuddy RBE:
+#   lib (Java)  <-  kt_lib (Kotlin, depends on Java)  <-  kt_app (Kotlin binary)
+#   lib (Java)  <-  HelloTest (JUnit test action)
+# This proves both compile and test actions run remotely through the Elide
+# toolchain across the Java/Kotlin boundary.
+
+elide_java_library(
+    name = "lib",
+    srcs = ["sample/Hello.java"],
+)
+
+elide_kotlin_library(
+    name = "kt_lib",
+    srcs = ["sample/Greeter.kt"],
+    module_name = "greeter",
+    deps = [":lib"],  # cross-language: Kotlin -> Java
+)
+
+elide_kotlin_binary(
+    name = "kt_app",
+    srcs = ["sample/App.kt"],
+    main_class = "sample.AppKt",
+    deps = [":kt_lib"],
+)
+
+elide_java_test(
+    name = "HelloTest",
+    srcs = ["sample/HelloTest.java"],
+    test_class = "sample.HelloTest",
+    runtime_deps = ["@maven//:org_junit_platform_junit_platform_console_standalone"],
+    deps = [
+        ":lib",
+        "@maven//:org_junit_jupiter_junit_jupiter_api",
+    ],
+)

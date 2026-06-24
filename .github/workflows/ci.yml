@@ -147,3 +147,44 @@ jobs:
         # //:annotated — kt_jvm_library with annotation processors, exercises
         # the transparent KAPT fallback to the stock rules_kotlin KotlinBuilder.
         run: bazel build //:greeter //:annotated
+
+  rbe:
+    name: rbe (BuildBuddy)
+    runs-on: ubuntu-24.04
+    # Needs the BUILDBUDDY_API_KEY secret, which GitHub does not expose to fork
+    # PRs — gate to same-repo events (main pushes + same-repo PRs). Like
+    # `integration`, this also downloads the elide binary at repo-rule time.
+    if: >-
+      github.event_name == 'push' ||
+      (github.event_name == 'pull_request' &&
+       github.event.pull_request.head.repo.full_name == github.repository)
+    steps:
+      - name: Harden the runner (Audit all outbound calls)
+        uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411 # v2.19.4
+        with:
+          egress-policy: audit
+
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+      - uses: bazel-contrib/setup-bazel@c5acdfb288317d0b5c0bbd7a396a3dc868bb0f86  # 0.19.0
+        with:
+          bazelisk-cache: true
+          disk-cache: ci-rbe
+          repository-cache: true
+      - name: Configure BuildBuddy API key
+        working-directory: e2e/rbe
+        env:
+          BUILDBUDDY_API_KEY: ${{ secrets.BUILDBUDDY_API_KEY }}
+        # Inject the key the way .bazelrc's try-import expects. Written to a file
+        # (never echoed) so it stays out of the build log.
+        run: |
+          set -euo pipefail
+          if [ -z "${BUILDBUDDY_API_KEY:-}" ]; then
+            echo "BUILDBUDDY_API_KEY secret is empty — cannot run RBE." >&2
+            exit 1
+          fi
+          printf 'common --remote_header=x-buildbuddy-api-key=%s\n' "${BUILDBUDDY_API_KEY}" > user.bazelrc
+      - name: bazel test //... --config=remote
+        working-directory: e2e/rbe
+        # Full remote: cache + execution + BES. Bazel prints the BuildBuddy
+        # invocation URL (from --bes_results_url) at the top of the run.
+        run: bazel test //... --config=remote --config=ci
