@@ -19,7 +19,7 @@ bazel_dep(name = "rules_jvm_external", version = "7.0", dev_dependency = True)
 
 # Transitively loaded by rules_java/rules_kotlin .bzl; declared so the Stardoc
 # `starlark_doc_extract` targets in //docs can cover it with a bzl_library.
-bazel_dep(name = "bazel_features", version = "1.42.1", dev_dependency = True)
+bazel_dep(name = "bazel_features", version = "1.50.0", dev_dependency = True)
 
 maven = use_extension("@rules_jvm_external//:extensions.bzl", "maven", dev_dependency = True)
 maven.install(
