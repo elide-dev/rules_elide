@@ -1,0 +1,29 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "description": [
+    "Renovate covers the Bazel-module gap that Dependabot cannot: bzlmod deps in every MODULE.bazel (bazel-module manager) and the pinned Bazel release in every .bazelversion (bazelisk manager). GitHub Actions and the Python benchmark deps stay with Dependabot (.github/dependabot.yml) so the two bots cover disjoint ecosystems and never open duplicate PRs.",
+    "Requires the Mend Renovate GitHub App installed on the elide-dev org with access to rules_elide — this config file alone does nothing.",
+    "Not managed here: the Elide compiler version (DEFAULT_VERSION in elide/private/versions.bzl) and its per-platform sha256 table. Bumping it requires recomputing release hashes, so it stays a deliberate manual update."
+  ],
+  "extends": [
+    "config:recommended",
+    ":semanticCommits",
+    "schedule:weekly"
+  ],
+  "enabledManagers": ["bazel-module", "bazelisk"],
+  "semanticCommitType": "chore",
+  "semanticCommitScope": "deps",
+  "labels": ["dependencies"],
+  "packageRules": [
+    {
+      "description": "Group all bzlmod (MODULE.bazel) updates into a single PR.",
+      "matchManagers": ["bazel-module"],
+      "groupName": "bazel modules"
+    },
+    {
+      "description": "The Bazel release itself (.bazelversion across all workspaces).",
+      "matchManagers": ["bazelisk"],
+      "groupName": "bazel version"
+    }
+  ]
+}
