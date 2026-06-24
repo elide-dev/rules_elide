@@ -30,4 +30,16 @@ class MainTest {
         assertEquals("/tmp/cap.bin", cfg.record, "--worker_record=<path> must set Config.record")
         assertEquals(listOf("--flagfile=/tmp/f"), rest, "--worker_record must not leak into rest")
     }
+
+    @Test fun quietPluginRewriteFlagOptsIn() {
+        val (cfg, rest) = Main.splitConfig(listOf(
+            "--elide=/bin/elide", "--quiet_plugin_rewrite", "--flagfile=/tmp/f"))
+        assertTrue(cfg.quietPluginRewrite, "--quiet_plugin_rewrite must set Config.quietPluginRewrite")
+        assertFalse("--quiet_plugin_rewrite" in rest, "--quiet_plugin_rewrite must not leak into rest")
+    }
+
+    @Test fun quietPluginRewriteDefaultsToWarn() {
+        val (cfg, _) = Main.splitConfig(listOf("--elide=/bin/elide", "--flagfile=/tmp/f"))
+        assertFalse(cfg.quietPluginRewrite, "warn (quiet off) by default")
+    }
 }

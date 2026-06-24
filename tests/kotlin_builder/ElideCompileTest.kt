@@ -130,6 +130,42 @@ class ElideCompileTest {
         assertEquals(1, kt.count { it == "-Xplugin=/m/metro.jar" }, "must not double-load the plugin")
     }
 
+    @Test fun builtinPluginXpluginRewrittenToFlag() {
+        // A -Xplugin jar duplicating an Elide builtin (serialization) is dropped
+        // and the version-pinned builtin is enabled via `--plugins=` instead.
+        val req = CompileRequest(
+            output = "out.jar", sources = listOf("A.kt"),
+            compilerPluginClasspath = listOf("/ext/lib/kotlinx-serialization-compiler-plugin.jar"))
+        val kt = ElideCompile.plan(req, elidePath = "/bin/elide").first { it.contains("kotlinc") }
+        assertTrue(
+            kt.none { it.startsWith("-Xplugin=") && it.contains("kotlinx-serialization") },
+            "serialization -Xplugin jar must be dropped",
+        )
+        assertTrue(kt.contains("--plugins=serialization"), "must enable the serialization builtin")
+        assertTrue(
+            kt.indexOf("--plugins=serialization") < kt.indexOf("--"),
+            "--plugins is an elide option; must precede the `--` separator",
+        )
+    }
+
+    @Test fun builtinPluginRewrittenAlsoFromPassthrough() {
+        val req = CompileRequest(
+            output = "out.jar", sources = listOf("A.kt"),
+            passthroughFlags = listOf("-Xplugin=/x/kotlinx-serialization-compiler-plugin.jar"))
+        val kt = ElideCompile.plan(req, elidePath = "/bin/elide").first { it.contains("kotlinc") }
+        assertTrue(kt.none { it.contains("kotlinx-serialization") }, "passthrough serialization -Xplugin dropped")
+        assertTrue(kt.contains("--plugins=serialization"))
+    }
+
+    @Test fun nonBuiltinXpluginNotRewritten() {
+        val req = CompileRequest(
+            output = "out.jar", sources = listOf("A.kt"),
+            compilerPluginClasspath = listOf("/x/dagger-compiler.jar"))
+        val kt = ElideCompile.plan(req, elidePath = "/bin/elide").first { it.contains("kotlinc") }
+        assertTrue(kt.contains("-Xplugin=/x/dagger-compiler.jar"), "non-builtin plugin must NOT be stripped")
+        assertTrue(kt.none { it.startsWith("--plugins=") }, "no builtin enabled for a non-builtin jar")
+    }
+
     @Test fun kotlinApiAndLanguageVersionForwarded() {
         val req = CompileRequest(output = "out.jar", sources = listOf("A.kt"), apiVersion = "2.1", languageVersion = "2.1")
         val kt = ElideCompile.plan(req, elidePath = "/bin/elide").first { it.contains("kotlinc") }

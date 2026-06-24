@@ -98,11 +98,19 @@ object ElideCompile {
         val cmds = mutableListOf<List<String>>()
         val sep = File.pathSeparator
 
+        // -Xplugin jars that duplicate an Elide builtin: drop them below and
+        // enable the version-pinned builtin via `--plugins=` instead (a raw
+        // -Xplugin risks a version-mismatch against the embedded compiler).
+        val rewrites = BuiltinPlugins.detect(req)
+        val rewrittenJars = rewrites.map { it.jar }.toSet()
+
         // --- kotlinc command ---
         // Elide top-level options precede the `--` separator; kotlinc TOOL_ARGS follow it.
         val kt = mutableListOf(elidePath, "kotlinc")
         // Used-dependency report for real .jdeps (Elide 1.3.2, WHIPLASH #1002/#1005).
         usedDepsReport?.let { kt += listOf("--report-used-deps", it) }
+        val builtins = BuiltinPlugins.builtinNames(rewrites)
+        if (builtins.isNotEmpty()) kt += "--plugins=${builtins.joinToString(",")}"
         kt += "--"
         kt += listOf("-d", req.output ?: error("--output required"))
         if (req.classpath.isNotEmpty()) {
@@ -136,6 +144,7 @@ object ElideCompile {
         // optioned plugins (e.g. Metro) silently lose their options. Skip a jar that
         // already rides in --kotlin_passthrough_flags to avoid double-loading.
         for (jar in req.compilerPluginClasspath) {
+            if (jar in rewrittenJars) continue // duplicates an Elide builtin (enabled via --plugins)
             val flag = "-Xplugin=$jar"
             if (flag !in req.passthroughFlags) kt += flag
         }
@@ -147,7 +156,7 @@ object ElideCompile {
         // falls back to its built-in default (warns + can change semantics).
         req.apiVersion?.let { kt += listOf("-api-version", it) }
         req.languageVersion?.let { kt += listOf("-language-version", it) }
-        kt += req.passthroughFlags
+        kt += req.passthroughFlags.filterNot { BuiltinPlugins.isRewrittenXplugin(it) }
         kt += req.sources
         // Generated sources unpacked from --source_jars (KAPT/KSP), for resolution.
         kt += extraSources

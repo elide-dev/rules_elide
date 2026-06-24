@@ -120,3 +120,18 @@ elide_kotlin_test(
         "@kt_test_deps//:org_jetbrains_kotlin_kotlin_test_junit5",
     ],
 )
+
+elide_kotlin_test(
+    name = "builtin_plugins_test",
+    srcs = ["BuiltinPluginsTest.kt"],
+    kotlinc_opts = ["-jvm-target=21"],
+    test_class = "elide.kotlin.builder.BuiltinPluginsTest",
+    runtime_deps = [
+        "@kt_test_deps//:org_junit_platform_junit_platform_console_standalone",
+    ],
+    deps = [
+        "//elide/kotlin/builder:lib",
+        "@kt_test_deps//:org_jetbrains_kotlin_kotlin_test",
+        "@kt_test_deps//:org_jetbrains_kotlin_kotlin_test_junit5",
+    ],
+)

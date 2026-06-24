@@ -78,7 +78,7 @@ export ELIDE_BAZEL=1
 exec "$(rlocation {shim})" \\
   --elide="$(rlocation {elide})" \\
   --fallback_builder="$(rlocation {fallback})" \\
-{resident_line}{record_line}  "$@"
+{resident_line}{record_line}{quiet_line}  "$@"
 """
 
 def _elide_kt_builder_launcher_impl(ctx):
@@ -119,6 +119,9 @@ def _elide_kt_builder_launcher_impl(ctx):
         # `--worker_record=<path>` tees the forwarded WorkRequest stream for
         # offline PGO replay (also a startup flag, for the same scrubbed-env reason).
         record_line = ("  --worker_record=\"%s\" \\\n" % ctx.attr.worker_record) if ctx.attr.worker_record else "",
+        # `--quiet_plugin_rewrite` silences the builtin-plugin rewrite warning
+        # (startup flag; same scrubbed-env reason as the others).
+        quiet_line = "  --quiet_plugin_rewrite \\\n" if ctx.attr.quiet_plugin_rewrite else "",
     )
     ctx.actions.write(output = launcher, content = content, is_executable = True)
 
@@ -161,6 +164,12 @@ _elide_kt_builder_launcher = rule(
             executable = True,
             cfg = "exec",
             allow_files = True,
+        ),
+        "quiet_plugin_rewrite": attr.bool(
+            default = False,
+            doc = "Inject the shim's `--quiet_plugin_rewrite` flag to silence the " +
+                  "warning emitted when a rules_kotlin `-Xplugin` jar duplicating " +
+                  "an Elide builtin is rewritten to `--plugins=`.",
         ),
         "resident_worker": attr.bool(
             default = False,
@@ -314,6 +323,8 @@ def register_elide_kotlin_toolchain(
             "//conditions:default": False,
         })
 
+    # Silence the builtin-plugin rewrite warning when the user opted out via
+    # //config/kotlinc:warn_builtin_plugin_rewrite=false (warn otherwise).
     _elide_kt_builder_launcher(
         name = name + "_launcher",
         shim = Label("//elide/kotlin/builder:elide_kotlin_builder"),
@@ -321,6 +332,10 @@ def register_elide_kotlin_toolchain(
         fallback_builder = fallback_builder,
         resident_worker = resident_worker,
         worker_record = worker_record,
+        quiet_plugin_rewrite = select({
+            Label("//config/kotlinc:warn_builtin_plugin_rewrite_disabled"): True,
+            "//conditions:default": False,
+        }),
     )
 
     # Materialize a stock toolchain. This creates `<name>_base_impl` (the
