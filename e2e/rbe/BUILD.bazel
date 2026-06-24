@@ -14,9 +14,20 @@ package(default_visibility = ["//visibility:public"])
 # This proves both compile and test actions run remotely through the Elide
 # toolchain across the Java/Kotlin boundary.
 
+# Compile Java to bytecode level 11 (class file version 55). Under remote
+# execution the JUnit test runs via `elide java`, which on the public RBE image
+# (rbe-ubuntu20-04) falls back to the image's system JDK — Java 11. Elide's
+# javac otherwise defaults to JDK 25 bytecode (class 69), which that runtime
+# can't load (UnsupportedClassVersionError). 11 is the floor the executor runs.
+_JAVA11 = [
+    "--release",
+    "11",
+]
+
 elide_java_library(
     name = "lib",
     srcs = ["sample/Hello.java"],
+    javac_opts = _JAVA11,
 )
 
 elide_kotlin_library(
@@ -36,6 +47,7 @@ elide_kotlin_binary(
 elide_java_test(
     name = "HelloTest",
     srcs = ["sample/HelloTest.java"],
+    javac_opts = _JAVA11,
     test_class = "sample.HelloTest",
     runtime_deps = ["@maven//:org_junit_platform_junit_platform_console_standalone"],
     deps = [
