@@ -53,6 +53,35 @@ jobs:
       - uses: astral-sh/setup-uv@fac544c07dec837d0ccb6301d7b5580bf5edae39  # v8.2.0
         with:
           python-version: "3.12"
+      # Bazel for the e2e-build benchmarks (test_e2e_bench.py builds
+      # e2e/integration). GHA caching is disabled: the dedicated bench runner
+      # persists its own Bazel state between runs, and benchmark builds should be
+      # free of actions/cache restore/save variability. (The e2e build also
+      # disables disk/remote action caches so cold/incremental timings reflect
+      # real compile work.)
+      - uses: bazel-contrib/setup-bazel@c5acdfb288317d0b5c0bbd7a396a3dc868bb0f86  # 0.19.0
+        with:
+          bazelisk-cache: false
+          disk-cache: false
+          repository-cache: false
+
+      # Stock javac + kotlinc 2.4.0 for the no-Elide baseline micro-benchmarks
+      # (test_kotlinc_full[vanilla] / test_javac_full[vanilla]). setup-java puts
+      # javac on PATH and sets JAVA_HOME (which the kotlinc launcher needs).
+      - uses: actions/setup-java@ad2b38190b15e4d6bdf0c97fb4fca8412226d287  # v5.3.0
+        with:
+          distribution: temurin
+          java-version: "21"
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6  # v2.2.0
+      - name: Install stock kotlinc 2.4.0 (npm kotlin-compiler via bun)
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/kotlinc"
+          (cd "$RUNNER_TEMP/kotlinc" && bun add kotlin-compiler@2.4.0)
+          kc="$RUNNER_TEMP/kotlinc/node_modules/kotlin-compiler/bin/kotlinc"
+          chmod +x "$kc"
+          echo "KOTLINC=$kc" >> "$GITHUB_ENV"
+          "$kc" -version || true
 
       - name: Download pinned Elide release (linux-amd64)
         # Benchmarks invoke `elide` directly (no Bazel), so fetch the same
@@ -73,7 +102,16 @@ jobs:
           "$RUNNER_TEMP/elide/bin/elide" --version || true
 
       - name: Run walltime benchmarks
-        uses: CodSpeedHQ/action@63f3e98b61959fe67f146a3ff022e4136fe9bb9c  # v4.17.6
+        uses: CodSpeedHQ/action@a4a36bb07c0638b0b4ca52bf1f3dad1b4289e52f  # v4.18.1
+        env:
+          # Disable the supplementary CPU profiler. It targets in-process
+          # benchmarks; neither backend handles our subprocess-spawning ones
+          # (Bazel server + JVM workers + native-image) on this runner — perf's
+          # parser rejects the perf.data, and samply hangs the job after the run
+          # finishes. The walltime *timings* (from pytest-codspeed) are still
+          # produced and uploaded; only the CPU flame graph is dropped, which is
+          # not meaningful for a subprocess build/compile benchmark anyway.
+          CODSPEED_PROFILER_ENABLED: "false"
         with:
           mode: walltime
           # uv provisions the deps ephemerally for this one invocation; the

@@ -9,18 +9,56 @@ CodSpeed can measure and compare them automatically.
 
 ## What runs
 
-`test_compile_bench.py` times three real `elide` subprocess workloads over a
-generated N-file fixture (default 50 files/language):
+`test_compile_bench.py` times pure-compiler workloads over a generated N-file
+fixture (default 50/language), comparing **Elide vs the stock compilers** on the
+same sources (the gain is the gap):
 
-| Benchmark               | Command                                          |
-| ----------------------- | ------------------------------------------------ |
-| `test_kotlinc_full`     | `elide kotlinc -- -d <out> <N .kt>`              |
-| `test_kotlinc_abi_only` | `elide kotlinc --abi-only -- -d <out> <N .kt>`   |
-| `test_javac_full`       | `elide javac --jar <out.jar> -- <N .java>`       |
+| Benchmark                    | Elide                              | vanilla baseline                |
+| ---------------------------- | ---------------------------------- | ------------------------------- |
+| `test_kotlinc_full[*]`       | `elide kotlinc -- -d <out> <.kt>`  | stock `kotlinc 2.4.0 -d <out>`  |
+| `test_javac_full[*]`         | `elide javac --jar <jar> -- <.java>` | stock `javac -d <out> <.java>` |
+| `test_kotlinc_abi_only`      | `elide kotlinc --abi-only …`       | — (Elide-only; no equivalent)   |
 
 Each timed compile targets a fresh output path so no incremental short-circuit
-hides real work. These isolate compiler wall-clock — not Bazel analysis or
-caching — so the signal tracks Elide/rules_elide compile speed directly.
+hides real work. These isolate compiler wall-clock — not Bazel analysis — so the
+signal tracks compile speed directly. Tools are resolved from `ELIDE`, `JAVAC`,
+and `KOTLINC` (each benchmark skips if its tool is absent); CI provides stock
+`javac` via `actions/setup-java` and stock `kotlinc 2.4.0` via the npm
+`kotlin-compiler` package installed with bun.
+
+`test_e2e_bench.py` shows the **build-speed gain of Elide over a no-Elide
+baseline** by building two sibling workspaces with identical sources/targets and
+comparing them: `e2e/vanilla` (stock rules_java/rules_kotlin) vs `e2e/integration`
+(the Elide toolchain). Each is built in two regimes, so CodSpeed reports four
+benchmarks — the gain is the gap between `vanilla` and `integration` per regime:
+
+| Benchmark                       | Regime                                          |
+| ------------------------------- | ----------------------------------------------- |
+| `test_cold[vanilla]`            | baseline, full recompile (`bazel clean`/round)  |
+| `test_cold[integration]`        | Elide, full recompile                           |
+| `test_incremental[vanilla]`     | baseline, rebuild after a 1-file edit           |
+| `test_incremental[integration]` | Elide, rebuild after a 1-file edit              |
+
+Both build a large committed generated fixture — `gen_kt` (200 `.kt`) + `gen_java`
+(200 `.java`), identical in both workspaces, from `e2e/gen_fixture.py` — so timings
+reflect real compiler throughput, not fixed overhead (on the tiny `sample/` demo
+the cold gain collapses to ~1.6×; at volume it is ~4.2×, matching
+`bench_suite.sh`). Builds run with `--disk_cache= --remote_cache=
+--remote_executor= --noremote_accept_cached` (no action-result cache); the
+repository cache is kept so downloads are reused. `clean`/edit/restore run in
+untimed `pedantic` setup/teardown, and a warm-up build (untimed) keeps one-time
+downloads out of the measured rounds. Needs `bazelisk`/`bazel` on PATH (or
+`$BAZELISK`); skips cleanly otherwise. The Elide build is pinned via
+`e2e/integration`'s `elide.install()` → `DEFAULT_VERSION`. The two workspaces stay
+isolated (separate output bases, only their own toolchains registered).
+
+The headline gain is **cold**. **Incremental is ~parity today**: with the default
+config neither side does incremental compilation, so a 1-file edit recompiles the
+whole module both ways (vanilla's warm worker ≈ Elide's native one-shot). It is
+kept as an honest signal that will show the gain once IC (issue #10) lands.
+
+To resize the fixture: `python e2e/gen_fixture.py e2e/vanilla N` and
+`python e2e/gen_fixture.py e2e/integration N` (keep both identical), then rebuild.
 
 ## Running locally
 

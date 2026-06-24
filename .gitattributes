@@ -14,3 +14,9 @@ docs/BUILD.bazel export-ignore
 # LF everywhere.
 * text=auto eol=lf
 *.bat text eol=crlf
+
+# Generated e2e benchmark fixture (e2e/gen_fixture.py): mark as generated so it
+# is collapsed in PR diffs, skipped by code review (Copilot), and left out of
+# language stats. Regenerate via gen_fixture.py rather than editing by hand.
+e2e/vanilla/gen/** linguist-generated=true
+e2e/integration/gen/** linguist-generated=true
