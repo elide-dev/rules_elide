@@ -1,0 +1,9 @@
+actions:
+  - name: "build //docs/..."
+    container_image: "ubuntu-24.04"
+    steps:
+      - run: "bazel build //docs/..."
+  - name: "test //tests/..."
+    container_image: "ubuntu-24.04"
+    steps:
+      - run: "bazel test //tests/..."

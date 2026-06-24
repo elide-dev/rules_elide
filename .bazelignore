@@ -1,3 +1,4 @@
 benchmarks
 e2e/integration
 e2e/smoke
+e2e/kotlin_builder
