@@ -80,7 +80,15 @@ jobs:
           "$RUNNER_TEMP/elide/bin/elide" --version || true
 
       - name: Run walltime benchmarks
-        uses: CodSpeedHQ/action@63f3e98b61959fe67f146a3ff022e4136fe9bb9c  # v4.17.6
+        uses: CodSpeedHQ/action@a4a36bb07c0638b0b4ca52bf1f3dad1b4289e52f  # v4.18.1
+        env:
+          # Profile with samply instead of perf. On this runner's kernel the
+          # runner's perf.data parser fails ("perf event header size smaller
+          # than the header itself") on our JVM + native-image subprocess tree —
+          # after the walltime timings are already produced, so it is non-fatal
+          # but loses the CPU profile. samply uses perf_event_open directly and
+          # writes its own profile, bypassing that parser, so profiling works.
+          CODSPEED_WALLTIME_PROFILER: samply
         with:
           mode: walltime
           # uv provisions the deps ephemerally for this one invocation; the

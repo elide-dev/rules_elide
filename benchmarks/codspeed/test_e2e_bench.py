@@ -124,11 +124,14 @@ def test_incremental(benchmark, project):
         src.write_text(original)
 
     try:
+        # More rounds + a warm-up round than the cold case: the warm-worker
+        # module recompile is noisier (JVM GC/JIT), so extra samples tighten it.
         benchmark.pedantic(
             lambda: _run(bazel, wd, *_BUILD),
             setup=edit,
             teardown=restore,
-            rounds=3,
+            rounds=7,
+            warmup_rounds=1,
             iterations=1,
         )
     finally:
