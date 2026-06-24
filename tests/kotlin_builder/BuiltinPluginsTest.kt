@@ -37,6 +37,17 @@ class BuiltinPluginsTest {
         assertEquals(listOf("serialization"), BuiltinPlugins.builtinNames(r))
     }
 
+    @Test fun handlesWindowsStyleSeparators() {
+        // basename extraction must tolerate `\` so matching + the warning stay
+        // correct if a flagfile carries Windows-style paths.
+        val r = BuiltinPlugins.detect(CompileRequest(
+            compilerPluginClasspath = listOf("C:\\ext\\lib\\" + SERIALIZATION_JAR)))
+        assertEquals(listOf("serialization"), BuiltinPlugins.builtinNames(r))
+        val w = BuiltinPlugins.warning(r)
+        assertTrue(SERIALIZATION_JAR in w, "warning shows the clean basename")
+        assertFalse("ext" in w, "warning must strip the Windows directory prefix")
+    }
+
     @Test fun detectsFromPassthrough() {
         val r = BuiltinPlugins.detect(CompileRequest(passthroughFlags = listOf("-Xplugin=/x/" + SERIALIZATION_JAR)))
         assertEquals(1, r.size)

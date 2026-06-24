@@ -28,8 +28,12 @@ object BuiltinPlugins {
     /** A `-Xplugin` jar that duplicates an Elide builtin. */
     data class Rewrite(val jar: String, val builtin: String)
 
+    /** Last path segment, tolerant of both `/` and Windows `\` separators. */
+    internal fun basename(path: String): String =
+        path.substringAfterLast('/').substringAfterLast('\\')
+
     private fun builtinFor(jar: String): String? {
-        val base = jar.substringAfterLast('/')
+        val base = basename(jar)
         for ((needle, name) in MAP) {
             if (needle in base) return name
         }
@@ -63,7 +67,7 @@ object BuiltinPlugins {
     /** Bazel-visible warning text for [rewrites], or "" when there is nothing to report. */
     fun warning(rewrites: List<Rewrite>): String {
         if (rewrites.isEmpty()) return ""
-        val lines = rewrites.joinToString("\n") { "  - ${it.jar.substringAfterLast('/')} -> --plugins=${it.builtin}" }
+        val lines = rewrites.joinToString("\n") { "  - ${basename(it.jar)} -> --plugins=${it.builtin}" }
         return "[warning] elide_kotlin_builder: dropped -Xplugin jar(s) that duplicate an Elide " +
             "builtin compiler plugin and enabled the version-pinned builtin instead:\n" + lines +
             "\n  (silence: --@rules_elide//config/kotlinc:warn_builtin_plugin_rewrite=false)\n"
