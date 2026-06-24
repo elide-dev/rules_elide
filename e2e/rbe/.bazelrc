@@ -34,10 +34,16 @@ common:buildbuddy --remote_cache_compression
 common:buildbuddy --remote_upload_local_results
 common:buildbuddy --remote_timeout=3h
 
+# host_platform + extra_execution_platforms pin to the Linux/x86_64 RBE
+# platform, so `--config=rbe`/`=remote` assumes a Linux x86_64 build host (CI
+# provides this). On a non-Linux host, use `--config=buildbuddy` (cache + BES
+# only). Workers are a local optimization Bazel won't run on the executor;
+# force one-shot remote compiles under RBE.
 common:rbe --config=buildbuddy
 common:rbe --remote_executor=grpcs://elide-dev.buildbuddy.io
 common:rbe --host_platform=//tools/platforms:rbe_linux_amd64
 common:rbe --extra_execution_platforms=//tools/platforms:rbe_linux_amd64
+common:rbe --@rules_elide//elide:use_workers=false
 common:rbe --jobs=50
 
 common:remote --config=rbe

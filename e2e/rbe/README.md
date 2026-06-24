@@ -29,6 +29,13 @@ bazel test //... --config=remote
 invocation URL. Without the key (or without `--config=remote`) the build runs
 locally like any other e2e workspace.
 
+`--config=remote`/`=rbe` pins both the host and execution platform to the
+Linux/x86_64 RBE platform, so it expects a **Linux x86_64 build host** (CI
+provides this). On another host (e.g. macOS) use `--config=buildbuddy` for
+remote cache + BES only, which executes locally. Compiles run as one-shot
+remote actions under RBE (Elide's persistent workers are a local-only
+optimization, disabled by the `rbe` config).
+
 CI runs this as the `rbe (BuildBuddy)` job (same-repo events only — the secret
 is not exposed to fork PRs). See `.github/workflows/ci.yml` and the design at
 `docs/superpowers/specs/2026-06-24-buildbuddy-rbe-design.md`.

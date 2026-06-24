@@ -52,10 +52,19 @@ common:buildbuddy --remote_timeout=3h
 # Remote execution on top of the cache. The Elide toolchain ships its native
 # binary to the executor as an action input, so the stock public glibc image
 # works (no custom worker image needed); see //tools/platforms.
+#
+# host_platform + extra_execution_platforms pin both the host and execution
+# platform to the Linux/x86_64 RBE platform, so `--config=rbe`/`=remote`
+# assumes a Linux x86_64 build host — which CI provides. On a non-Linux host,
+# use `--config=buildbuddy` (remote cache + BES only, executes locally).
 common:rbe --config=buildbuddy
 common:rbe --remote_executor=grpcs://elide-dev.buildbuddy.io
 common:rbe --host_platform=//tools/platforms:rbe_linux_amd64
 common:rbe --extra_execution_platforms=//tools/platforms:rbe_linux_amd64
+# Persistent workers are a *local* optimization (Bazel does not run them on the
+# remote executor); force Elide's supported one-shot compiles under RBE so every
+# compile is a plain remote action, with no local worker strategy in the way.
+common:rbe --//elide:use_workers=false
 common:rbe --jobs=50
 
 # Convenience alias: full remote (cache + execution).
