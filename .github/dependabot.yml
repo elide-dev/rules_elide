@@ -1,8 +1,8 @@
 # Dependency update automation. Satisfies the OpenSSF Scorecard
 # Dependency-Update-Tool check and keeps pinned action SHAs / Python benchmark
-# deps current. Note: Dependabot has no bzlmod support, so Bazel module
-# versions in MODULE.bazel (protobuf, rules_kotlin, rules_jvm_external, …) are
-# still bumped manually.
+# deps current. Dependabot has no bzlmod support, so Bazel module versions in
+# MODULE.bazel and the Bazel release in .bazelversion are handled by Renovate
+# instead (see .github/renovate.json); the two bots cover disjoint ecosystems.
 version: 2
 updates:
   # GitHub Actions across all workflows. Actions are pinned by commit SHA;
