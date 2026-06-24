@@ -19,19 +19,26 @@ object Main {
         val fallback: String,
         val resident: Boolean = false,
         val record: String = "",
+        // Silence the `[warning]` emitted when a rules_kotlin `-Xplugin` jar
+        // duplicating an Elide builtin is rewritten to `--plugins=`. Off by
+        // default (warn); the toolchain launcher injects `--quiet_plugin_rewrite`
+        // when //config/kotlinc:warn_builtin_plugin_rewrite=false.
+        val quietPluginRewrite: Boolean = false,
     )
 
     fun splitConfig(argv: List<String>): Pair<Config, List<String>> {
         var elide = ""; var fallback = ""; var resident = false; var record = ""
+        var quietPluginRewrite = false
         val rest = mutableListOf<String>()
         for (a in argv) when {
             a.startsWith("--elide=") -> elide = a.substringAfter("=")
             a.startsWith("--fallback_builder=") -> fallback = a.substringAfter("=")
             a == "--resident_worker" -> resident = true
             a.startsWith("--worker_record=") -> record = a.substringAfter("=")
+            a == "--quiet_plugin_rewrite" -> quietPluginRewrite = true
             else -> rest += a
         }
-        return Config(elide, fallback, resident, record) to rest
+        return Config(elide, fallback, resident, record, quietPluginRewrite) to rest
     }
 
     /** Handle one unit of work. Returns (exitCode, capturedOutput). */
@@ -45,6 +52,11 @@ object Main {
         val req = Flagfile.parse(Flagfile.readTokens(Paths.get(ff)))
         val wd = File(".")
         if (Router.route(req).route == Route.FALLBACK) return Fallback.run(cfg.fallback, ff, wd)
+
+        // -Xplugin jars duplicating an Elide builtin are rewritten to `--plugins=`
+        // in ElideCompile.plan; surface that once as a Bazel `[warning]` (unless
+        // silenced). Prepended to the captured output, which becomes WorkResponse.output.
+        val rewriteWarning = if (cfg.quietPluginRewrite) "" else BuiltinPlugins.warning(BuiltinPlugins.detect(req))
 
         // Unpack generated sources from --source_jars (KAPT/KSP) so the compile can
         // resolve references to generated symbols; clean up the temp dir after.
@@ -60,7 +72,8 @@ object Main {
         try {
             val extraSources = srcJarDir?.let { ElideCompile.extractSourceJars(req.sourceJars, it) } ?: emptyList()
             val cmds = ElideCompile.plan(req, cfg.elide, extraSources, usedReport?.path)
-            val (code, out) = compileCmds(cmds, resident, inputs, wd)
+            val (code, compileOut) = compileCmds(cmds, resident, inputs, wd)
+            val out = rewriteWarning + compileOut
             if (code == 0) req.jdeps?.let { jdeps ->
                 // Deps.Dependencies.rule_label is the Bazel rule label (`--target_label`),
                 // not the Kotlin module name. Leave empty when absent rather than emit an
@@ -126,6 +139,7 @@ object Main {
                         cfg2.fallback.ifEmpty { cfg.fallback },
                         cfg.resident || cfg2.resident,
                         cfg.record.ifEmpty { cfg2.record },
+                        cfg.quietPluginRewrite || cfg2.quietPluginRewrite,
                     )
                     if (resident == null && merged.resident && merged.elide.isNotEmpty()) {
                         // Record path: the `--worker_record=` startup flag (reaches the

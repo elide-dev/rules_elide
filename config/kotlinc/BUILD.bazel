@@ -40,3 +40,19 @@ bool_flag(
     name = "abi_compile_avoidance",
     build_setting_default = False,
 )
+
+# On (default): the KotlinBuilder shim emits a Bazel `[warning]` when it rewrites
+# a rules_kotlin `-Xplugin=<jar>` that duplicates an Elide builtin compiler
+# plugin (e.g. kotlinx-serialization) to the version-pinned `--plugins=<name>`
+# builtin. Flip to False to silence the warning once the behavior is understood
+# (the rewrite itself always happens). The toolchain launcher passes the shim
+# `--quiet_plugin_rewrite` when this is False.
+bool_flag(
+    name = "warn_builtin_plugin_rewrite",
+    build_setting_default = True,
+)
+
+config_setting(
+    name = "warn_builtin_plugin_rewrite_disabled",
+    flag_values = {":warn_builtin_plugin_rewrite": "False"},
+)
