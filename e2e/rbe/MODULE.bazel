@@ -26,5 +26,8 @@ maven.install(
         "org.junit.jupiter:junit-jupiter-api:5.10.2",
         "org.junit.platform:junit-platform-console-standalone:1.10.2",
     ],
+    # protobuf (pulled in transitively via rules_elide) also contributes to the
+    # shared `maven` repo; acknowledging it suppresses the layering warning.
+    known_contributing_modules = ["protobuf"],
 )
 use_repo(maven, "maven")
