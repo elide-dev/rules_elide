@@ -22,23 +22,29 @@ Each timed compile targets a fresh output path so no incremental short-circuit
 hides real work. These isolate compiler wall-clock — not Bazel analysis or
 caching — so the signal tracks Elide/rules_elide compile speed directly.
 
-`test_e2e_bench.py` times an end-to-end `bazel build` of the `e2e/integration`
-consumer workspace through the Elide toolchain, in two regimes:
+`test_e2e_bench.py` shows the **build-speed gain of Elide over a no-Elide
+baseline** by building two sibling workspaces with identical sources/targets and
+comparing them: `e2e/vanilla` (stock rules_java/rules_kotlin) vs `e2e/integration`
+(the Elide toolchain). Each is built in two regimes, so CodSpeed reports four
+benchmarks — the gain is the gap between `vanilla` and `integration` per regime:
 
-| Benchmark                      | Regime                                          |
-| ------------------------------ | ----------------------------------------------- |
-| `test_integration_cold`        | full recompile (`bazel clean` between rounds)   |
-| `test_integration_incremental` | rebuild after a 1-file edit (`sample/Greeter.kt`) |
+| Benchmark                       | Regime                                          |
+| ------------------------------- | ----------------------------------------------- |
+| `test_cold[vanilla]`            | baseline, full recompile (`bazel clean`/round)  |
+| `test_cold[integration]`        | Elide, full recompile                           |
+| `test_incremental[vanilla]`     | baseline, rebuild after a 1-file edit           |
+| `test_incremental[integration]` | Elide, rebuild after a 1-file edit              |
 
-The build runs `bazel build -- //... -//:native_app` with `--disk_cache=
---remote_cache= --remote_executor= --noremote_accept_cached` so timings reflect
-real compile work (no action-result cache); the repository cache is kept so the
-pinned Elide download is reused. `clean`/edit/restore happen in untimed
-`pedantic` setup/teardown, and a warm-up build (untimed) keeps the one-time Elide
-+ maven download out of the measured rounds. Needs `bazelisk`/`bazel` on PATH
-(or `$BAZELISK`); skips cleanly otherwise. Elide is pinned via the e2e
-workspace's `elide.install()` → `DEFAULT_VERSION`, advancing as we bump
-`versions.bzl`.
+Both build the common target set (`//:lib //:app //:kt_lib //:kt_app
+//:HelloTest`) with `--disk_cache= --remote_cache= --remote_executor=
+--noremote_accept_cached` so timings reflect real compile work (no action-result
+cache); the repository cache is kept so downloads are reused. `clean`/edit/restore
+run in untimed `pedantic` setup/teardown, and a warm-up build (untimed) keeps
+one-time downloads out of the measured rounds. Needs `bazelisk`/`bazel` on PATH
+(or `$BAZELISK`); skips cleanly otherwise. The Elide build is pinned via
+`e2e/integration`'s `elide.install()` → `DEFAULT_VERSION`, advancing as we bump
+`versions.bzl`. The two workspaces stay isolated (separate output bases, only
+their own toolchains registered).
 
 ## Running locally
 

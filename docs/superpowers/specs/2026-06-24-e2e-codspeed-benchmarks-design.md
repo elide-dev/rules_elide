@@ -5,20 +5,28 @@
 
 ## Goal
 
-Track the wall-clock time to build a real rules_elide consumer project end-to-end
-through the Elide toolchain, reported to CodSpeed per PR alongside the existing
-compiler micro-benchmarks. Catches regressions the micro-benchmarks can't —
-toolchain registration, worker launch, analysis, multi-target builds — on an
-actual `bazel build` of `e2e/integration`.
+Show — and keep showing — the build-speed **gain of Elide over a no-Elide
+baseline** on a real consumer project, reported to CodSpeed per PR. The gain is
+the gap between two benchmarks built from identical sources: stock
+rules_java/rules_kotlin vs the Elide toolchain. Tracking both also catches the
+gain eroding over time, and catches our own regressions, on an actual
+`bazel build`.
 
 ## Scope
 
-- **Project:** `e2e/integration` only (real Elide toolchain; `bazel build -- //...
-  -//:native_app`, mirroring the integration CI job). `e2e/kotlin_builder` and
-  `e2e/smoke` are out of scope for this iteration.
-- **Regimes:** both **cold** (full recompile) and **incremental** (1-file edit).
+- **Two sibling workspaces, identical sources/targets:**
+  - `e2e/vanilla` — stock rules_java / rules_kotlin (**baseline**, no Elide).
+  - `e2e/integration` — the same project through the Elide toolchain.
+  Separate workspaces (own output bases, only their own toolchains registered) so
+  no Bazel state or toolchain bleeds between baseline and Elide.
+- **Build set:** the compile graph common to both, target-for-target
+  (`//:lib //:app //:kt_lib //:kt_app //:HelloTest`). Elide-only targets
+  (`native_app`, `format`) are excluded so the A/B is apples-to-apples.
+- **Regimes:** both **cold** (full recompile) and **incremental** (1-file edit)
+  → four benchmarks: `{cold,incremental} × [vanilla,integration]`.
 - **Reporting:** CodSpeed walltime, in the existing `walltime` job of
   `.github/workflows/benchmarks.yml`, on `linux-amd64-bench`, on PR + main push.
+- Out of scope: `e2e/kotlin_builder`, `e2e/smoke`.
 
 ## Approach
 
@@ -40,13 +48,15 @@ run **untimed** between rounds (confirmed supported in pytest-codspeed 5.0.3).
 - **Warm-up:** one untimed `bazel build` before the timed rounds, so the one-time
   Elide download (~600 MB at repo-rule fetch) and first analysis are never inside
   a timed round.
-- **`test_integration_cold`:** `setup = bazel clean`, `target = bazel build`.
-  Each round recompiles from scratch.
-- **`test_integration_incremental`:** `setup` edits a method body in one source
-  (candidate `sample/Greeter.kt`; implementation picks a file whose edit forces a
-  recompile and verifies it via the dirtied target), `target = bazel build`,
-  `teardown` restores the file. Models the 1-file dev rebuild; leaves the
-  workspace pristine.
+- Parametrized over both workspaces (`vanilla`, `integration`), so each regime
+  yields a baseline + Elide benchmark: `test_cold[vanilla]`,
+  `test_cold[integration]`, `test_incremental[vanilla]`, `test_incremental[integration]`.
+- **`test_cold`:** `setup = bazel clean`, `target = bazel build`. Each round
+  recompiles from scratch.
+- **`test_incremental`:** `setup` edits a method body in `sample/Greeter.kt`
+  (a unique trailing comment guarantees a recompile of the dirtied target +
+  dependents each round), `target = bazel build`, `teardown` restores the file.
+  Models the 1-file dev rebuild; leaves the workspace pristine.
 - **Rounds:** small (≈3–5); Bazel builds take seconds. Tunable via pytest-codspeed
   markers (`max_rounds`/`max_time`) if needed.
 

@@ -1,21 +1,28 @@
 # SPDX-License-Identifier: Apache-2.0
-"""CodSpeed walltime benchmarks for an end-to-end Bazel build of e2e/integration.
+"""CodSpeed walltime benchmarks: Elide vs no-Elide on an end-to-end Bazel build.
 
-Times `bazel build` of the `e2e/integration` consumer workspace through the Elide
-toolchain, in two regimes:
+Times `bazel build` of two sibling consumer workspaces that share identical
+sources and target structure:
 
-  * cold        — full recompile (`bazel clean` between rounds)
-  * incremental — rebuild after a 1-file edit (the dev inner loop)
+  * e2e/vanilla     — stock rules_java / rules_kotlin (the no-Elide BASELINE)
+  * e2e/integration — the same project built through the Elide toolchain
 
-Caches that would mask compile work are disabled on the build: no remote
-cache/execution and no local disk action cache. The *repository* cache is kept,
-so the pinned Elide download (DEFAULT_VERSION, via the workspace's own
-`elide.install()`) is reused across rounds rather than re-fetched.
+Each is built in two regimes — cold (full recompile) and incremental (1-file
+edit) — so CodSpeed reports four benchmarks:
 
-`benchmark.pedantic(setup=, teardown=)` runs setup/teardown UNTIMED between
-rounds, so `clean`/edit/restore never land in a measured round. A warm-up build
-runs first (also untimed) so the one-time Elide + maven download and first
-analysis are excluded.
+    test_cold[vanilla]          test_cold[integration]
+    test_incremental[vanilla]   test_incremental[integration]
+
+The gain is the gap between the `vanilla` and `integration` times in each
+regime; tracking both also catches the gain eroding over time. The two
+workspaces are separate (own output bases, only their own toolchains
+registered), so no Bazel state or toolchain bleeds between baseline and Elide.
+
+The build disables action-result caches (no remote cache/exec, no disk cache) so
+timings reflect real compile work; the repository cache is kept so downloads are
+reused. `clean`/edit/restore run in untimed `pedantic` setup/teardown, and an
+untimed warm-up build keeps one-time downloads + first analysis out of measured
+rounds.
 
 Local smoke:  pytest benchmarks/codspeed/test_e2e_bench.py
 Measured:     under CodSpeedHQ/action (walltime); see .github/workflows/benchmarks.yml
@@ -29,29 +36,27 @@ from pathlib import Path
 
 import pytest
 
-REPO_ROOT = Path(__file__).resolve().parents[2]
-E2E = REPO_ROOT / "e2e" / "integration"
-EDIT_SRC = E2E / "sample" / "Greeter.kt"
+E2E = Path(__file__).resolve().parents[2] / "e2e"
 
-# Whole workspace except the upstream-blocked native_app (mirrors the CI
-# integration job). The cache flags force honest compile work:
-#   --disk_cache=             no local disk action cache
-#   --remote_cache=           no remote cache
-#   --remote_executor=        no remote execution
-#   --noremote_accept_cached  never serve action results from a remote cache
-# (empty values also override anything set in the workspace .bazelrc). The
-# repository cache is intentionally left enabled.
-_BUILD_ARGS = [
-    "build",
+# Workspaces under test. `vanilla` is the no-Elide baseline; `integration` is the
+# same project through the Elide toolchain.
+PROJECTS = {"vanilla": E2E / "vanilla", "integration": E2E / "integration"}
+
+# The compile graph present in BOTH projects, target-for-target (Elide-only
+# targets like native_app/format are excluded so the A/B is apples-to-apples).
+TARGETS = ["//:lib", "//:app", "//:kt_lib", "//:kt_app", "//:HelloTest"]
+
+# Force honest compile work: no remote cache/exec, no local disk action cache.
+# Empty values also override anything in the workspace .bazelrc. Repository cache
+# is left enabled so toolchain/dep downloads are reused across rounds.
+_CACHE_FLAGS = [
     "--disk_cache=",
     "--remote_cache=",
     "--remote_executor=",
     "--noremote_accept_cached",
     "--noremote_upload_local_results",
-    "--",
-    "//...",
-    "-//:native_app",
 ]
+_BUILD = ["build", *_CACHE_FLAGS, "--", *TARGETS]
 
 _nonce = itertools.count(1)
 
@@ -63,12 +68,12 @@ def _bazel_bin():
     return None
 
 
-def _run(bazel, *args):
-    proc = subprocess.run([bazel, *args], cwd=str(E2E), capture_output=True, text=True)
+def _run(bazel, wd, *args):
+    proc = subprocess.run([bazel, *args], cwd=str(wd), capture_output=True, text=True)
     if proc.returncode != 0:
         # A failed build must fail the benchmark, not report a misleadingly fast time.
         raise AssertionError(
-            f"bazel {' '.join(args)} (exit {proc.returncode})\n{proc.stderr[-4000:]}"
+            f"[{wd.name}] bazel {' '.join(args)} (exit {proc.returncode})\n{proc.stderr[-4000:]}"
         )
 
 
@@ -77,43 +82,51 @@ def bazel():
     b = _bazel_bin()
     if b is None:
         pytest.skip("bazelisk/bazel not found (set BAZELISK=...)")
-    if not (E2E / "MODULE.bazel").is_file():
-        pytest.skip(f"e2e/integration workspace not found at {E2E}")
-    # Warm up (untimed): fetch Elide + maven, prime analysis.
-    _run(b, *_BUILD_ARGS)
-    yield b
-    _run(b, "clean")  # leave no build outputs behind
+    return b
 
 
-def test_integration_cold(benchmark, bazel):
+@pytest.fixture(scope="session", params=list(PROJECTS))
+def project(request, bazel):
+    wd = PROJECTS[request.param]
+    if not (wd / "MODULE.bazel").is_file():
+        pytest.skip(f"workspace not found: {wd}")
+    _run(bazel, wd, *_BUILD)  # warm up (untimed): fetch toolchains/deps, prime analysis
+    yield bazel, wd
+    _run(bazel, wd, "clean")  # leave no build outputs behind
+
+
+def test_cold(benchmark, project):
     """Full recompile each round: `bazel clean` (untimed) then build (timed)."""
+    bazel, wd = project
     benchmark.pedantic(
-        lambda: _run(bazel, *_BUILD_ARGS),
-        setup=lambda: _run(bazel, "clean"),
+        lambda: _run(bazel, wd, *_BUILD),
+        setup=lambda: _run(bazel, wd, "clean"),
         rounds=3,
         iterations=1,
     )
 
 
-def test_integration_incremental(benchmark, bazel):
+def test_incremental(benchmark, project):
     """Rebuild after a 1-file edit: edit a source (untimed), build (timed), restore."""
-    original = EDIT_SRC.read_text()
+    bazel, wd = project
+    src = wd / "sample" / "Greeter.kt"
+    original = src.read_text()
 
     def edit():
-        # A unique trailing comment guarantees a content change (hence a recompile
+        # Unique trailing comment guarantees a content change (hence a recompile
         # of the dirtied target + dependents) every round, even if teardown is skipped.
-        EDIT_SRC.write_text(f"{original}\n// codspeed bench edit {next(_nonce)}\n")
+        src.write_text(f"{original}\n// codspeed bench edit {next(_nonce)}\n")
 
     def restore():
-        EDIT_SRC.write_text(original)
+        src.write_text(original)
 
     try:
         benchmark.pedantic(
-            lambda: _run(bazel, *_BUILD_ARGS),
+            lambda: _run(bazel, wd, *_BUILD),
             setup=edit,
             teardown=restore,
             rounds=3,
             iterations=1,
         )
     finally:
-        EDIT_SRC.write_text(original)
+        src.write_text(original)

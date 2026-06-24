@@ -1,0 +1,46 @@
+load("@rules_java//java:defs.bzl", "java_binary", "java_library", "java_test")
+load("@rules_kotlin//kotlin:jvm.bzl", "kt_jvm_binary", "kt_jvm_library")
+
+package(default_visibility = ["//visibility:public"])
+
+# Mirror of e2e/integration's compile graph, target-for-target, with stock
+# rules instead of elide_*. The Elide-only targets there (`native_app` via
+# elide_native_image, `format` via elide_format) have no vanilla equivalent and
+# are not part of the compile A/B, so they are omitted.
+
+java_library(
+    name = "lib",
+    srcs = ["sample/Hello.java"],
+)
+
+java_binary(
+    name = "app",
+    srcs = ["sample/Main.java"],
+    main_class = "sample.Main",
+    deps = [":lib"],
+)
+
+kt_jvm_library(
+    name = "kt_lib",
+    srcs = ["sample/Greeter.kt"],
+    module_name = "greeter",
+    deps = [":lib"],
+)
+
+kt_jvm_binary(
+    name = "kt_app",
+    srcs = ["sample/App.kt"],
+    main_class = "sample.AppKt",
+    deps = [":kt_lib"],
+)
+
+java_test(
+    name = "HelloTest",
+    srcs = ["sample/HelloTest.java"],
+    test_class = "sample.HelloTest",
+    runtime_deps = ["@maven//:org_junit_platform_junit_platform_console_standalone"],
+    deps = [
+        ":lib",
+        "@maven//:org_junit_jupiter_junit_jupiter_api",
+    ],
+)

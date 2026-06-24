@@ -1,0 +1,23 @@
+module(name = "rules_elide_vanilla")
+
+# No-Elide baseline: the same sources/targets as e2e/integration, built with
+# stock rules_java / rules_kotlin. Lives in its own workspace (own output base,
+# only the default Kotlin toolchain registered) so no Elide toolchain or build
+# state can bleed in — giving an honest A/B against the Elide build for the
+# CodSpeed e2e benchmarks (benchmarks/codspeed/test_e2e_bench.py).
+bazel_dep(name = "rules_java", version = "9.6.1")
+bazel_dep(name = "rules_kotlin", version = "2.4.0")
+bazel_dep(name = "rules_jvm_external", version = "7.0")
+
+# Stock Kotlin toolchain only (no Elide).
+register_toolchains("@rules_kotlin//kotlin/internal:default_toolchain")
+
+# JUnit Platform deps via Maven for the test rule (mirrors e2e/integration).
+maven = use_extension("@rules_jvm_external//:extensions.bzl", "maven")
+maven.install(
+    artifacts = [
+        "org.junit.jupiter:junit-jupiter-api:5.10.2",
+        "org.junit.platform:junit-platform-console-standalone:1.10.2",
+    ],
+)
+use_repo(maven, "maven")
