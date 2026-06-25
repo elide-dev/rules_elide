@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.0](https://github.com/elide-dev/rules_elide/compare/v0.3.0...v0.4.0) (2026-06-25)
+
+
+### Features
+
+* **release:** target 0.4.0; run BCR publish in the `bcr` environment ([#54](https://github.com/elide-dev/rules_elide/issues/54)) ([58a61bb](https://github.com/elide-dev/rules_elide/commit/58a61bb1f4b38b88a4b2465060867eb1a22124cb))
+
 ## [0.3.0](https://github.com/elide-dev/rules_elide/compare/v0.2.0...v0.3.0) (2026-06-25)
 
 
