@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.0](https://github.com/elide-dev/rules_elide/compare/v0.1.0...v0.1.0) (2026-06-25)
+
+
+### Bug Fixes
+
+* **release:** support immutable releases (draft-&gt;publish) + fix BCR source fetch ([#40](https://github.com/elide-dev/rules_elide/issues/40)) ([63325e9](https://github.com/elide-dev/rules_elide/commit/63325e969f4e5d687a31f6f979bc84bc007bf9c8))
+
 ## 0.1.0 (2026-06-25)
 
 
