@@ -16,6 +16,10 @@ permissions:
 jobs:
   tests:
     name: tests (bazel ${{ matrix.bazel }} / ${{ matrix.os }})
+    # Skip release-please PRs: they only touch CHANGELOG/version files and are
+    # re-validated on main after merge. head_ref is empty on push, so main
+    # pushes are unaffected. (Same guard on the other PR-running jobs below.)
+    if: ${{ !startsWith(github.head_ref, 'release-please--') }}
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -43,6 +47,7 @@ jobs:
 
   e2e:
     name: e2e smoke (analysis)
+    if: ${{ !startsWith(github.head_ref, 'release-please--') }}
     runs-on: ubuntu-24.04
     steps:
       - name: Harden the runner (Audit all outbound calls)
@@ -62,6 +67,7 @@ jobs:
 
   lint:
     name: lint (pre-commit)
+    if: ${{ !startsWith(github.head_ref, 'release-please--') }}
     runs-on: ubuntu-24.04
     steps:
       - name: Harden the runner (Audit all outbound calls)
@@ -78,6 +84,7 @@ jobs:
 
   docs-freshness:
     name: docs freshness
+    if: ${{ !startsWith(github.head_ref, 'release-please--') }}
     runs-on: ubuntu-24.04
     steps:
       - name: Harden the runner (Audit all outbound calls)
@@ -155,9 +162,10 @@ jobs:
     # PRs — gate to same-repo events (main pushes + same-repo PRs). Like
     # `integration`, this also downloads the elide binary at repo-rule time.
     if: >-
-      github.event_name == 'push' ||
-      (github.event_name == 'pull_request' &&
-       github.event.pull_request.head.repo.full_name == github.repository)
+      !startsWith(github.head_ref, 'release-please--') &&
+      (github.event_name == 'push' ||
+       (github.event_name == 'pull_request' &&
+        github.event.pull_request.head.repo.full_name == github.repository))
     steps:
       - name: Harden the runner (Audit all outbound calls)
         uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411 # v2.19.4
