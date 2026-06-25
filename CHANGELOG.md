@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.5.1](https://github.com/elide-dev/rules_elide/compare/v0.5.0...v0.5.1) (2026-06-25)
+
+
+### Bug Fixes
+
+* **bcr:** move module() comment out so version-stamp can't corrupt MODULE.bazel ([#62](https://github.com/elide-dev/rules_elide/issues/62)) ([6c1eac3](https://github.com/elide-dev/rules_elide/commit/6c1eac326439e1e74e039a255c18a371ab81e6ba))
+
 ## [0.5.0](https://github.com/elide-dev/rules_elide/compare/v0.4.0...v0.5.0) (2026-06-25)
 
 
