@@ -16,12 +16,12 @@ permissions:
 jobs:
   tests:
     name: tests (bazel ${{ matrix.bazel }} / ${{ matrix.os }})
-    # Skip release-please PRs: they only touch CHANGELOG/version files and are
-    # re-validated on main after merge. Gated on SAME-REPO (head.repo == this
-    # repo) so a fork PR can't skip CI by naming its branch `release-please--*`;
-    # release-please branches only ever exist on our own repo. head.repo is null
-    # on push, so main pushes run. (Same guard on the other PR jobs below.)
-    if: ${{ github.event.pull_request.head.repo.full_name != github.repository || !startsWith(github.head_ref, 'release-please--') }}
+    # Skip only same-repo release-please PRs: they touch CHANGELOG/version files
+    # only and are re-validated on main after merge. The `event_name ==
+    # 'pull_request'` guard means push/schedule never read pull_request fields,
+    # and the same-repo check stops a fork PR from skipping CI by naming its
+    # branch `release-please--*`. (Same guard on the other PR jobs below.)
+    if: ${{ !(github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository && startsWith(github.head_ref, 'release-please--')) }}
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -49,7 +49,7 @@ jobs:
 
   e2e:
     name: e2e smoke (analysis)
-    if: ${{ github.event.pull_request.head.repo.full_name != github.repository || !startsWith(github.head_ref, 'release-please--') }}
+    if: ${{ !(github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository && startsWith(github.head_ref, 'release-please--')) }}
     runs-on: ubuntu-24.04
     steps:
       - name: Harden the runner (Audit all outbound calls)
@@ -69,7 +69,7 @@ jobs:
 
   lint:
     name: lint (pre-commit)
-    if: ${{ github.event.pull_request.head.repo.full_name != github.repository || !startsWith(github.head_ref, 'release-please--') }}
+    if: ${{ !(github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository && startsWith(github.head_ref, 'release-please--')) }}
     runs-on: ubuntu-24.04
     steps:
       - name: Harden the runner (Audit all outbound calls)
@@ -86,7 +86,7 @@ jobs:
 
   docs-freshness:
     name: docs freshness
-    if: ${{ github.event.pull_request.head.repo.full_name != github.repository || !startsWith(github.head_ref, 'release-please--') }}
+    if: ${{ !(github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository && startsWith(github.head_ref, 'release-please--')) }}
     runs-on: ubuntu-24.04
     steps:
       - name: Harden the runner (Audit all outbound calls)
