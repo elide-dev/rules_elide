@@ -30,11 +30,16 @@ jobs:
   walltime:
     name: compile benchmarks (walltime)
     # Self-hosted infra must not run untrusted fork code: gate to same-repo PRs
-    # (and main pushes). Fork PRs are skipped here.
+    # (and main pushes). Fork PRs are skipped here. Also skip release-please
+    # branches (e.g. `release-please--branches--main--…`): those PRs only touch
+    # CHANGELOG/version files, so benchmarking them just burns the dedicated
+    # bench runner.
     if: >-
-      github.event_name == 'push' ||
+      (github.event_name == 'push' &&
+       !startsWith(github.ref_name, 'release-please')) ||
       (github.event_name == 'pull_request' &&
-       github.event.pull_request.head.repo.full_name == github.repository)
+       github.event.pull_request.head.repo.full_name == github.repository &&
+       !startsWith(github.head_ref, 'release-please'))
     permissions:
       contents: read
       id-token: write  # OIDC auth to CodSpeed (no upload token needed)
