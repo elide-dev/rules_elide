@@ -138,6 +138,13 @@ jobs:
     with:
       tag_name: ${{ needs.release-please.outputs.tag_name }}
       registry_fork: elide-dev/bazel-central-registry
+      # Run publish-to-bcr's job in the `bcr` GitHub deployment environment
+      # (a reusable-workflow input — a `uses:` job can't take a top-level
+      # `environment:` key). Lets us gate/track the BCR deploy via Environments
+      # (protection rules / required reviewers). Requires a `bcr` environment in
+      # repo Settings → Environments. PUBLISH_TOKEN stays a repo/org secret
+      # (it's passed into the reusable workflow below).
+      environment: bcr
       # The release is still a DRAFT at this point (we publish in the `publish`
       # job, after BCR uploads its attestations), so the `tag_name` git tag does
       # not exist yet. publish-to-bcr checks out the module repo at
