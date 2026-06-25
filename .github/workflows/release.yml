@@ -91,6 +91,7 @@ jobs:
           cat usage_notes.md >> body.md
           gh release edit "$TAG" --notes-file body.md
       - name: Attest build provenance (Sigstore, SLSA Build L2)
+        id: attest
         uses: actions/attest-build-provenance@a2bbfa25375fe432b6a289bc6b6cd05ecd0c4c32  # v4.1.0
         with:
           subject-path: |
@@ -102,12 +103,28 @@ jobs:
         with:
           subject-path: rules_elide-${{ env.TAG }}.tar.gz
           sbom-path: rules_elide-${{ env.TAG }}.spdx.json
-      - name: Publish the release
-        # Until now the release was a draft (mutable) so we could attach assets;
-        # publishing finalizes it — and creates the real git tag. This is what
-        # makes the flow compatible with immutable releases (no post-publish
-        # asset uploads).
-        run: gh release edit "$TAG" --draft=false --latest
+      # Stage the workflow artifacts publish-to-bcr consumes (bazel-contrib
+      # release_ruleset's contract): `release_files` (the archives) and
+      # `attestations` (per-archive <name>.intoto.jsonl = the provenance bundle
+      # compacted via `jq -c`). The `bcr` job downloads these from this run, so
+      # it never fetches from the (draft/immutable) Release URL.
+      - name: Stage release_files + attestations for publish-to-bcr
+        run: |
+          mkdir -p attestations
+          for a in "rules_elide-${TAG}.tar.gz" "rules_elide-${TAG}.docs.tar.gz"; do
+            jq -c . < "${{ steps.attest.outputs.bundle-path }}" > "attestations/${a}.intoto.jsonl"
+          done
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
+        with:
+          name: release_files
+          path: |
+            rules_elide-${{ env.TAG }}.tar.gz
+            rules_elide-${{ env.TAG }}.docs.tar.gz
+            rules_elide-${{ env.TAG }}.spdx.json
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
+        with:
+          name: attestations
+          path: attestations/
 
   bcr:
     name: publish to BCR
@@ -121,17 +138,35 @@ jobs:
     with:
       tag_name: ${{ needs.release-please.outputs.tag_name }}
       registry_fork: elide-dev/bazel-central-registry
-      # We don't use bazel-contrib's release_ruleset, so the `release_files` /
-      # `attestations` workflow artifacts it would publish don't exist. Disable
-      # the default artifact download; publish-to-bcr then computes the source
-      # integrity by fetching the archive from the published Release URL in
-      # source.json instead.
-      download_default_release_artifacts: false
-      # Attest the BCR entry. REQUIRES immutable releases to be OFF: the attest
-      # path runs an "Upload attestations to release" step
-      # (softprops/action-gh-release) that pushes files back to the source
-      # Release, which an immutable release rejects. (GitHub-side build
-      # provenance + SBOM are still attached in the `assets` job regardless.)
+      # Consume the `release_files` + `attestations` workflow artifacts the
+      # `assets` job uploaded in this run (defaults: download_default_release_artifacts
+      # = true, release_artifacts_run_id = github.run_id). publish-to-bcr (>= the
+      # PR #375 fix, present in v1.4.1) uses these LOCAL artifacts rather than
+      # fetching from the Release URL — which is exactly what makes it work with
+      # draft / immutable releases. `attest: true` attaches provenance to the
+      # BCR entry (and, in draft mode, to the still-draft Release).
       attest: true
     secrets:
       publish_token: ${{ secrets.PUBLISH_TOKEN }}
+
+  # Publish the draft release only AFTER BCR has attached its attestations (both
+  # asset upload and attestation upload need a mutable draft). Publishing here
+  # finalizes the release — creating the real tag and baking in all assets — so
+  # the flow is compatible with immutable releases (no post-publish uploads).
+  publish:
+    name: publish the release
+    needs: [release-please, bcr]
+    if: needs.release-please.outputs.release_created == 'true'
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    env:
+      TAG: ${{ needs.release-please.outputs.tag_name }}
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - name: Harden the runner (Audit all outbound calls)
+        uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411  # v2.19.4
+        with:
+          egress-policy: audit
+      - name: Publish the draft release
+        run: gh release edit "$TAG" --draft=false --latest

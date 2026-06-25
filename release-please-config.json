@@ -8,7 +8,7 @@
       "include-component-in-tag": false,
       "bump-minor-pre-major": true,
       "bump-patch-for-minor-pre-major": false,
-      "release-as": "0.2.0",
+      "release-as": "0.3.0",
       "draft": true,
       "prerelease": false
     }
