@@ -53,7 +53,7 @@
       "changelog-path": "CHANGELOG.md",
       "include-component-in-tag": false,
       "bump-minor-pre-major": true,
-      "bump-patch-for-minor-pre-major": true,
+      "bump-patch-for-minor-pre-major": false,
       "draft": false,
       "prerelease": false
     }
@@ -61,13 +61,13 @@
 }
 ```
 
-Notes: `include-component-in-tag: false` ⇒ tags are `vX.Y.Z` (not `rules_elide-vX.Y.Z`). `release-type: "simple"` tracks the version in the manifest (no in-repo version file is updated, which is correct for a Bazel module). The pre-major bump flags keep `0.x` releases moving by minor/patch.
+Notes: `include-component-in-tag: false` ⇒ tags are `vX.Y.Z` (not `rules_elide-vX.Y.Z`). `release-type: "simple"` tracks the version in the manifest (no in-repo version file is updated, which is correct for a Bazel module). With `bump-minor-pre-major: true` and `bump-patch-for-minor-pre-major: false`, pre-1.0 `feat` commits bump the minor version (breaking changes are capped at minor), so from the `0.0.0` baseline the first release is `0.1.0`.
 
-- [ ] **Step 2: Create `.release-please-manifest.json`** (seed initial version)
+- [ ] **Step 2: Create `.release-please-manifest.json`** (seed the last-released baseline; release-please bumps from here)
 
 ```json
 {
-  ".": "0.1.0"
+  ".": "0.0.0"
 }
 ```
 
@@ -86,7 +86,7 @@ Expected: `ok`
 
 ```bash
 git add release-please-config.json .release-please-manifest.json CHANGELOG.md
-git commit -m "chore(release): add release-please config (seed 0.1.0)"
+git commit -m "chore(release): add release-please config (seed 0.0.0)"
 ```
 
 ---

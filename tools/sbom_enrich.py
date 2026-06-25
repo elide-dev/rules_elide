@@ -47,7 +47,7 @@ def enrich(spdx, deps):
             "externalRefs": [{
                 "referenceCategory": "PACKAGE-MANAGER",
                 "referenceType": "purl",
-                "referenceLocator": "pkg:bazel/%s@%s" % (name, version),
+                "referenceLocator": "pkg:generic/bazel/%s@%s" % (name, version),
             }],
         })
         relationships.append({
@@ -62,12 +62,12 @@ def main(argv):
     if len(argv) != 3:
         sys.exit("usage: sbom_enrich.py <spdx.json> <MODULE.bazel>")
     spdx_path, module_path = argv[1], argv[2]
-    with open(spdx_path) as f:
+    with open(spdx_path, encoding="utf-8") as f:
         spdx = json.load(f)
-    with open(module_path) as f:
+    with open(module_path, encoding="utf-8") as f:
         deps = parse_bazel_deps(f.read())
     enrich(spdx, deps)
-    with open(spdx_path, "w") as f:
+    with open(spdx_path, "w", encoding="utf-8") as f:
         json.dump(spdx, f, indent=2)
         f.write("\n")
     print("enriched %s with %d bazel_dep package(s)" % (spdx_path, len(deps)))

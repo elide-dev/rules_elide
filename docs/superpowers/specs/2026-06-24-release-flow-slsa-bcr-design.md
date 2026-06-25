@@ -79,7 +79,10 @@ BCR test module.
 - `release-type: "simple"`, version tracked in the manifest. **No `version`
   field is added to `MODULE.bazel`** — BCR derives the version from the release
   tag, and the root module omits its own version by convention.
-- Generates and maintains `CHANGELOG.md`. Seed initial version `0.1.0`.
+- Generates and maintains `CHANGELOG.md`. The manifest is seeded to `0.0.0`
+  (the last-released baseline) with `bump-minor-pre-major: true` and
+  `bump-patch-for-minor-pre-major: false`, so the first `feat`-driven release is
+  `0.1.0`.
 - Conventional Commits are already enforced by the commitizen pre-commit hook,
   so no new contributor-facing convention is introduced.
 - Runs with the default `GITHUB_TOKEN` (sufficient: it opens the release PR and,
@@ -122,7 +125,7 @@ BCR test module.
 
 **Add**
 - `release-please-config.json`
-- `.release-please-manifest.json` (`{ ".": "0.1.0" }`)
+- `.release-please-manifest.json` (`{ ".": "0.0.0" }`)
 - `CHANGELOG.md` (seed)
 - `tools/sbom_prep.sh` (SPDX generation + `MODULE.bazel` dep enrichment)
 

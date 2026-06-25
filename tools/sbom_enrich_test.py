@@ -1,6 +1,13 @@
 # SPDX-License-Identifier: Apache-2.0
 """Tests for the SPDX SBOM bazel_dep enrichment helper."""
 
+import os
+import sys
+
+# Make the test runnable from any working directory (e.g. repo root in CI), not
+# only from within tools/: ensure this file's directory is on sys.path.
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+
 from sbom_enrich import enrich, parse_bazel_deps
 
 _MODULE = """
@@ -28,7 +35,7 @@ def test_enrich_adds_package_and_relationship():
     enrich(spdx, [("platforms", "1.1.0")])
     pkg = next(p for p in spdx["packages"] if p.get("name") == "platforms")
     assert pkg["versionInfo"] == "1.1.0"
-    assert pkg["externalRefs"][0]["referenceLocator"] == "pkg:bazel/platforms@1.1.0"
+    assert pkg["externalRefs"][0]["referenceLocator"] == "pkg:generic/bazel/platforms@1.1.0"
     rel = spdx["relationships"][0]
     assert rel["relationshipType"] == "DEPENDS_ON"
     assert rel["spdxElementId"] == "SPDXRef-Package-root"
