@@ -1,6 +1,10 @@
+# protobuf 35.x, a transitive proto dep, is Bazel 8+ only, so require >=8.0.0.
+# Keep this note above the module directive and free of parentheses: BCR's
+# version stamper inserts the version at the first close-paren after the
+# directive opens, so a stray paren here corrupts the published MODULE.bazel.
+# v0.5.0 failed BCR this way: a parenthesis in this comment broke the stamp.
 module(
     name = "rules_elide",
-    # Bazel 8+ only: protobuf 35.x (a transitive proto dep) requires >=8.0.0.
     bazel_compatibility = [">=8.0.0"],
 )
 
