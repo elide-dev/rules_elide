@@ -316,14 +316,14 @@ def run_kotlinc(ctx, output_jar):
                 abi_args.add("-Xplugin=" + f.path)
         for o in ctx.attr.kotlinc_opts:
             abi_args.add(o)
-        abi_args.add_all(kt_srcs)
+        abi_args.add_all(kt_srcs + java_srcs)
         _run_elide_compile(
             ctx,
             mnemonic = "ElideKotlincAbi",
             subcommand = "kotlinc",
             tool_args = abi_args,
             inputs = depset(
-                direct = kt_srcs,
+                direct = kt_srcs + java_srcs,
                 transitive = [classpath, plugin_cp, friend_jars, elide.compile_tool_files],
             ),
             outputs = [abi_jar],

@@ -107,6 +107,11 @@ def _abi_avoidance_mixed_test_impl(ctx):
     abis = [a for a in actions if a.mnemonic == "ElideKotlincAbi"]
     asserts.equals(env, 1, len(abis), "mixed kt+java must emit one --abi-only action")
     asserts.true(env, "--abi-only" in abis[0].argv, "abi action must pass `--abi-only`")
+    asserts.true(
+        env,
+        any([a.endswith(".java") for a in abis[0].argv]),
+        "abi action must pass the Java sources so their ABI is emitted (not Kotlin-only)",
+    )
     compile_jars = analysistest.target_under_test(env)[JavaInfo].compile_jars.to_list()
     asserts.true(
         env,
