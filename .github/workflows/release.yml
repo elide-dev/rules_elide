@@ -172,6 +172,10 @@ jobs:
       author_email: elidebot@elide.dev
       committer_name: elidebot
       committer_email: elidebot@elide.dev
+      # Push the entry branch to the fork (as elidebot, via publish_token) but do
+      # NOT open the PR here — the `bcr-pr` job below opens it under sgammon's own
+      # token so he controls the PR (mark ready, etc.) independently of the bot.
+      open_pull_request: false
     secrets:
       publish_token: ${{ secrets.PUBLISH_TOKEN }}
 
@@ -243,3 +247,45 @@ jobs:
         # fail with "not a git repository". (Harmless when the signing path has
         # checked out the repo.)
         run: gh release edit "$TAG" --repo "$GITHUB_REPOSITORY" --draft=false --latest
+
+  # Open the BCR pull request under sgammon's OWN token (PR_TOKEN_SGAMMON: repo
+  # scope on his account, used ONLY here) rather than the bot's. publish-to-bcr
+  # already pushed the entry branch `rules_elide-<tag>` to the fork as elidebot
+  # (open_pull_request: false above); filing the PR here makes sgammon the PR
+  # author, so he controls it (e.g. mark ready for review). The commit's
+  # author/committer remain elidebot, so the CLA check is unaffected. Runs AFTER
+  # `publish` so the release asset the BCR presubmit downloads is already public
+  # (the PR is opened as a draft for sgammon to take ready himself).
+  bcr-pr:
+    name: open the BCR pull request
+    needs: [release-please, publish]
+    if: needs.release-please.outputs.release_created == 'true'
+    runs-on: ubuntu-24.04
+    environment: bcr
+    env:
+      TAG: ${{ needs.release-please.outputs.tag_name }}
+    steps:
+      - name: Harden the runner (Audit all outbound calls)
+        uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411  # v2.19.4
+        with:
+          egress-policy: audit
+      - name: Open the BCR pull request as sgammon
+        env:
+          PR_TOKEN: ${{ secrets.PR_TOKEN_SGAMMON }}
+        run: |
+          set -o errexit -o nounset -o pipefail
+          version="${TAG#v}"
+          body="$(printf 'Release: https://github.com/%s/releases/tag/%s\n\n_Filed by the rules_elide release workflow under @sgammon; entry pushed by elidebot._' "$GITHUB_REPOSITORY" "$TAG")"
+          request="$(jq --null-input \
+            --arg title "rules_elide@${version}" \
+            --arg body "$body" \
+            --arg head "elide-dev:rules_elide-${TAG}" \
+            --arg base "main" \
+            '{title: $title, body: $body, head: $head, base: $base, maintainer_can_modify: true, draft: true}')"
+          curl --fail-with-body --location --silent --show-error \
+            --request POST \
+            --header "Accept: application/vnd.github+json" \
+            --header "Authorization: Bearer ${PR_TOKEN}" \
+            --header "X-GitHub-Api-Version: 2022-11-28" \
+            https://api.github.com/repos/bazelbuild/bazel-central-registry/pulls \
+            --data "$request"
