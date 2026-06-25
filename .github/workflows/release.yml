@@ -30,6 +30,11 @@ jobs:
       - uses: googleapis/release-please-action@45996ed1f6d02564a971a2fa1b5860e934307cf7  # v5.0.0
         id: rp
         with:
+          # The enterprise policy forbids the default GITHUB_TOKEN from creating
+          # pull requests, so release-please authenticates with a PAT (a user
+          # token is not subject to that Actions policy). PUBLISH_TOKEN is a
+          # classic PAT with `repo` + `workflow` scope.
+          token: ${{ secrets.PUBLISH_TOKEN }}
           config-file: release-please-config.json
           manifest-file: .release-please-manifest.json
 
