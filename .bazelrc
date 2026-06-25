@@ -48,6 +48,7 @@ common:buildbuddy --remote_cache=grpcs://elide-dev.buildbuddy.io
 common:buildbuddy --remote_cache_compression
 common:buildbuddy --remote_upload_local_results
 common:buildbuddy --remote_timeout=3h
+common:buildbuddy --java_runtime_version=remotejdk_11
 
 # Remote execution on top of the cache. The Elide toolchain ships its native
 # binary to the executor as an action input, so the stock public glibc image

@@ -9,7 +9,7 @@ actions:
         branches:
           - "*"
     steps:
-      - run: "bazel build //docs/..."
+      - run: "bazel build --config=ci --config=buildbuddy //docs/..."
   - name: "test //tests/..."
     container_image: "ubuntu-24.04"
     triggers:
@@ -20,4 +20,4 @@ actions:
         branches:
           - "*"
     steps:
-      - run: "bazel test //tests/..."
+      - run: "bazel test --config=ci --config=buildbuddy //tests/..."
