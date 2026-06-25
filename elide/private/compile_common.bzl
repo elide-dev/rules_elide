@@ -291,9 +291,9 @@ def run_kotlinc(ctx, output_jar):
     # every dependent rebuild, and dependents key on this fast action rather than
     # the full compile. const/inline/signature changes still change the header,
     # keeping pruning sound (verified by //e2e/abi_avoidance). `--abi-only` emits
-    # Kotlin ABI only, so this is scoped to kt-only targets; mixed kt+java keeps
-    # the run_ijar compile jar.
-    abi_avoidance = ctx.attr._abi_compile_avoidance[BuildSettingInfo].value and has_kt and not has_java
+    # both the Kotlin ABI and the Java ABI (via the bundled Java header compiler),
+    # so it covers mixed kt+java targets as well as kt-only ones.
+    abi_avoidance = ctx.attr._abi_compile_avoidance[BuildSettingInfo].value and has_kt
 
     abi_jar = None
     if abi_avoidance:

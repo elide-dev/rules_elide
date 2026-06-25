@@ -17,8 +17,8 @@
 #
 # It also pins the two implementation-critical `--abi-only` behaviors the rule
 # wiring depends on: it accepts a `-d <jar>` output, and on mixed kt+java it
-# emits Kotlin ABI ONLY (hence the rule scopes avoidance to kt-only targets;
-# mixed-source support is filed upstream).
+# emits both the Kotlin and Java ABI (so the header is complete for mixed
+# targets).
 #
 # Usage:  ELIDE=/path/to/elide ./run.sh        (or: ./run.sh /path/to/elide)
 # Exits non-zero if any assertion fails.
@@ -100,18 +100,18 @@ else
   echo "  FAIL jar-output             -d <jar> did not produce a class jar" >&2; rc=1
 fi
 
-# (2) mixed kt+java: --abi-only emits Kotlin ABI only (no Java class). This is
-# WHY the rule scopes avoidance to kt-only; mixed support is upstream.
+# (2) mixed kt+java: --abi-only emits both the Kotlin and Java ABI, so the
+# header is complete and the rule can use it for mixed targets too.
 printf 'package s\nclass K { fun f(): Int = 1 }\n' > "$WORK/K.kt"
 printf 'package s;\npublic final class L { public static int g() { return 2; } }\n' > "$WORK/L.java"
 mkdir -p "$WORK/mx"
 "$ELIDE" kotlinc --abi-only -- -d "$WORK/mx" -cp . "$WORK/K.kt" "$WORK/L.java" >/dev/null 2>&1
 has_k=$([ -f "$WORK/mx/s/K.class" ] && echo 1 || echo 0)
 has_l=$([ -f "$WORK/mx/s/L.class" ] && echo 1 || echo 0)
-if [ "$has_k" = 1 ] && [ "$has_l" = 0 ]; then
-  echo "  ok   mixed-kotlin-only     --abi-only emits Kotlin ABI only (Java dropped)"
+if [ "$has_k" = 1 ] && [ "$has_l" = 1 ]; then
+  echo "  ok   mixed-kt-and-java     --abi-only emits both Kotlin and Java ABI"
 else
-  echo "  FAIL mixed-kotlin-only     expected K.class only (K=$has_k L=$has_l)" >&2; rc=1
+  echo "  FAIL mixed-kt-and-java     expected K.class and L.class (K=$has_k L=$has_l)" >&2; rc=1
 fi
 
 echo
