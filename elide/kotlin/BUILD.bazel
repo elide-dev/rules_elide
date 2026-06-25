@@ -7,5 +7,4 @@ exports_files(["toolchain.bzl"])
 bzl_library(
     name = "toolchain",
     srcs = ["toolchain.bzl"],
-    deps = ["@rules_kotlin//kotlin:core"],
 )

@@ -1,5 +1,15 @@
 # Files excluded from `git archive` / release tarballs.
-e2e export-ignore
+# NOTE: do NOT export-ignore `e2e` wholesale — `e2e/smoke` is the BCR test
+# module (`.bcr/presubmit.yml` -> bcr_test_module: module_path: e2e/smoke) and
+# MUST ship in the released archive that BCR extracts. Exclude the other,
+# heavier e2e workspaces individually instead; `e2e/smoke` stays in the archive.
+e2e/abi_avoidance export-ignore
+e2e/ic_correctness export-ignore
+e2e/integration export-ignore
+e2e/kotlin_builder export-ignore
+e2e/rbe export-ignore
+e2e/vanilla export-ignore
+e2e/gen_fixture.py export-ignore
 tests export-ignore
 tools export-ignore
 docs/BUILD.bazel export-ignore

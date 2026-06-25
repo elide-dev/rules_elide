@@ -159,13 +159,34 @@ jobs:
       # draft / immutable releases. `attest: true` attaches provenance to the
       # BCR entry (and, in draft mode, to the still-draft Release).
       attest: true
+      # Commit the BCR entry as a single, stable bot identity. The Google CLA
+      # check (cla/google) verifies EVERY commit author AND committer in the PR.
+      # By default publish-to-bcr authors the commit as `github.actor` (whoever
+      # merged the release PR) and commits as `github-actions[bot]` — so the CLA
+      # would be gated on the bot AND on each releaser individually. Pinning both
+      # to `elidebot` means exactly one identity must be CLA-covered.
+      # PREREQUISITE: the elidebot GitHub account must have `elidebot@elide.dev`
+      # as a verified email and have signed Google's CLA (or be listed under
+      # Elide's corporate CLA), or cla/google will fail on `elidebot` instead.
+      author_name: elidebot
+      author_email: elidebot@elide.dev
+      committer_name: elidebot
+      committer_email: elidebot@elide.dev
     secrets:
       publish_token: ${{ secrets.PUBLISH_TOKEN }}
 
   # Publish the draft release only AFTER BCR has attached its attestations (both
   # asset upload and attestation upload need a mutable draft). Publishing here
-  # finalizes the release — creating the real tag and baking in all assets — so
-  # the flow is compatible with immutable releases (no post-publish uploads).
+  # finalizes the release and binds the git tag, so the flow is compatible with
+  # immutable releases (no post-publish uploads).
+  #
+  # Tag signing: when an elidebot GPG key is configured (ELIDEBOT_GPG_PRIVATE_KEY
+  # secret), we create a GPG-SIGNED ANNOTATED tag at the release commit and push
+  # it as elidebot BEFORE un-drafting; GitHub then binds the release to that
+  # existing signed tag (shown "Verified") instead of auto-creating a lightweight
+  # one. Without the secret, this degrades gracefully: no tag is pushed and
+  # un-drafting creates the usual lightweight tag — so this is safe to merge
+  # before the key exists.
   publish:
     name: publish the release
     needs: [release-please, bcr]
@@ -181,5 +202,44 @@ jobs:
         uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411  # v2.19.4
         with:
           egress-policy: audit
+      - name: Detect elidebot signing key
+        id: gpg
+        env:
+          GPG_KEY: ${{ secrets.ELIDEBOT_GPG_PRIVATE_KEY }}
+        run: |
+          if [ -n "$GPG_KEY" ]; then
+            echo "enabled=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "enabled=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::ELIDEBOT_GPG_PRIVATE_KEY not set — publishing with an unsigned lightweight tag."
+          fi
+      - name: Check out the release commit (for tagging)
+        if: steps.gpg.outputs.enabled == 'true'
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+        with:
+          ref: ${{ github.sha }}
+          # Push the signed tag as elidebot, not the default Actions token.
+          token: ${{ secrets.PUBLISH_TOKEN }}
+      - name: Import elidebot GPG key
+        if: steps.gpg.outputs.enabled == 'true'
+        uses: step-security/ghaction-import-gpg@c0b4a334b9b72bfaaebec86ef022a78a5b17f828  # v7.0.0
+        with:
+          # The elidebot key has no passphrase, so only the private-key secret is
+          # needed (no `passphrase:` input).
+          gpg_private_key: ${{ secrets.ELIDEBOT_GPG_PRIVATE_KEY }}
+          # Configure git to sign tags and set user.name/email from the key UID
+          # (elidebot <elidebot@elide.dev>), so the tagger matches a CLA/Verified
+          # identity.
+          git_user_signingkey: true
+          git_tag_gpgsign: true
+      - name: Create + push the signed annotated tag
+        if: steps.gpg.outputs.enabled == 'true'
+        run: |
+          git tag -s "$TAG" -m "Release $TAG" "$GITHUB_SHA"
+          git push origin "refs/tags/$TAG"
       - name: Publish the draft release
-        run: gh release edit "$TAG" --draft=false --latest
+        # --repo is required because the no-signing path runs WITHOUT a checkout:
+        # `gh` would otherwise try to infer the repo from a local git remote and
+        # fail with "not a git repository". (Harmless when the signing path has
+        # checked out the repo.)
+        run: gh release edit "$TAG" --repo "$GITHUB_REPOSITORY" --draft=false --latest
