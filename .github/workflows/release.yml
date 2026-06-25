@@ -238,4 +238,8 @@ jobs:
           git tag -s "$TAG" -m "Release $TAG" "$GITHUB_SHA"
           git push origin "refs/tags/$TAG"
       - name: Publish the draft release
-        run: gh release edit "$TAG" --draft=false --latest
+        # --repo is required because the no-signing path runs WITHOUT a checkout:
+        # `gh` would otherwise try to infer the repo from a local git remote and
+        # fail with "not a git repository". (Harmless when the signing path has
+        # checked out the repo.)
+        run: gh release edit "$TAG" --repo "$GITHUB_REPOSITORY" --draft=false --latest
