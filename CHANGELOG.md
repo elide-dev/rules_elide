@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.0](https://github.com/elide-dev/rules_elide/compare/v0.2.0...v0.3.0) (2026-06-25)
+
+
+### Features
+
+* **release:** official BCR artifact flow (immutable-release compatible) ([#48](https://github.com/elide-dev/rules_elide/issues/48)) ([19bae81](https://github.com/elide-dev/rules_elide/commit/19bae81548ce57b09e10e652e01103219df99440))
+
 ## 0.2.0 (2026-06-25)
 
 ### Added
