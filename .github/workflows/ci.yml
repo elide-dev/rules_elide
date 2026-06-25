@@ -17,9 +17,11 @@ jobs:
   tests:
     name: tests (bazel ${{ matrix.bazel }} / ${{ matrix.os }})
     # Skip release-please PRs: they only touch CHANGELOG/version files and are
-    # re-validated on main after merge. head_ref is empty on push, so main
-    # pushes are unaffected. (Same guard on the other PR-running jobs below.)
-    if: ${{ !startsWith(github.head_ref, 'release-please--') }}
+    # re-validated on main after merge. Gated on SAME-REPO (head.repo == this
+    # repo) so a fork PR can't skip CI by naming its branch `release-please--*`;
+    # release-please branches only ever exist on our own repo. head.repo is null
+    # on push, so main pushes run. (Same guard on the other PR jobs below.)
+    if: ${{ github.event.pull_request.head.repo.full_name != github.repository || !startsWith(github.head_ref, 'release-please--') }}
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -47,7 +49,7 @@ jobs:
 
   e2e:
     name: e2e smoke (analysis)
-    if: ${{ !startsWith(github.head_ref, 'release-please--') }}
+    if: ${{ github.event.pull_request.head.repo.full_name != github.repository || !startsWith(github.head_ref, 'release-please--') }}
     runs-on: ubuntu-24.04
     steps:
       - name: Harden the runner (Audit all outbound calls)
@@ -67,7 +69,7 @@ jobs:
 
   lint:
     name: lint (pre-commit)
-    if: ${{ !startsWith(github.head_ref, 'release-please--') }}
+    if: ${{ github.event.pull_request.head.repo.full_name != github.repository || !startsWith(github.head_ref, 'release-please--') }}
     runs-on: ubuntu-24.04
     steps:
       - name: Harden the runner (Audit all outbound calls)
@@ -84,7 +86,7 @@ jobs:
 
   docs-freshness:
     name: docs freshness
-    if: ${{ !startsWith(github.head_ref, 'release-please--') }}
+    if: ${{ github.event.pull_request.head.repo.full_name != github.repository || !startsWith(github.head_ref, 'release-please--') }}
     runs-on: ubuntu-24.04
     steps:
       - name: Harden the runner (Audit all outbound calls)
