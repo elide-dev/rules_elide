@@ -182,4 +182,7 @@ jobs:
         with:
           egress-policy: audit
       - name: Publish the draft release
-        run: gh release edit "$TAG" --draft=false --latest
+        # --repo is required: this job has no checkout, so without it `gh`
+        # tries to infer the repo from a local git remote and fails with
+        # "not a git repository".
+        run: gh release edit "$TAG" --repo "$GITHUB_REPOSITORY" --draft=false --latest
