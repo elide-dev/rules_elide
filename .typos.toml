@@ -6,3 +6,8 @@ extend-exclude = [
   "MODULE.bazel.lock",
   "bazel-*",
 ]
+
+# Known-good words typos would otherwise flag.
+[default.extend-words]
+# in-toto attestation format (e.g. `<archive>.intoto.jsonl`); not a typo of "into".
+intoto = "intoto"
