@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.5.0](https://github.com/elide-dev/rules_elide/compare/v0.4.0...v0.5.0) (2026-06-25)
+
+
+### Features
+
+* **release:** trusted BCR release — presubmit fixes, CLA identity, signed tags ([#58](https://github.com/elide-dev/rules_elide/issues/58)) ([5b680b9](https://github.com/elide-dev/rules_elide/commit/5b680b966af6bd72f5c5fee083e8b110435e822f))
+
 ## [0.4.0](https://github.com/elide-dev/rules_elide/compare/v0.3.0...v0.4.0) (2026-06-25)
 
 
