@@ -127,5 +127,11 @@ jobs:
       # integrity by fetching the archive from the published Release URL in
       # source.json instead.
       download_default_release_artifacts: false
+      # Attest the BCR entry. REQUIRES immutable releases to be OFF: the attest
+      # path runs an "Upload attestations to release" step
+      # (softprops/action-gh-release) that pushes files back to the source
+      # Release, which an immutable release rejects. (GitHub-side build
+      # provenance + SBOM are still attached in the `assets` job regardless.)
+      attest: true
     secrets:
       publish_token: ${{ secrets.PUBLISH_TOKEN }}
