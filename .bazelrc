@@ -48,11 +48,12 @@ common:buildbuddy --remote_cache=grpcs://elide-dev.buildbuddy.io
 common:buildbuddy --remote_cache_compression
 common:buildbuddy --remote_upload_local_results
 common:buildbuddy --remote_timeout=3h
-common:buildbuddy --java_language_version=11
-common:buildbuddy --java_runtime_version=11
-common:buildbuddy --tool_java_language_version=11
-common:buildbuddy --tool_java_runtime_version=11
-common:buildbuddy --java_runtime_version=remotejdk_11
+# Run tests/tools on a JDK that can load the test bytecode: the
+# tests/kotlin_builder targets compile to -jvm-target=21 (class 65), and the
+# hermetic test launcher ships this runtime for `elide java`. (Both the target
+# and exec/tool runtimes, as a version label — not a bare language level.)
+common:buildbuddy --java_runtime_version=remotejdk_21
+common:buildbuddy --tool_java_runtime_version=remotejdk_21
 common:buildbuddy --noslim_profile
 common:buildbuddy --experimental_profile_include_target_label
 common:buildbuddy --experimental_profile_include_primary_output
