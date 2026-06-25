@@ -57,8 +57,15 @@ jobs:
           egress-policy: audit
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
         with:
-          ref: ${{ needs.release-please.outputs.tag_name }}
-          fetch-depth: 0   # release_prep.sh runs `git archive <tag>`
+          # The release is a DRAFT here (immutable-releases compatible), so the
+          # git tag does not exist yet — check out the release-PR merge commit
+          # (github.sha, the commit release-please released) rather than the tag.
+          fetch-depth: 0
+      - name: Tag the checked-out commit locally for the source archive
+        # release_prep.sh runs `git archive <tag>`; create the tag locally so the
+        # archive resolves. The real remote tag is created when the draft is
+        # published below.
+        run: git tag --force "$TAG"
       - name: Build release assets
         run: .github/workflows/release_prep.sh "$TAG" > usage_notes.md
       - name: Generate SPDX SBOM (syft)
@@ -95,6 +102,12 @@ jobs:
         with:
           subject-path: rules_elide-${{ env.TAG }}.tar.gz
           sbom-path: rules_elide-${{ env.TAG }}.spdx.json
+      - name: Publish the release
+        # Until now the release was a draft (mutable) so we could attach assets;
+        # publishing finalizes it — and creates the real git tag. This is what
+        # makes the flow compatible with immutable releases (no post-publish
+        # asset uploads).
+        run: gh release edit "$TAG" --draft=false --latest
 
   bcr:
     name: publish to BCR
@@ -108,5 +121,11 @@ jobs:
     with:
       tag_name: ${{ needs.release-please.outputs.tag_name }}
       registry_fork: elide-dev/bazel-central-registry
+      # We don't use bazel-contrib's release_ruleset, so the `release_files` /
+      # `attestations` workflow artifacts it would publish don't exist. Disable
+      # the default artifact download; publish-to-bcr then computes the source
+      # integrity by fetching the archive from the published Release URL in
+      # source.json instead.
+      download_default_release_artifacts: false
     secrets:
       publish_token: ${{ secrets.PUBLISH_TOKEN }}
