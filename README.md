@@ -205,6 +205,8 @@ See [`e2e/smoke/README.md`](e2e/smoke/README.md) for the full flow.
 
 Semantic versioning. `compatibility_level = 1` until a hard API break.
 
+Releases are automated via [release-please](https://github.com/googleapis/release-please) and published to [GitHub Releases](https://github.com/elide-dev/rules_elide/releases) and the [Bazel Central Registry](https://registry.bazel.build/) with Sigstore-signed build provenance and SBOMs. See [RELEASING.md](RELEASING.md) for details.
+
 ## License
 
 Apache 2.0. See [LICENSE](LICENSE).
