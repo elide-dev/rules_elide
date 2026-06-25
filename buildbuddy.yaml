@@ -1,0 +1,23 @@
+actions:
+  - name: "build //docs/..."
+    container_image: "ubuntu-24.04"
+    triggers:
+      push:
+        branches:
+          - "main"
+      pull_request:
+        branches:
+          - "*"
+    steps:
+      - run: "bazel build --config=ci --config=buildbuddy //docs/..."
+  - name: "test //tests/..."
+    container_image: "ubuntu-24.04"
+    triggers:
+      push:
+        branches:
+          - "main"
+      pull_request:
+        branches:
+          - "*"
+    steps:
+      - run: "bazel test --config=ci --config=buildbuddy //tests/..."

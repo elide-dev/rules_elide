@@ -1,0 +1,57 @@
+load(
+    "@rules_elide//elide:defs.bzl",
+    "elide_java_library",
+    "elide_java_test",
+    "elide_kotlin_binary",
+    "elide_kotlin_library",
+)
+
+package(default_visibility = ["//visibility:public"])
+
+# Minimal cross-language graph, exercised end-to-end on BuildBuddy RBE:
+#   lib (Java)  <-  kt_lib (Kotlin, depends on Java)  <-  kt_app (Kotlin binary)
+#   lib (Java)  <-  HelloTest (JUnit test action)
+# This proves both compile and test actions run remotely through the Elide
+# toolchain across the Java/Kotlin boundary.
+
+# Compile Java to bytecode level 11 (class file version 55). Under remote
+# execution the JUnit test runs via `elide java`, which on the public RBE image
+# (rbe-ubuntu20-04) falls back to the image's system JDK — Java 11. Elide's
+# javac otherwise defaults to JDK 25 bytecode (class 69), which that runtime
+# can't load (UnsupportedClassVersionError). 11 is the floor the executor runs.
+_JAVA11 = [
+    "--release",
+    "11",
+]
+
+elide_java_library(
+    name = "lib",
+    srcs = ["sample/Hello.java"],
+    javac_opts = _JAVA11,
+)
+
+elide_kotlin_library(
+    name = "kt_lib",
+    srcs = ["sample/Greeter.kt"],
+    module_name = "greeter",
+    deps = [":lib"],  # cross-language: Kotlin -> Java
+)
+
+elide_kotlin_binary(
+    name = "kt_app",
+    srcs = ["sample/App.kt"],
+    main_class = "sample.AppKt",
+    deps = [":kt_lib"],
+)
+
+elide_java_test(
+    name = "HelloTest",
+    srcs = ["sample/HelloTest.java"],
+    javac_opts = _JAVA11,
+    test_class = "sample.HelloTest",
+    runtime_deps = ["@maven//:org_junit_platform_junit_platform_console_standalone"],
+    deps = [
+        ":lib",
+        "@maven//:org_junit_jupiter_junit_jupiter_api",
+    ],
+)

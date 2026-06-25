@@ -1,0 +1,33 @@
+module(name = "rules_elide_rbe")
+
+bazel_dep(name = "rules_elide", version = "0.0.0")
+local_path_override(
+    module_name = "rules_elide",
+    path = "../..",
+)
+
+# platforms is needed directly here: //tools/platforms:rbe_linux_amd64 references
+# @platforms//os and @platforms//cpu constraints.
+bazel_dep(name = "platforms", version = "1.1.0")
+bazel_dep(name = "rules_jvm_external", version = "7.0")
+
+# Real Elide toolchain (downloads the binary at repo-rule time, like
+# e2e/integration). Under RBE the binary is shipped to the executor as an input.
+elide = use_extension("@rules_elide//elide:extensions.bzl", "elide")
+elide.install(channel = "nightly")
+use_repo(elide, "elide_toolchains")
+
+register_toolchains("@elide_toolchains//:all")
+
+# JUnit Platform deps for the test target.
+maven = use_extension("@rules_jvm_external//:extensions.bzl", "maven")
+maven.install(
+    artifacts = [
+        "org.junit.jupiter:junit-jupiter-api:5.10.2",
+        "org.junit.platform:junit-platform-console-standalone:1.10.2",
+    ],
+    # protobuf (pulled in transitively via rules_elide) also contributes to the
+    # shared `maven` repo; acknowledging it suppresses the layering warning.
+    known_contributing_modules = ["protobuf"],
+)
+use_repo(maven, "maven")

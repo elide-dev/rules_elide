@@ -659,8 +659,14 @@ def build_launcher(ctx, output_jar):
 # Unlike build_launcher, test launchers keep short_path (no rlocation): they only
 # run under `bazel test` (cwd = runfiles tree), never as a persistent worker.
 _TEST_LAUNCHER_TEMPLATE_SH = """\
-#!/bin/sh
-set -eu
+#!/usr/bin/env bash
+{runfiles_init}
+# `elide java` runs the test and needs an external JDK (it probes JAVA_HOME).
+# Ship a Bazel JDK in the launcher's runfiles and point JAVA_HOME at it, so the
+# test does not depend on a system JDK on PATH — e.g. on remote executors / CI
+# containers with a scrubbed environment. (Mirrors //elide/kotlin/toolchain.bzl.)
+_elide_java_bin="$(rlocation {jdk_java})"
+export JAVA_HOME="$(dirname "$(dirname "$_elide_java_bin")")"
 # Bazel test runner contract: honour TEST_TMPDIR, XML_OUTPUT_FILE, TEST_FILTER.
 reports_dir="${{TEST_TMPDIR:-/tmp}}/reports"
 mkdir -p "$reports_dir"
@@ -740,6 +746,17 @@ def build_test_launcher(ctx, output_jar):
     selector_flag = (
         "--select-class=" + ctx.attr.test_class if ctx.attr.test_class else "--scan-classpath"
     )
+
+    # Hermetic JDK for `elide java`: resolve the shipped Bazel runtime's
+    # `bin/java` via rlocation so JAVA_HOME does not depend on a system JDK.
+    jdk = ctx.attr._jdk[java_common.JavaRuntimeInfo]
+    java_home = jdk.java_home
+    if java_home.startswith("external/"):
+        jdk_home_key = java_home[len("external/"):]
+    else:
+        jdk_home_key = ctx.workspace_name + "/" + java_home
+    jdk_java = jdk_home_key + "/bin/java"
+
     if is_win:
         jvm_flags = "".join([f + " " for f in ctx.attr.jvm_flags])
         content = _TEST_LAUNCHER_TEMPLATE_BAT.format(
@@ -752,6 +769,8 @@ def build_test_launcher(ctx, output_jar):
     else:
         jvm_flags = "".join([shell.quote(f) + " " for f in ctx.attr.jvm_flags])
         content = _TEST_LAUNCHER_TEMPLATE_SH.format(
+            runfiles_init = _RUNFILES_INIT,
+            jdk_java = shell.quote(jdk_java),
             elide = shell.quote(elide.binary.short_path),
             jvm_flags = jvm_flags,
             classpath = shell.quote(classpath_str),
@@ -761,8 +780,8 @@ def build_test_launcher(ctx, output_jar):
     ctx.actions.write(output = launcher, content = content, is_executable = True)
     runfiles = ctx.runfiles(
         files = [output_jar, launcher],
-        transitive_files = depset(transitive = [elide.tool_files, classpath]),
-    )
+        transitive_files = depset(transitive = [elide.tool_files, classpath, jdk.files]),
+    ).merge(ctx.attr._runfiles_library[DefaultInfo].default_runfiles)
     return launcher, runfiles
 
 # Common attribute sets used by Java and Kotlin compile rules.
@@ -859,6 +878,15 @@ COMMON_TEST_EXTRA_ATTRS = {
     ),
     "test_class": attr.string(
         doc = "Single JUnit Platform test class to select. Empty -> --scan-classpath.",
+    ),
+    "_jdk": attr.label(
+        default = "@bazel_tools//tools/jdk:current_java_runtime",
+        providers = [java_common.JavaRuntimeInfo],
+        doc = "JDK shipped in the test launcher's runfiles so `elide java` has a " +
+              "hermetic external JVM (JAVA_HOME) — no reliance on a system JDK.",
+    ),
+    "_runfiles_library": attr.label(
+        default = "@bazel_tools//tools/bash/runfiles",
     ),
     "_windows_constraint": attr.label(
         default = "@platforms//os:windows",

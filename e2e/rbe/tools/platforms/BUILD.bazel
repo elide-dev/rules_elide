@@ -1,0 +1,31 @@
+# RBE execution platform for BuildBuddy (referenced by `--config=rbe` in
+# //.bazelrc via --host_platform / --extra_execution_platforms).
+#
+# Unlike a Rust-bearing monorepo, rules_elide needs no custom worker image or
+# libc constraint: the Elide toolchain ships its native binary to the executor
+# as an action input, so the stock public BuildBuddy glibc image suffices.
+#
+# Notes on exec_properties:
+#   * container-image is digest-pinned — mutable tags can cache-hit stale layers.
+#   * `network` (NOT `dockerNetwork`) is the real BuildBuddy property name;
+#     `off` disables action-time networking (the binary + JDK are inputs, so no
+#     network is needed at action time — the e2e/rbe test is what proves this).
+#   * test.EstimatedMemory gives JVM test actions headroom; BuildBuddy's default
+#     sizing is too small for the JVM's -Xms reservation and trips
+#     os::commit_memory.
+package(default_visibility = ["//visibility:public"])
+
+platform(
+    name = "rbe_linux_amd64",
+    constraint_values = [
+        "@platforms//os:linux",
+        "@platforms//cpu:x86_64",
+    ],
+    exec_properties = {
+        "Arch": "amd64",
+        "OSFamily": "Linux",
+        "container-image": "docker://gcr.io/flame-public/rbe-ubuntu20-04@sha256:036ae8c90876fa22da9ace6f8218e614f4cd500a154fc162973fff691e72d28e",
+        "network": "off",
+        "test.EstimatedMemory": "1GB",
+    },
+)

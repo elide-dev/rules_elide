@@ -30,5 +30,54 @@ build:ci --show_timestamps
 test:ci --test_output=errors
 test:ci --test_summary=detailed
 
-# Local user overrides.
+# --- Remote build: BuildBuddy RBE + cache + Build Event Stream ----------------
+# Opt-in by design: this is a public ruleset, so remote is never on by default
+# (that would break keyless/fork builds). CI passes --config=remote with the
+# key; local builds stay local unless a dev opts in. The API key is NEVER
+# committed — it is injected via user.bazelrc (see try-import below) as:
+#   common --remote_header=x-buildbuddy-api-key=<KEY>
+#
+#   --config=buildbuddy   BES + remote cache (no remote execution)
+#   --config=rbe          the above + remote execution on the RBE platform
+#   --config=remote       alias for --config=rbe (the usual entrypoint)
+
+# BES + remote cache.
+common:buildbuddy --bes_results_url=https://elide-dev.buildbuddy.io/invocation/
+common:buildbuddy --bes_backend=grpcs://elide-dev.buildbuddy.io
+common:buildbuddy --remote_cache=grpcs://elide-dev.buildbuddy.io
+common:buildbuddy --remote_cache_compression
+common:buildbuddy --remote_upload_local_results
+common:buildbuddy --remote_timeout=3h
+# Run tests/tools on a JDK that can load the test bytecode: the
+# tests/kotlin_builder targets compile to -jvm-target=21 (class 65), and the
+# hermetic test launcher ships this runtime for `elide java`. (Both the target
+# and exec/tool runtimes, as a version label — not a bare language level.)
+common:buildbuddy --java_runtime_version=remotejdk_21
+common:buildbuddy --tool_java_runtime_version=remotejdk_21
+common:buildbuddy --noslim_profile
+common:buildbuddy --experimental_profile_include_target_label
+common:buildbuddy --experimental_profile_include_primary_output
+
+# Remote execution on top of the cache. The Elide toolchain ships its native
+# binary to the executor as an action input, so the stock public glibc image
+# works (no custom worker image needed); see //tools/platforms.
+#
+# host_platform + extra_execution_platforms pin both the host and execution
+# platform to the Linux/x86_64 RBE platform, so `--config=rbe`/`=remote`
+# assumes a Linux x86_64 build host — which CI provides. On a non-Linux host,
+# use `--config=buildbuddy` (remote cache + BES only, executes locally).
+common:rbe --config=buildbuddy
+common:rbe --remote_executor=grpcs://elide-dev.buildbuddy.io
+common:rbe --host_platform=//tools/platforms:rbe_linux_amd64
+common:rbe --extra_execution_platforms=//tools/platforms:rbe_linux_amd64
+# Persistent workers are a *local* optimization (Bazel does not run them on the
+# remote executor); force Elide's supported one-shot compiles under RBE so every
+# compile is a plain remote action, with no local worker strategy in the way.
+common:rbe --//elide:use_workers=false
+common:rbe --jobs=50
+
+# Convenience alias: full remote (cache + execution).
+common:remote --config=rbe
+
+# Local user overrides (incl. the BuildBuddy API key — keep out of git).
 try-import %workspace%/user.bazelrc
