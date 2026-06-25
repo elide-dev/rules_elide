@@ -138,6 +138,12 @@ jobs:
     with:
       tag_name: ${{ needs.release-please.outputs.tag_name }}
       registry_fork: elide-dev/bazel-central-registry
+      # The release is still a DRAFT at this point (we publish in the `publish`
+      # job, after BCR uploads its attestations), so the `tag_name` git tag does
+      # not exist yet. publish-to-bcr checks out the module repo at
+      # `templates_ref || tag_name`; pin templates_ref to the release commit so
+      # the checkout works without the tag. (This is the draft/immutable path.)
+      templates_ref: ${{ github.sha }}
       # Consume the `release_files` + `attestations` workflow artifacts the
       # `assets` job uploaded in this run (defaults: download_default_release_artifacts
       # = true, release_artifacts_run_id = github.run_id). publish-to-bcr (>= the
