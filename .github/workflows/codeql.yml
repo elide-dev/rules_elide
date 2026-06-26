@@ -17,7 +17,16 @@ jobs:
     # Code Security, which is free for public repos but paid on private
     # ones. Skip the job while the repository is private; it will resume
     # automatically when the repo flips to public.
-    if: github.event.repository.visibility == 'public'
+    # Public repo only (Code Security), and skip only same-repo release-please
+    # PRs (they touch CHANGELOG/version files only; re-scanned on main after
+    # merge). The `event_name == 'pull_request'` guard keeps push/schedule from
+    # reading pull_request fields; the same-repo check stops a fork PR from
+    # skipping the scan by naming its branch `release-please--*`.
+    if: >-
+      github.event.repository.visibility == 'public' &&
+      !(github.event_name == 'pull_request' &&
+        github.event.pull_request.head.repo.full_name == github.repository &&
+        startsWith(github.head_ref, 'release-please--'))
     runs-on: ubuntu-24.04
     permissions:
       # Job-level permissions override workflow-level read-all; restate
