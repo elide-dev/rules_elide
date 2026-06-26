@@ -29,11 +29,20 @@ cp docs/*.md "${docs_stage}/${PREFIX}/docs/"
 (cd "${docs_stage}" && tar -cz -f "${OLDPWD}/${DOCS_ARCHIVE}" "${PREFIX}")
 
 # SPDX SBOM over the source archive, enriched with the MODULE.bazel dep closure.
-# syft is installed to a temp dir (pinned); tool output is sent to stderr so it
-# never pollutes the release notes on stdout.
+# syft is fetched as a pinned release binary and checksum-verified against the
+# release's checksums.txt — no remote installer script is piped to a shell. Tool
+# output goes to stderr so it never pollutes the release notes on stdout.
+SYFT_VERSION="1.45.1"
 syft_dir="$(mktemp -d)"
-curl -fsSL https://raw.githubusercontent.com/anchore/syft/main/install.sh \
-  | sh -s -- -b "${syft_dir}" v1.45.1 1>&2
+syft_base="https://github.com/anchore/syft/releases/download/v${SYFT_VERSION}"
+syft_tgz="syft_${SYFT_VERSION}_linux_amd64.tar.gz"
+(
+  cd "${syft_dir}"
+  curl -fsSL -o "${syft_tgz}" "${syft_base}/${syft_tgz}"
+  curl -fsSL -o checksums.txt "${syft_base}/syft_${SYFT_VERSION}_checksums.txt"
+  grep " ${syft_tgz}\$" checksums.txt | sha256sum -c -
+  tar -xzf "${syft_tgz}" syft
+) 1>&2
 "${syft_dir}/syft" scan "file:${SRC_ARCHIVE}" -o "spdx-json=${SBOM}" 1>&2
 python3 tools/sbom_enrich.py "${SBOM}" MODULE.bazel 1>&2
 
