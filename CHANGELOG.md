@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.6.0](https://github.com/elide-dev/rules_elide/compare/v0.5.1...v0.6.0) (2026-06-26)
+
+
+### Features
+
+* **release:** build releases via release_ruleset (verifiable BCR attestations) ([#66](https://github.com/elide-dev/rules_elide/issues/66)) ([581cac4](https://github.com/elide-dev/rules_elide/commit/581cac4db4bf06fab12c38228c8fdebd8e0b0a1e))
+
 ## [0.5.1](https://github.com/elide-dev/rules_elide/compare/v0.5.0...v0.5.1) (2026-06-25)
 
 
