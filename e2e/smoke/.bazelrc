@@ -1,2 +1,10 @@
 common --enable_bzlmod
 build --incompatible_strict_action_env
+
+# rules_kotlin pulls rules_android (non-dev) and registers @androidsdk//:all, so
+# its android_sdk_repository extension runs during toolchain resolution even
+# though nothing here builds Android. With ANDROID_HOME set it validates the SDK
+# and fails on old build tools (BCR's macOS runners ship build-tools 30.0.3 <
+# the required 35.0.0); with ANDROID_HOME empty it creates a harmless stub repo.
+# Clear it for repo rules so the smoke build analyzes on every platform.
+common --repo_env=ANDROID_HOME=
