@@ -8,6 +8,13 @@ common --enable_bzlmod
 build --incompatible_strict_action_env
 build --sandbox_default_allow_network=false
 
+# rules_kotlin pulls rules_android (non-dev) and registers @androidsdk//:all, so
+# its android_sdk_repository extension runs during toolchain resolution even
+# though nothing here builds Android. With ANDROID_HOME set it validates the SDK
+# and fails on old build tools; with ANDROID_HOME empty it stubs harmlessly.
+# Clear it for repo rules so a runner's stale Android SDK can't break the build.
+common --repo_env=ANDROID_HOME=
+
 # Include JAVA_HOME/GRAALVM_HOME in the ElideNativeImage action cache key.
 # The value enters the action via use_default_shell_env=True in the rule itself;
 # --action_env here ensures a change in the JDK path invalidates cached outputs.
