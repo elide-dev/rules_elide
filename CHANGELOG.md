@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.6.1](https://github.com/elide-dev/rules_elide/compare/v0.6.0...v0.6.1) (2026-06-27)
+
+
+### Bug Fixes
+
+* **bcr:** clear ANDROID_HOME for repo rules so macOS smoke build analyzes ([#68](https://github.com/elide-dev/rules_elide/issues/68)) ([243fbaa](https://github.com/elide-dev/rules_elide/commit/243fbaafc20d92f0e9686ccc7306368e8ec56817))
+
 ## [0.6.0](https://github.com/elide-dev/rules_elide/compare/v0.5.1...v0.6.0) (2026-06-26)
 
 
