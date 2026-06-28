@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.6.2](https://github.com/elide-dev/rules_elide/compare/v0.6.1...v0.6.2) (2026-06-28)
+
+
+### Bug Fixes
+
+* **deps:** bump default Elide runtime to 1.3.6+20260628 (latest nightly) ([#71](https://github.com/elide-dev/rules_elide/issues/71)) ([9d9c639](https://github.com/elide-dev/rules_elide/commit/9d9c639e6e3bd8feea1db8c9f65258a4da5788f2))
+
 ## [0.6.1](https://github.com/elide-dev/rules_elide/compare/v0.6.0...v0.6.1) (2026-06-27)
 
 
