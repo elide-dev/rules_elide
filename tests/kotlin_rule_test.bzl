@@ -98,28 +98,30 @@ _abi_avoidance_test = analysistest.make(
     config_settings = {"@@//config/kotlinc:abi_compile_avoidance": True},  # buildifier: disable=canonical-repository
 )
 
-def _abi_avoidance_mixed_fallback_test_impl(ctx):
-    # `elide kotlinc --abi-only` emits Kotlin ABI only, so mixed kt+java targets
-    # must NOT take the abi path (a Kotlin-only header would drop the Java ABI
-    # and break dependents). They fall back to the run_ijar compile jar.
+def _abi_avoidance_mixed_test_impl(ctx):
+    # With avoidance on, a mixed kt+java target also emits the `--abi-only` header
+    # action: `--abi-only` now emits both the Kotlin and Java ABI, so the header
+    # is complete and dependents key on it (and prune body-only edits).
     env = analysistest.begin(ctx)
     actions = analysistest.target_actions(env)
-    asserts.equals(
+    abis = [a for a in actions if a.mnemonic == "ElideKotlincAbi"]
+    asserts.equals(env, 1, len(abis), "mixed kt+java must emit one --abi-only action")
+    asserts.true(env, "--abi-only" in abis[0].argv, "abi action must pass `--abi-only`")
+    asserts.true(
         env,
-        0,
-        len([a for a in actions if a.mnemonic == "ElideKotlincAbi"]),
-        "mixed kt+java must not emit an --abi-only action (Kotlin-only ABI)",
+        any([a.endswith(".java") for a in abis[0].argv]),
+        "abi action must pass the Java sources so their ABI is emitted (not Kotlin-only)",
     )
     compile_jars = analysistest.target_under_test(env)[JavaInfo].compile_jars.to_list()
     asserts.true(
         env,
-        not any([j.basename.endswith("_abi.jar") for j in compile_jars]),
-        "mixed target compile_jar must be the run_ijar jar, not an `_abi.jar`",
+        any([j.basename.endswith("_abi.jar") for j in compile_jars]),
+        "mixed target compile_jar must be the `--abi-only` header jar when avoidance is on",
     )
     return analysistest.end(env)
 
-_abi_avoidance_mixed_fallback_test = analysistest.make(
-    _abi_avoidance_mixed_fallback_test_impl,
+_abi_avoidance_mixed_test = analysistest.make(
+    _abi_avoidance_mixed_test_impl,
     config_settings = {"@@//config/kotlinc:abi_compile_avoidance": True},  # buildifier: disable=canonical-repository
 )
 
@@ -477,8 +479,8 @@ def kotlin_rule_test_suite(name):
         name = "kt_abi_avoidance_test",
         target_under_test = ":_kt_lib_fixture",
     )
-    _abi_avoidance_mixed_fallback_test(
-        name = "kt_abi_avoidance_mixed_fallback_test",
+    _abi_avoidance_mixed_test(
+        name = "kt_abi_avoidance_mixed_test",
         target_under_test = ":_kt_mixed_fixture",
     )
     native.test_suite(
@@ -495,6 +497,6 @@ def kotlin_rule_test_suite(name):
             ":kt_binary_executable_test",
             ":kt_test_rule_executable_test",
             ":kt_abi_avoidance_test",
-            ":kt_abi_avoidance_mixed_fallback_test",
+            ":kt_abi_avoidance_mixed_test",
         ],
     )
