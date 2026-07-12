@@ -24,7 +24,7 @@ jobs:
       tag_name: ${{ steps.rp.outputs.tag_name }}
     steps:
       - name: Harden the runner (Audit all outbound calls)
-        uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411  # v2.19.4
+        uses: step-security/harden-runner@bf7454d06d71f1098171f2acdf0cd4708d7b5920  # v2.20.0
         with:
           egress-policy: audit
       - uses: googleapis/release-please-action@45996ed1f6d02564a971a2fa1b5860e934307cf7  # v5.0.0
@@ -56,7 +56,7 @@ jobs:
       TAG: ${{ needs.release-please.outputs.tag_name }}
     steps:
       - name: Harden the runner (Audit all outbound calls)
-        uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411  # v2.19.4
+        uses: step-security/harden-runner@bf7454d06d71f1098171f2acdf0cd4708d7b5920  # v2.20.0
         with:
           egress-policy: audit
       - name: Detect elidebot signing key
@@ -141,7 +141,7 @@ jobs:
     # attestations record the builder ref from this `uses:`, and BCR's
     # slsa-verifier rejects a bare-SHA ref ("unexpected ref type"). A tag ref
     # (refs/tags/v1.4.1) verifies.
-    uses: bazel-contrib/publish-to-bcr/.github/workflows/publish.yaml@v1.4.1
+    uses: bazel-contrib/publish-to-bcr/.github/workflows/publish.yaml@v1.4.2
     with:
       tag_name: ${{ needs.release-please.outputs.tag_name }}
       registry_fork: elide-dev/bazel-central-registry
@@ -182,7 +182,7 @@ jobs:
       GH_TOKEN: ${{ github.token }}
     steps:
       - name: Harden the runner (Audit all outbound calls)
-        uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411  # v2.19.4
+        uses: step-security/harden-runner@bf7454d06d71f1098171f2acdf0cd4708d7b5920  # v2.20.0
         with:
           egress-policy: audit
       - name: Publish the draft release
@@ -208,7 +208,7 @@ jobs:
       TAG: ${{ needs.release-please.outputs.tag_name }}
     steps:
       - name: Harden the runner (Audit all outbound calls)
-        uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411  # v2.19.4
+        uses: step-security/harden-runner@bf7454d06d71f1098171f2acdf0cd4708d7b5920  # v2.20.0
         with:
           egress-policy: audit
       - name: Open the BCR pull request as sgammon
