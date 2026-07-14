@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.7.0](https://github.com/elide-dev/rules_elide/compare/v0.6.1...v0.7.0) (2026-07-14)
+
+
+### Features
+
+* **kotlin:** extend abi compile-avoidance to mixed kotlin+java targets ([#36](https://github.com/elide-dev/rules_elide/issues/36)) ([dad26e5](https://github.com/elide-dev/rules_elide/commit/dad26e56affc8aea185a6579ece983dc516920e6))
+
+
+### Bug Fixes
+
+* **deps:** bump default Elide runtime to 1.3.6+20260628 (latest nightly) ([#71](https://github.com/elide-dev/rules_elide/issues/71)) ([9d9c639](https://github.com/elide-dev/rules_elide/commit/9d9c639e6e3bd8feea1db8c9f65258a4da5788f2))
+
 ## [0.6.1](https://github.com/elide-dev/rules_elide/compare/v0.6.0...v0.6.1) (2026-06-27)
 
 
