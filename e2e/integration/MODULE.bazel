@@ -6,7 +6,7 @@ local_path_override(
     path = "../..",
 )
 
-bazel_dep(name = "rules_jvm_external", version = "7.0")
+bazel_dep(name = "rules_jvm_external", version = "7.1")
 
 # Activate the elide module extension against the real Elide CDN. This
 # downloads the elide binary at repo-rule time, enabling real `bazel build`

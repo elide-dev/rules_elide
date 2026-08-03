@@ -5,9 +5,9 @@ module(name = "rules_elide_vanilla")
 # only the default Kotlin toolchain registered) so no Elide toolchain or build
 # state can bleed in — giving an honest A/B against the Elide build for the
 # CodSpeed e2e benchmarks (benchmarks/codspeed/test_e2e_bench.py).
-bazel_dep(name = "rules_java", version = "9.6.1")
+bazel_dep(name = "rules_java", version = "9.7.0")
 bazel_dep(name = "rules_kotlin", version = "2.4.0")
-bazel_dep(name = "rules_jvm_external", version = "7.0")
+bazel_dep(name = "rules_jvm_external", version = "7.1")
 
 # Stock Kotlin toolchain only (no Elide).
 register_toolchains("@rules_kotlin//kotlin/internal:default_toolchain")
