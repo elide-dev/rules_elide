@@ -9,7 +9,7 @@ local_path_override(
 # platforms is needed directly here: //tools/platforms:rbe_linux_amd64 references
 # @platforms//os and @platforms//cpu constraints.
 bazel_dep(name = "platforms", version = "1.1.0")
-bazel_dep(name = "rules_jvm_external", version = "7.0")
+bazel_dep(name = "rules_jvm_external", version = "7.1")
 
 # Real Elide toolchain (downloads the binary at repo-rule time, like
 # e2e/integration). Under RBE the binary is shipped to the executor as an input.

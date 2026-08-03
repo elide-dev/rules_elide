@@ -6,7 +6,7 @@ local_path_override(
     path = "../..",
 )
 
-bazel_dep(name = "bazel_skylib", version = "1.9.0")
+bazel_dep(name = "bazel_skylib", version = "1.9.2")
 
 # Wire the module extension end-to-end. Without an `.install()` tag the
 # extension materializes an empty toolchains hub: this validates that
