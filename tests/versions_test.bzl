@@ -5,7 +5,7 @@
 load("@bazel_skylib//lib:unittest.bzl", "asserts", "unittest")
 
 # buildifier: disable=bzl-visibility
-load("//elide/private:versions.bzl", "PLATFORMS", "archive_ext", "binary_ext")
+load("//elide/private:versions.bzl", "DEFAULT_VERSION", "ELIDE_VERSIONS", "PLATFORMS", "archive_ext", "binary_ext", "release_tag")
 
 def _archive_ext_test_impl(ctx):
     env = unittest.begin(ctx)
@@ -36,6 +36,15 @@ def _platforms_complete_test_impl(ctx):
 
 _platforms_complete_test = unittest.make(_platforms_complete_test_impl)
 
+def _release_tag_test_impl(ctx):
+    env = unittest.begin(ctx)
+    asserts.equals(env, "1.3.6+20260628", release_tag("1.3.6+20260628"))
+    asserts.equals(env, "v1.6.0-rc.2", release_tag("1.6.0-rc.2"))
+    asserts.true(env, DEFAULT_VERSION in ELIDE_VERSIONS, "DEFAULT_VERSION has no integrity row")
+    return unittest.end(env)
+
+_release_tag_test = unittest.make(_release_tag_test_impl)
+
 def versions_test_suite(name):
     """Wires unit tests for versions.bzl helpers.
 
@@ -45,11 +54,13 @@ def versions_test_suite(name):
     _archive_ext_test(name = "archive_ext_test")
     _binary_ext_test(name = "binary_ext_test")
     _platforms_complete_test(name = "platforms_complete_test")
+    _release_tag_test(name = "release_tag_test")
     native.test_suite(
         name = name,
         tests = [
             ":archive_ext_test",
             ":binary_ext_test",
             ":platforms_complete_test",
+            ":release_tag_test",
         ],
     )

@@ -12,18 +12,27 @@ object Fallback {
     // launch flag (no env var, no `Picked up …` notice). See WHIPLASH#1131.
     //
     // The option only exists on JDK 23+; passing it to an older `java` launcher is
-    // a fatal "Unrecognized option", so gate on the running feature version (the
-    // shim and the fallback builder share the toolchain JDK).
+    // a fatal "Unrecognized option", so gate on the JDK the fallback builder runs
+    // on: the launcher's JAVA_HOME. The shim itself runs on `elide java`, whose
+    // version says nothing about that JDK.
     private const val UNSAFE_SILENCER =
         "--wrapper_script_flag=--jvm_flag=--sun-misc-unsafe-memory-access=allow"
 
     internal fun unsafeSilencer(jdkFeature: Int): List<String> =
         if (jdkFeature >= 23) listOf(UNSAFE_SILENCER) else emptyList()
 
+    /** Feature version of the JDK at [javaHome], from its `release` file; 0 when unknown. */
+    fun jdkFeature(javaHome: String?): Int {
+        if (javaHome.isNullOrEmpty()) return 0
+        val release = File(javaHome, "release").takeIf { it.isFile } ?: return 0
+        val line = release.readLines().firstOrNull { it.startsWith("JAVA_VERSION=") } ?: return 0
+        return line.substringAfter('=').trim('"').takeWhile { it.isDigit() }.toIntOrNull() ?: 0
+    }
+
     fun command(
         stockBuilder: String,
         flagfile: String,
-        jdkFeature: Int = Runtime.version().feature(),
+        jdkFeature: Int = jdkFeature(System.getenv("JAVA_HOME")),
     ): List<String> =
         listOf(stockBuilder) + unsafeSilencer(jdkFeature) + "--flagfile=$flagfile"
 

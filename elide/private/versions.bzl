@@ -51,6 +51,7 @@ DEFAULT_CHANNEL = "nightly"
 # Hashes verified 2026-06-22 against GitHub release tag 1.3.4+20260622.
 # Hashes verified 2026-06-23 against GitHub release tag 1.3.4+20260623.
 # Hashes verified 2026-06-28 against GitHub release tag 1.3.6+20260628.
+# Hashes verified 2026-10-12 against GitHub release tag v1.6.0-rc.2.
 ELIDE_VERSIONS = {
     "1.2.0+20260602": {
         ("linux", "amd64"): "sha256-yIQZwU4nM0SN19Zj2rdikdWBpj9d+fVlJK0d10p3DRA=",
@@ -106,11 +107,35 @@ ELIDE_VERSIONS = {
         ("macos", "arm64"): "sha256-IPUIc9kYzc1mxpva0PX88yGA7UsWS+dneXTfhJxUxRA=",
         ("windows", "amd64"): "sha256-mKvMV80P8OFl0Qw1fTjH33qRw239sIPqJ0m18VAhlt8=",
     },
+    "1.6.0-rc.2": {
+        ("linux", "amd64"): "sha256-hlwps26EHnSj+mZtqTGylHzACQAKcUrZIPWW3Q8OV5c=",
+        ("linux", "arm64"): "sha256-rVHHv97BWesWwT2s9eMW/BNYYtjivxps8xiZOeKJSSw=",
+        ("macos", "arm64"): "sha256-eWiPIObRBd6ZxAtCpSR1gtAb2S9IRufTP7KxddFrOug=",
+        ("windows", "amd64"): "sha256-KGilECOjaOLFVMy1jhiHx2dcWUbXVW9n9Hp1kOF06uw=",
+    },
 }
+
+# Versions whose GitHub release tag differs from the version string. Nightly tags
+# (`1.3.6+20260628`) are the version itself; release candidates and releases are
+# tagged with a leading `v`.
+RELEASE_TAGS = {
+    "1.6.0-rc.2": "v1.6.0-rc.2",
+}
+
+def release_tag(version):
+    """Returns the GitHub release tag that publishes `version`.
+
+    Args:
+        version: str. An Elide version, e.g. `1.6.0-rc.2` or `1.3.6+20260628`.
+
+    Returns:
+        str. The release tag, which the `{version}` URL token expands to.
+    """
+    return RELEASE_TAGS.get(version, version)
 
 # Default version used when consumers call elide.install() without a version.
 # Points at the most-recently verified entry in ELIDE_VERSIONS above.
-DEFAULT_VERSION = "1.3.6+20260628"
+DEFAULT_VERSION = "1.6.0-rc.2"
 
 # GitHub releases serve each tag as an immutable artifact. The {channel} token
 # is accepted but unused here; it remains available for consumers who override

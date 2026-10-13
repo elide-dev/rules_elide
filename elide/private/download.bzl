@@ -2,7 +2,7 @@
 
 """Repository rule that downloads one elide release artifact for one platform."""
 
-load(":versions.bzl", "DEFAULT_CHANNEL", "DEFAULT_URL_TEMPLATE", "archive_ext", "binary_ext")
+load(":versions.bzl", "DEFAULT_CHANNEL", "DEFAULT_URL_TEMPLATE", "archive_ext", "binary_ext", "release_tag")
 
 visibility(["//elide/...", "//tests/..."])
 
@@ -60,7 +60,7 @@ def _elide_download_impl(ctx):
     cpu = ctx.attr.cpu
     url = (ctx.attr.url_template or DEFAULT_URL_TEMPLATE).format(
         channel = ctx.attr.channel or DEFAULT_CHANNEL,
-        version = ctx.attr.version,
+        version = release_tag(ctx.attr.version),
         os = os,
         cpu = cpu,
         ext = archive_ext(os),
@@ -94,6 +94,10 @@ def _elide_download_impl(ctx):
             ctx.execute(["chmod", "+x", "bin/" + name])
         for name in ["native-image", "native-image-configure"]:
             ctx.execute(["chmod", "+x", "lib/svm/bin/" + name])
+
+        # The JDK's process launcher helper also lacks it; without it every
+        # subprocess started from `elide java` fails with posix_spawn EACCES.
+        ctx.execute(["chmod", "+x", "lib/jspawnhelper"])
     bin_ext = binary_ext(os)
     binary_path = ctx.attr.binary_path or ("bin/elide" + bin_ext)
     ctx.file("BUILD.bazel", _BUILD_TEMPLATE.format(
