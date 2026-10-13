@@ -96,8 +96,10 @@ jobs:
         run: |
           set -euo pipefail
           ver="$(awk -F'"' '/^DEFAULT_VERSION = /{print $2}' elide/private/versions.bzl)"
-          echo "Elide version: $ver"
-          base="https://github.com/elide-dev/elide/releases/download/$ver"
+          tag="$(awk -F'"' -v v="$ver" '$2 == v && $4 != "" {print $4}' elide/private/versions.bzl)"
+          tag="${tag:-$ver}"
+          echo "Elide version: $ver (tag $tag)"
+          base="https://github.com/elide-dev/elide/releases/download/$tag"
           curl -fsSL -o elide.tgz "$base/elide.linux-amd64.tgz"
           curl -fsSL -o elide.tgz.sha256 "$base/elide.linux-amd64.tgz.sha256"
           echo "$(awk '{print $1}' elide.tgz.sha256)  elide.tgz" | sha256sum -c -
