@@ -13,7 +13,7 @@ lib (Java)  <-  HelloTest (JUnit test action)
 
 so both a cross-language compile and a remote **test** action run on the
 executor. The Elide native binary is shipped to the executor as an action input
-(the public glibc image `gcr.io/flame-public/rbe-ubuntu20-04` is enough — no
+(the public glibc image `gcr.io/flame-public/rbe-ubuntu24-04` is enough — no
 custom worker image), which is why the RBE platform can set `network: off`.
 
 ## Running it

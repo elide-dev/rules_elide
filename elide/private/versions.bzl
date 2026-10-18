@@ -108,17 +108,17 @@ ELIDE_VERSIONS = {
         ("macos", "arm64"): "sha256-IPUIc9kYzc1mxpva0PX88yGA7UsWS+dneXTfhJxUxRA=",
         ("windows", "amd64"): "sha256-mKvMV80P8OFl0Qw1fTjH33qRw239sIPqJ0m18VAhlt8=",
     },
-    "1.6.0-rc.2": {
-        ("linux", "amd64"): "sha256-hlwps26EHnSj+mZtqTGylHzACQAKcUrZIPWW3Q8OV5c=",
-        ("linux", "arm64"): "sha256-rVHHv97BWesWwT2s9eMW/BNYYtjivxps8xiZOeKJSSw=",
-        ("macos", "arm64"): "sha256-eWiPIObRBd6ZxAtCpSR1gtAb2S9IRufTP7KxddFrOug=",
-        ("windows", "amd64"): "sha256-KGilECOjaOLFVMy1jhiHx2dcWUbXVW9n9Hp1kOF06uw=",
-    },
     "1.6.0": {
         ("linux", "amd64"): "sha256-vus2eTze9Kis/OrmBPolmfF2O9EGgEwO+fu35fe/2X4=",
         ("linux", "arm64"): "sha256-iAwLDYkqhlIeLVb/sXxLvN+dbr2eyd+fLfvNOpZCVTE=",
         ("macos", "arm64"): "sha256-cTEKx6IkaKmuuoXCh7s6UvE819POiUBE5p6ZjGkOvts=",
         ("windows", "amd64"): "sha256-YcH7aJ0G/SAUwU8jX5PmT9xvLhW8Dlzfy7vhI2a0cC8=",
+    },
+    "1.6.0-rc.2": {
+        ("linux", "amd64"): "sha256-hlwps26EHnSj+mZtqTGylHzACQAKcUrZIPWW3Q8OV5c=",
+        ("linux", "arm64"): "sha256-rVHHv97BWesWwT2s9eMW/BNYYtjivxps8xiZOeKJSSw=",
+        ("macos", "arm64"): "sha256-eWiPIObRBd6ZxAtCpSR1gtAb2S9IRufTP7KxddFrOug=",
+        ("windows", "amd64"): "sha256-KGilECOjaOLFVMy1jhiHx2dcWUbXVW9n9Hp1kOF06uw=",
     },
 }
 
@@ -126,8 +126,8 @@ ELIDE_VERSIONS = {
 # (`1.3.6+20260628`) are the version itself; release candidates and releases are
 # tagged with a leading `v`.
 RELEASE_TAGS = {
-    "1.6.0-rc.2": "v1.6.0-rc.2",
     "1.6.0": "v1.6.0",
+    "1.6.0-rc.2": "v1.6.0-rc.2",
 }
 
 def release_tag(version):
