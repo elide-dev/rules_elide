@@ -107,6 +107,17 @@ the shim produces ABI (header) jars using Elide's embedded `jvm-abi-gen`. The
 ABI jar is used as the `compile_jar` in the emitted `JavaInfo`, enabling
 downstream incremental rebuilds without waiting for the full class jar.
 
+## Annotation processing (KAPT)
+
+With an Elide whose `kotlinc --help` lists `--kapt-sources`, rules_kotlin's
+`KotlinKapt` action runs on Elide instead of the stock builder: the processors
+run in javac over an error-tolerant ABI header of the Kotlin sources (no stub
+generation) and over the Java sources, and the action's generated-sources,
+generated-classes and stubs jars are written as rules_kotlin expects. Kotlin code
+may reference classes the processors generate. Where such a reference appears in
+a signature, processors see `Any?` (KAPT shows `error.NonExistentClass`). With an
+older Elide, KAPT actions keep delegating to the stock builder.
+
 ## Dependency tracking (jdeps)
 
 The shim writes a **real** `.jdeps` (`Deps.Dependencies`) protobuf for every

@@ -135,7 +135,21 @@ def _tool_args(ctx):
     """
     return ctx.actions.args()
 
-def _run_elide_compile(ctx, mnemonic, subcommand, tool_args, inputs, outputs, progress_message):
+def _unused_inputs_file(ctx, name, tool_args):
+    """Declares a `--unused-inputs` list when //elide:prune_unused_inputs is on.
+
+    Adds the Elide option to `tool_args` (callers invoke this before adding `--`).
+
+    Returns:
+        File or None. Pass to _run_elide_compile as `unused_inputs`.
+    """
+    if not ctx.attr._prune_unused_inputs[BuildSettingInfo].value:
+        return None
+    f = ctx.actions.declare_file(name + ".unused_inputs")
+    tool_args.add("--unused-inputs", f)
+    return f
+
+def _run_elide_compile(ctx, mnemonic, subcommand, tool_args, inputs, outputs, progress_message, unused_inputs = None):
     """Runs `elide <subcommand>` to compile, as a worker or a one-shot process.
 
     Both modes use the same arg form: `elide <subcommand> <tool_args>`, where
@@ -162,8 +176,11 @@ def _run_elide_compile(ctx, mnemonic, subcommand, tool_args, inputs, outputs, pr
         inputs: depset[File]. Action inputs.
         outputs: list[File]. Declared action outputs.
         progress_message: str. Bazel progress message.
+        unused_inputs: File or None. Bazel `unused_inputs_list` from _unused_inputs_file.
     """
     elide = ctx.toolchains[TOOLCHAIN_TYPE].elide_info
+    if unused_inputs:
+        outputs = outputs + [unused_inputs]
     lead = ctx.actions.args()
     lead.add(subcommand)
 
@@ -179,6 +196,7 @@ def _run_elide_compile(ctx, mnemonic, subcommand, tool_args, inputs, outputs, pr
             progress_message = progress_message,
             execution_requirements = _WORKER_EXEC_REQUIREMENTS,
             env = _ELIDE_BAZEL_ENV,
+            unused_inputs_list = unused_inputs,
         )
     else:
         ctx.actions.run(
@@ -189,6 +207,7 @@ def _run_elide_compile(ctx, mnemonic, subcommand, tool_args, inputs, outputs, pr
             outputs = outputs,
             progress_message = progress_message,
             env = _ELIDE_BAZEL_ENV,
+            unused_inputs_list = unused_inputs,
         )
 
 def run_javac(ctx, output_jar):
@@ -229,6 +248,7 @@ def run_javac(ctx, output_jar):
     javac_args.add("--jar", class_jar)
     if ctx.attr._classpath_cache[BuildSettingInfo].value:
         javac_args.add("--classpath-cache")
+    unused_inputs = _unused_inputs_file(ctx, ctx.label.name, javac_args)
     javac_args.add("--")
     full_cp = depset(transitive = [classpath, plugin_cp])
     javac_args.add_joined("-classpath", full_cp, join_with = sep)
@@ -244,6 +264,7 @@ def run_javac(ctx, output_jar):
         inputs = depset(direct = ctx.files.srcs, transitive = [classpath, plugin_cp, elide.compile_tool_files]),
         outputs = [class_jar],
         progress_message = "Compiling %{label} (elide javac)",
+        unused_inputs = unused_inputs,
     )
 
     if has_res:
@@ -387,6 +408,7 @@ def run_kotlinc(ctx, output_jar):
         builtin_plugins = getattr(ctx.attr, "builtin_plugins", [])
         if builtin_plugins:
             args.add_joined(builtin_plugins, join_with = ",", format_joined = "--plugins=%s")
+        kt_unused_inputs = _unused_inputs_file(ctx, ctx.label.name + "_kt", args)
         args.add("--")
 
         # A directory output must be passed as a plain path (Args#add rejects
@@ -419,6 +441,7 @@ def run_kotlinc(ctx, output_jar):
             ),
             outputs = [compile_out],
             progress_message = "Compiling %{label} (elide kotlinc)",
+            unused_inputs = kt_unused_inputs,
         )
 
         # IC compiled to a directory; pack it into `kt_jar` (the form the rest of
@@ -885,6 +908,12 @@ COMMON_LIBRARY_ATTRS = {
         providers = [BuildSettingInfo],
         doc = "Build setting opting kotlinc compiles into incremental " +
               "compilation (compile-to-dir + cache-dir + pack-to-jar).",
+    ),
+    "_prune_unused_inputs": attr.label(
+        default = Label("//elide:prune_unused_inputs"),
+        providers = [BuildSettingInfo],
+        doc = "Build setting: compile actions report unused classpath jars as a " +
+              "Bazel `unused_inputs_list`. See //elide:prune_unused_inputs.",
     ),
     "_use_workers": attr.label(
         default = Label("//elide:use_workers"),

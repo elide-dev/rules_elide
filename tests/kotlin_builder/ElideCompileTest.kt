@@ -185,6 +185,27 @@ class ElideCompileTest {
         assertEquals("/tmp/used.txt", kt[r + 1])
     }
 
+    @Test fun kaptPlanMapsOutputsAndProcessors() {
+        val req = CompileRequest(
+            sources = listOf("A.kt", "B.java"),
+            classpath = listOf("dep.jar"),
+            processors = listOf("p.P", "p.Q"),
+            processorPath = listOf("proc.jar", "anno.jar"),
+            generatedJavaSrcjar = "gen.srcjar",
+            kaptGeneratedClassJar = "gen-classes.jar",
+            kaptGeneratedStubJar = "stubs.jar",
+        )
+        val kt = ElideCompile.planKapt(req, "/bin/elide").single()
+        val sep = kt.indexOf("--")
+        fun opt(flag: String): String { val i = kt.indexOf(flag); assertTrue(i in 0 until sep, "$flag before --"); return kt[i + 1] }
+        assertEquals("gen.srcjar", opt("--kapt-sources"))
+        assertEquals("gen-classes.jar", opt("--kapt-classes"))
+        assertEquals("stubs.jar", opt("--kapt-stubs"))
+        assertEquals("p.P,p.Q", opt("--processors"))
+        assertEquals("proc.jar" + java.io.File.pathSeparator + "anno.jar", opt("--processorpath"))
+        assertTrue(kt.containsAll(listOf("A.kt", "B.java")) && kt.indexOf("A.kt") > sep, "sources after --")
+    }
+
     @Test fun elideJdepsFlagsPrecedeSeparator() {
         val req = CompileRequest(output = "out.jar", sources = listOf("A.kt"), targetLabel = "//a:b")
         val kt = ElideCompile.plan(req, elidePath = "/bin/elide", jdeps = "/tmp/out.jdeps")

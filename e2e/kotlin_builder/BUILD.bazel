@@ -19,8 +19,9 @@ kt_jvm_library(
     srcs = ["sample/Greeter.kt"],
 )
 
-# --- KAPT fallback: an annotation processor forces the shim to delegate to the
-# stock rules_kotlin KotlinBuilder (Router detects --processors). ---
+# --- KAPT: an annotation processor makes rules_kotlin run a KotlinKapt action,
+# which the shim runs on Elide (`kotlinc --kapt-sources`) when supported, else on
+# the stock KotlinBuilder. ---
 
 java_library(
     name = "marker_anno",

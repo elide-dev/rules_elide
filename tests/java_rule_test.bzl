@@ -157,6 +157,27 @@ _header_compilation_test = analysistest.make(
     config_settings = {"@@//config/javac:header_compilation": True},  # buildifier: disable=canonical-repository
 )
 
+def _unused_inputs_test_impl(ctx):
+    # With //elide:prune_unused_inputs=True the javac action passes `--unused-inputs`
+    # (an Elide option, before `--`) and declares the list as an output.
+    env = analysistest.begin(ctx)
+    javacs = [a for a in analysistest.target_actions(env) if a.mnemonic == "ElideJavac"]
+    asserts.equals(env, 1, len(javacs), "expected one ElideJavac action")
+    argv = javacs[0].argv
+    asserts.true(env, argv.index("--unused-inputs") < argv.index("--"), "`--unused-inputs` must precede `--`")
+    asserts.true(
+        env,
+        any([f.basename.endswith(".unused_inputs") for f in javacs[0].outputs.to_list()]),
+        "the unused-inputs list must be an action output",
+    )
+    return analysistest.end(env)
+
+_unused_inputs_test = analysistest.make(
+    _unused_inputs_test_impl,
+    # See _library_action_no_worker_test re: the @@ canonical root ref.
+    config_settings = {"@@//elide:prune_unused_inputs": True},  # buildifier: disable=canonical-repository
+)
+
 def _binary_executable_test_impl(ctx):
     env = analysistest.begin(ctx)
     target = analysistest.target_under_test(env)
@@ -246,6 +267,10 @@ def java_rule_test_suite(name):
         name = "library_header_compilation_test",
         target_under_test = ":_lib_fixture",
     )
+    _unused_inputs_test(
+        name = "library_unused_inputs_test",
+        target_under_test = ":_lib_fixture",
+    )
     _binary_executable_test(
         name = "binary_executable_test",
         target_under_test = ":_bin_fixture",
@@ -262,6 +287,7 @@ def java_rule_test_suite(name):
             ":library_action_no_worker_test",
             ":library_classpath_cache_test",
             ":library_header_compilation_test",
+            ":library_unused_inputs_test",
             ":binary_executable_test",
             ":test_rule_executable_test",
         ],

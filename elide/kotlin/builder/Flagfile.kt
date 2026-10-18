@@ -27,8 +27,15 @@ data class CompileRequest(
     val stubsPluginOptions: List<String> = emptyList(),
     val apiVersion: String? = null,
     val languageVersion: String? = null,
+    // KAPT action outputs (rules_kotlin's KotlinKapt): generated sources, classes, and stubs.
+    val generatedJavaSrcjar: String? = null,
+    val kaptGeneratedClassJar: String? = null,
+    val kaptGeneratedStubJar: String? = null,
     val raw: Map<String, List<String>> = emptyMap(),
-)
+) {
+    /** A rules_kotlin KAPT action: runs processors and produces generated sources, no classes. */
+    val isKapt: Boolean get() = generatedJavaSrcjar != null && processors.isNotEmpty()
+}
 
 object Flagfile {
     /** Reads `--flagfile=<path>` content (one token per line) into tokens. */
@@ -70,6 +77,9 @@ object Flagfile {
             stubsPluginOptions = list("--stubs_plugin_options"),
             apiVersion = first("--kotlin_api_version"),
             languageVersion = first("--kotlin_language_version"),
+            generatedJavaSrcjar = first("--generated_java_srcjar"),
+            kaptGeneratedClassJar = first("--kapt_generated_class_jar"),
+            kaptGeneratedStubJar = first("--kapt_generated_stub_jar"),
             raw = map.mapValues { it.value.toList() },
         )
     }

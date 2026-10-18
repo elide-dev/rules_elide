@@ -6,6 +6,10 @@ import java.util.concurrent.ConcurrentHashMap
 /** Optional `elide kotlinc` flags, probed once per Elide binary from its `--help`. */
 object ElideCapabilities {
     private val jdeps = ConcurrentHashMap<String, Boolean>()
+    private val kapt = ConcurrentHashMap<String, Boolean>()
+
+    /** Whether `elide kotlinc` runs annotation processors itself (`--kapt-sources`). */
+    fun supportsKapt(elide: String): Boolean = kapt.getOrPut(elide) { helpMentions(elide, "--kapt-sources") }
 
     /** Whether `elide kotlinc` writes `.jdeps` itself (`--jdeps`). */
     fun supportsJdeps(elide: String): Boolean = jdeps.getOrPut(elide) { helpMentions(elide, "--jdeps") }

@@ -119,6 +119,10 @@ Every compile rule returns a complete `JavaInfo`:
   `elide kotlinc --abi-only` action, built from source: dependents start
   without waiting on the full compile, and body-only edits leave the header
   byte-identical so dependents are pruned.
+
+With `--@rules_elide//elide:prune_unused_inputs=true`, javac/kotlinc compile actions
+also report the classpath jars the compiler neither used nor searched as a Bazel
+`unused_inputs_list`, so a change confined to those jars doesn't rerun the action.
 - `source_jars` — sources packaged via `java_common.pack_sources`
   (IDE sync / Maven publish friendly).
 

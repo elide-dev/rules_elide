@@ -16,8 +16,9 @@ import javax.tools.JavaFileObject;
  * Trivial annotation processor: for each {@code @Marker}-annotated type it
  * generates a `<Name>Generated` Java class. Its presence forces rules_kotlin to
  * pass {@code --processors}/{@code --processorpath} in the KotlinBuilder
- * flagfile, which the Elide shim's Router detects and delegates to the stock
- * builder (KAPT is not on the Elide fast path).
+ * flagfile. The shim's Router runs that KAPT action on Elide when it supports
+ * {@code kotlinc --kapt-sources}, and delegates to the stock builder otherwise.
+ * {@code @Marker} is SOURCE-retained, so Elide's header must keep it.
  */
 @SupportedAnnotationTypes("proc.Marker")
 @SupportedSourceVersion(SourceVersion.RELEASE_8)

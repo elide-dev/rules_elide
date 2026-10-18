@@ -177,6 +177,31 @@ object ElideCompile {
     }
 
     /**
+     * The `elide kotlinc --kapt-sources` command for a rules_kotlin KAPT action: processors run
+     * over an error-tolerant header of the Kotlin sources (no stub generation) and the Java
+     * sources, writing the generated sources, generated classes and the header-as-stubs jars the
+     * action declares.
+     */
+    fun planKapt(req: CompileRequest, elidePath: String): List<List<String>> {
+        val sep = File.pathSeparator
+        val kt = mutableListOf(elidePath, "kotlinc")
+        kt += listOf("--kapt-sources", req.generatedJavaSrcjar ?: error("--generated_java_srcjar required"))
+        req.kaptGeneratedClassJar?.let { kt += listOf("--kapt-classes", it) }
+        req.kaptGeneratedStubJar?.let { kt += listOf("--kapt-stubs", it) }
+        if (req.processorPath.isNotEmpty()) kt += listOf("--processorpath", req.processorPath.joinToString(sep))
+        if (req.processors.isNotEmpty()) kt += listOf("--processors", req.processors.joinToString(","))
+        kt += "--"
+        if (req.classpath.isNotEmpty()) kt += listOf("-classpath", req.classpath.joinToString(sep))
+        req.moduleName?.let { kt += listOf("-module-name", it) }
+        if (req.friendPaths.isNotEmpty()) kt += "-Xfriend-paths=" + req.friendPaths.joinToString(",")
+        req.apiVersion?.let { kt += listOf("-api-version", it) }
+        req.languageVersion?.let { kt += listOf("-language-version", it) }
+        kt += req.passthroughFlags.filterNot { BuiltinPlugins.isRewrittenXplugin(it) }
+        kt += req.sources
+        return listOf(kt)
+    }
+
+    /**
      * Worker-form kotlinc args for a resident `elide kotlinc --persistent_worker`.
      *
      * Takes a kotlinc command produced by [plan] (always `cmds[0]`) and strips

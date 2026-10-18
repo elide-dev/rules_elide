@@ -18,4 +18,10 @@ class RouterTest {
         assertEquals(Route.FAST, Router.route(CompileRequest(
             compilerPluginClasspath = listOf("external/.../kotlin-jvm-abi-gen.jar"))).route)
     }
+
+    @Test fun kaptActionRoutesToElideWhenSupported() {
+        val req = CompileRequest(processors = listOf("p.P"), generatedJavaSrcjar = "gen.srcjar")
+        assertEquals(Route.FAST_KAPT, Router.route(req, elideKapt = true).route)
+        assertEquals(Route.FALLBACK, Router.route(req, elideKapt = false).route)
+    }
 }
