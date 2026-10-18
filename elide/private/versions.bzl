@@ -152,6 +152,57 @@ DEFAULT_URL_TEMPLATE = (
     "https://github.com/elide-dev/elide/releases/download/{version}/elide.{os}-{cpu}.{ext}"
 )
 
+def download_url(url_template, channel, version, os, cpu):
+    """Expands a release URL template for one platform.
+
+    The built-in template points at GitHub releases, so `{version}` becomes the
+    release tag there. A custom template gets the version exactly as pinned.
+
+    Args:
+        url_template: str. A custom template, or empty for the built-in one.
+        channel: str. Release channel; empty means DEFAULT_CHANNEL.
+        version: str. An Elide version from ELIDE_VERSIONS.
+        os: str. OS token, e.g. `linux`.
+        cpu: str. CPU token, e.g. `amd64`.
+
+    Returns:
+        str. The archive URL.
+    """
+    return (url_template or DEFAULT_URL_TEMPLATE).format(
+        channel = channel or DEFAULT_CHANNEL,
+        version = version if url_template else release_tag(version),
+        os = os,
+        cpu = cpu,
+        ext = archive_ext(os),
+    )
+
+def _parse_semver(version):
+    """Parses `X.Y.Z` (with optional `-prerelease` / `+metadata`) into a comparable tuple.
+
+    Non-numeric or short versions sort lexically after numeric ones; this gives
+    `1.10.0` > `1.9.0` while still keeping `latest` predictably greatest. A
+    prerelease sorts below the release it precedes (`1.6.0-rc.2` < `1.6.0`).
+    """
+    if version == "latest":
+        return (999999999, 0, 0, 1, "")
+    base = version.split("+", 1)[0]
+    core = base.split("-", 1)[0]
+    stable = 0 if "-" in base else 1
+    parts = core.split(".")
+    nums = []
+    for p in parts:
+        if p.isdigit():
+            nums.append(int(p))
+        else:
+            return (-1, 0, 0, 0, version)
+    if len(nums) < 3:
+        nums = nums + [0] * (3 - len(nums))
+    return (nums[0], nums[1], nums[2], stable, version)
+
+def select_version(versions):
+    """Returns the highest of `versions`, ranking releases above their prereleases."""
+    return sorted(versions, key = _parse_semver)[-1]
+
 def archive_ext(os):
     """Returns the canonical archive extension for the given OS token."""
     return "zip" if os == "windows" else "tgz"

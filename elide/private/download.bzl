@@ -2,7 +2,7 @@
 
 """Repository rule that downloads one elide release artifact for one platform."""
 
-load(":versions.bzl", "DEFAULT_CHANNEL", "DEFAULT_URL_TEMPLATE", "archive_ext", "binary_ext", "release_tag")
+load(":versions.bzl", "binary_ext", "download_url")
 
 visibility(["//elide/...", "//tests/..."])
 
@@ -58,13 +58,7 @@ filegroup(
 def _elide_download_impl(ctx):
     os = ctx.attr.os
     cpu = ctx.attr.cpu
-    url = (ctx.attr.url_template or DEFAULT_URL_TEMPLATE).format(
-        channel = ctx.attr.channel or DEFAULT_CHANNEL,
-        version = release_tag(ctx.attr.version),
-        os = os,
-        cpu = cpu,
-        ext = archive_ext(os),
-    )
+    url = download_url(ctx.attr.url_template, ctx.attr.channel, ctx.attr.version, os, cpu)
     ctx.download_and_extract(
         url = url,
         integrity = ctx.attr.integrity,

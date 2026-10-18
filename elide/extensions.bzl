@@ -4,7 +4,7 @@
 
 load("//elide/private:download.bzl", "elide_download", "elide_local")
 load("//elide/private:hub.bzl", "elide_toolchains_hub")
-load("//elide/private:versions.bzl", "DEFAULT_CHANNEL", "DEFAULT_VERSION", "ELIDE_VERSIONS", "PLATFORMS")
+load("//elide/private:versions.bzl", "DEFAULT_CHANNEL", "DEFAULT_VERSION", "ELIDE_VERSIONS", "PLATFORMS", "select_version")
 
 # `elide.use` — bring-your-own Elide: a custom release (your own tarballs + hashes
 # via `version` + `url_template` + `integrity`), or a locally-extracted
@@ -66,29 +66,6 @@ _install = tag_class(
         ),
     },
 )
-
-def _parse_semver(version):
-    """Parses `X.Y.Z` (with optional `+metadata`) into a comparable tuple.
-
-    Non-numeric or short versions sort lexically after numeric ones; this gives
-    `1.10.0` > `1.9.0` while still keeping `latest` predictably greatest.
-    """
-    if version == "latest":
-        return (999999999, 0, 0, "")
-    core = version.split("+", 1)[0].split("-", 1)[0]
-    parts = core.split(".")
-    nums = []
-    for p in parts:
-        if p.isdigit():
-            nums.append(int(p))
-        else:
-            return (-1, 0, 0, version)
-    if len(nums) < 3:
-        nums = nums + [0] * (3 - len(nums))
-    return (nums[0], nums[1], nums[2], version)
-
-def _select_version(versions):
-    return sorted(versions, key = _parse_semver)[-1]
 
 def _host_platform(ctx):
     """Maps the host (os.name, os.arch) to an (os, cpu) pair, or (None, None)."""
@@ -179,7 +156,7 @@ def _elide_impl(ctx):
         elide_toolchains_hub(name = "elide_toolchains", version = "", repo_prefix = repo_prefix)
         return ctx.extension_metadata(reproducible = True)
 
-    version = _select_version(versions)
+    version = select_version(versions)
     integrity_for_version = ELIDE_VERSIONS.get(version)
     if integrity_for_version == None:
         fail(
