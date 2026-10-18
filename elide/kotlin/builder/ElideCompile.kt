@@ -94,6 +94,7 @@ object ElideCompile {
         elidePath: String,
         extraSources: List<String> = emptyList(),
         usedDepsReport: String? = null,
+        jdeps: String? = null,
     ): List<List<String>> {
         val cmds = mutableListOf<List<String>>()
         val sep = File.pathSeparator
@@ -109,6 +110,11 @@ object ElideCompile {
         val kt = mutableListOf(elidePath, "kotlinc")
         // Used-dependency report for real .jdeps (Elide 1.3.2, WHIPLASH #1002/#1005).
         usedDepsReport?.let { kt += listOf("--report-used-deps", it) }
+        // Elide writes the .jdeps itself, with per-class usage and hashes.
+        jdeps?.let {
+            kt += listOf("--jdeps", it)
+            req.targetLabel?.let { label -> kt += listOf("--target-label", label) }
+        }
         val builtins = BuiltinPlugins.builtinNames(rewrites)
         if (builtins.isNotEmpty()) kt += "--plugins=${builtins.joinToString(",")}"
         kt += "--"

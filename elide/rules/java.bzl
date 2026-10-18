@@ -4,7 +4,8 @@
 
 `elide_java_library` / `_binary` / `_test` drive `elide javac` to compile
 `.java` sources. Every rule returns `JavaInfo` (with an `ijar`-derived
-`compile_jar` and a packed `source_jar`) so downstream `java_*` / `kt_*`
+`compile_jar`, or a source-built header jar under
+`//config/javac:header_compilation`, and a packed `source_jar`) so downstream `java_*` / `kt_*`
 rules consume the outputs without any adapter, plus `ElideInfo` for
 Elide-specific metadata propagation.
 """
@@ -33,10 +34,10 @@ _JAVA_TOOLCHAINS = [TOOLCHAIN_TYPE, "@bazel_tools//tools/jdk:toolchain_type"]
 
 def _elide_java_library_impl(ctx):
     output_jar = ctx.actions.declare_file(ctx.label.name + ".jar")
-    run_javac(ctx, output_jar)
+    header_jar = run_javac(ctx, output_jar)
     source_jar = pack_source_jar(ctx)
     return [
-        make_java_info(ctx, output_jar, source_jar = source_jar),
+        make_java_info(ctx, output_jar, source_jar = source_jar, compile_jar_override = header_jar),
         make_elide_info(ctx),
         DefaultInfo(files = depset([output_jar])),
     ]
@@ -56,11 +57,11 @@ elide_java_library = rule(
 
 def _elide_java_binary_impl(ctx):
     output_jar = ctx.actions.declare_file(ctx.label.name + ".jar")
-    run_javac(ctx, output_jar)
+    header_jar = run_javac(ctx, output_jar)
     source_jar = pack_source_jar(ctx)
     launcher, runfiles = build_launcher(ctx, output_jar)
     return [
-        make_java_info(ctx, output_jar, source_jar = source_jar),
+        make_java_info(ctx, output_jar, source_jar = source_jar, compile_jar_override = header_jar),
         make_elide_info(ctx),
         DefaultInfo(executable = launcher, runfiles = runfiles, files = depset([launcher])),
     ]
@@ -78,11 +79,11 @@ elide_java_binary = rule(
 
 def _elide_java_test_impl(ctx):
     output_jar = ctx.actions.declare_file(ctx.label.name + ".jar")
-    run_javac(ctx, output_jar)
+    header_jar = run_javac(ctx, output_jar)
     source_jar = pack_source_jar(ctx)
     launcher, runfiles = build_test_launcher(ctx, output_jar)
     return [
-        make_java_info(ctx, output_jar, source_jar = source_jar),
+        make_java_info(ctx, output_jar, source_jar = source_jar, compile_jar_override = header_jar),
         make_elide_info(ctx),
         DefaultInfo(executable = launcher, runfiles = runfiles, files = depset([launcher])),
     ]

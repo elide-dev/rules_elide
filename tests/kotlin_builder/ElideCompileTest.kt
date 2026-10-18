@@ -185,6 +185,19 @@ class ElideCompileTest {
         assertEquals("/tmp/used.txt", kt[r + 1])
     }
 
+    @Test fun elideJdepsFlagsPrecedeSeparator() {
+        val req = CompileRequest(output = "out.jar", sources = listOf("A.kt"), targetLabel = "//a:b")
+        val kt = ElideCompile.plan(req, elidePath = "/bin/elide", jdeps = "/tmp/out.jdeps")
+            .first { it.contains("kotlinc") }
+        val sep = kt.indexOf("--")
+        val j = kt.indexOf("--jdeps")
+        val l = kt.indexOf("--target-label")
+        assertTrue(j in 0 until sep && l in 0 until sep, "--jdeps/--target-label are Elide options, before --")
+        assertEquals("/tmp/out.jdeps", kt[j + 1])
+        assertEquals("//a:b", kt[l + 1])
+        assertTrue("--report-used-deps" !in kt, "no line report when Elide writes the .jdeps")
+    }
+
     // --- #6: generated sources from --source_jars ---
 
     @Test fun extraSourcesAddedToKotlincSourceSet() {

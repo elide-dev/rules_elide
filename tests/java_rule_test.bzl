@@ -126,6 +126,37 @@ _library_action_no_worker_test = analysistest.make(
     config_settings = {"@@//elide:use_workers": False},  # buildifier: disable=canonical-repository
 )
 
+def _header_compilation_test_impl(ctx):
+    # With //config/javac:header_compilation=True, a separate `elide javac
+    # --abi-only` action builds the header from source and JavaInfo's
+    # compile_jar is that header, not the run_ijar-derived jar.
+    env = analysistest.begin(ctx)
+    headers = [a for a in analysistest.target_actions(env) if a.mnemonic == "ElideJavacHeader"]
+    asserts.equals(env, 1, len(headers), "expected one ElideJavacHeader action")
+    argv = headers[0].argv
+    sep = argv.index("--")
+    asserts.true(env, argv.index("--abi-only") < sep, "`--abi-only` must precede `--`")
+    asserts.true(env, argv.index("--emit-abi") < sep, "`--emit-abi` must precede `--`")
+    outs = headers[0].outputs.to_list()
+    asserts.true(
+        env,
+        len(outs) == 1 and outs[0].basename.endswith("_header.jar"),
+        "header action must output a single `_header.jar`",
+    )
+    compile_jars = analysistest.target_under_test(env)[JavaInfo].compile_jars.to_list()
+    asserts.true(
+        env,
+        any([j.basename.endswith("_header.jar") for j in compile_jars]),
+        "compile_jar must be the header jar under header compilation",
+    )
+    return analysistest.end(env)
+
+_header_compilation_test = analysistest.make(
+    _header_compilation_test_impl,
+    # See _library_action_no_worker_test re: the @@ canonical root ref.
+    config_settings = {"@@//config/javac:header_compilation": True},  # buildifier: disable=canonical-repository
+)
+
 def _binary_executable_test_impl(ctx):
     env = analysistest.begin(ctx)
     target = analysistest.target_under_test(env)
@@ -211,6 +242,10 @@ def java_rule_test_suite(name):
         name = "library_classpath_cache_test",
         target_under_test = ":_lib_fixture",
     )
+    _header_compilation_test(
+        name = "library_header_compilation_test",
+        target_under_test = ":_lib_fixture",
+    )
     _binary_executable_test(
         name = "binary_executable_test",
         target_under_test = ":_bin_fixture",
@@ -226,6 +261,7 @@ def java_rule_test_suite(name):
             ":library_action_test",
             ":library_action_no_worker_test",
             ":library_classpath_cache_test",
+            ":library_header_compilation_test",
             ":binary_executable_test",
             ":test_rule_executable_test",
         ],

@@ -21,3 +21,14 @@ config_setting(
     name = "classpath_cache_enabled",
     flag_values = {":classpath_cache": "True"},
 )
+
+# Opt-in (default off until the pinned Elide ships `javac --abi-only`): a Java
+# target's `JavaInfo.compile_jar` is a header jar from a dedicated
+# `elide javac --abi-only` action (Turbine: built from source, signatures only)
+# instead of `java_common.run_ijar` over the full compile. Dependents start as
+# soon as the header exists rather than after the full javac, and a
+# method-body edit leaves the header byte-identical, so they are pruned.
+bool_flag(
+    name = "header_compilation",
+    build_setting_default = False,
+)

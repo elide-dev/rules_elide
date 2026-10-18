@@ -109,22 +109,31 @@ downstream incremental rebuilds without waiting for the full class jar.
 
 ## Dependency tracking (jdeps)
 
-As of Elide 1.3.2 the shim writes a **real** `.jdeps` (`Deps.Dependencies`)
-protobuf for every fast-path compile. It passes `--report-used-deps` to
-`elide kotlinc` (which records the classpath entries the output actually
-references — WHIPLASH #998, fixed in #1002/#1005) and classifies each classpath
-entry as `EXPLICIT` (used and a direct dependency), `IMPLICIT` (used transitive
-dependency), or `UNUSED`. This is the data Bazel/`rules_kotlin` consume for
-`unused_deps` reporting and `experimental_reduce_classpath_mode`.
+The shim writes a **real** `.jdeps` (`Deps.Dependencies`) protobuf for every
+fast-path compile.
 
-Notes:
+With an Elide whose `kotlinc --help` lists `--jdeps` (probed once per worker),
+Elide writes the `.jdeps` itself from what the compiler read: K2's lookups plus
+the classpath classes the output references, closed over supertypes. Each
+classpath entry is `EXPLICIT` (the compiler used a class from it), `IMPLICIT`
+(only needed to read others, e.g. a supertype from a transitive jar) or
+`UNUSED` — the classification `rules_kotlin`'s own jdeps plugin uses — and every
+used entry lists its classes with the SHA-256 of their class files (the
+`usedClasses` field of per-class compilation avoidance, rules_kotlin#1530).
 
-- When a target has no classpath (or no jdeps output is requested) the shim
-  writes a valid empty `Deps` proto.
-- The accuracy of the classification follows Elide's `--report-used-deps`
-  analysis (`jdeps`-based). The shim does not itself fail the build on
-  strict-deps violations; it emits the data and leaves enforcement to the
-  consuming `rules_kotlin` configuration.
+With an older Elide the shim passes `--report-used-deps` and classifies each
+classpath entry itself: `EXPLICIT` (used and a direct dependency), `IMPLICIT`
+(used transitive dependency) or `UNUSED`.
+
+Either way this is the data Bazel/`rules_kotlin` consume for `unused_deps`
+reporting and `experimental_reduce_classpath_mode`. Notes:
+
+- A target with no Kotlin sources (e.g. a Java-only srcjar) skips `kotlinc`:
+  the shim writes empty class and ABI jars and an empty `Deps` proto, and
+  `rules_kotlin`'s javac action compiles the Java.
+- The shim does not itself fail the build on strict-deps violations; it emits
+  the data and leaves enforcement to the consuming `rules_kotlin`
+  configuration.
 
 ## Caveats
 

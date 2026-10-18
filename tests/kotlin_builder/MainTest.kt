@@ -42,4 +42,22 @@ class MainTest {
         val (cfg, _) = Main.splitConfig(listOf("--elide=/bin/elide", "--flagfile=/tmp/f"))
         assertFalse(cfg.quietPluginRewrite, "warn (quiet off) by default")
     }
+
+    @Test fun javaOnlyRequestWritesEmptyOutputs() {
+        val dir = java.nio.file.Files.createTempDirectory("main-test").toFile()
+        val src = java.io.File(dir, "J.java").apply { writeText("class J {}") }
+        val req = CompileRequest(
+            output = java.io.File(dir, "out.jar").path,
+            abiJar = java.io.File(dir, "abi.jar").path,
+            jdeps = java.io.File(dir, "out.jdeps").path,
+            targetLabel = "//a:b",
+            sources = listOf(src.path),
+        )
+        assertEquals(0, Main.writeEmptyOutputs(req))
+        for (jar in listOf("out.jar", "abi.jar")) {
+            java.util.zip.ZipFile(java.io.File(dir, jar)).use { assertEquals(0, it.size(), "$jar must be empty") }
+        }
+        assertTrue(java.io.File(dir, "out.jdeps").exists(), "stub .jdeps written")
+        dir.deleteRecursively()
+    }
 }

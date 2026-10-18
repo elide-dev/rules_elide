@@ -24,4 +24,11 @@ class FallbackTest {
             Fallback.command(stockBuilder = "/bin/stock", flagfile = "/tmp/f", jdkFeature = 23),
         )
     }
+
+    @Test fun parsesJavaFeatureVersions() {
+        assertEquals(11, Fallback.parseJavaFeature("openjdk version \"11.0.22\" 2024-01-16"))
+        assertEquals(8, Fallback.parseJavaFeature("openjdk version \"1.8.0_402\""))
+        assertEquals(25, Fallback.parseJavaFeature("openjdk version \"25\" 2025-09-16"))
+        assertEquals(0, Fallback.parseJavaFeature("garbage"))
+    }
 }

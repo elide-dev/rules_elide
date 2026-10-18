@@ -203,9 +203,18 @@ def run_javac(ctx, output_jar):
     class jar which `_merge_resources` then folds into `output_jar`; otherwise
     `--jar` writes `output_jar` directly.
 
+    With header compilation on (//config/javac:header_compilation), a separate
+    `elide javac --abi-only` action builds a header jar from source (Turbine:
+    signatures only, no method bodies), so dependents compile against it
+    without waiting on — or ijar-processing — the full compile.
+
     Args:
         ctx: rule context. Must expose srcs/deps/javac_opts/plugins.
         output_jar: File. Declared output classes jar.
+
+    Returns:
+        File or None. The header jar under header compilation (pass to
+        make_java_info as compile_jar_override); otherwise None.
     """
     elide = ctx.toolchains[TOOLCHAIN_TYPE].elide_info
     classpath = compile_classpath(ctx.attr.deps)
@@ -239,6 +248,28 @@ def run_javac(ctx, output_jar):
 
     if has_res:
         _merge_resources(ctx, [class_jar], output_jar)
+
+    if not ctx.attr._header_compilation[BuildSettingInfo].value or not ctx.files.srcs:
+        return None
+    header_jar = ctx.actions.declare_file(ctx.label.name + "_header.jar")
+    header_args = _tool_args(ctx)
+    header_args.add("--abi-only")
+    header_args.add("--emit-abi", header_jar)
+    header_args.add("--")
+    header_args.add_joined("-classpath", full_cp, join_with = sep)
+    for o in ctx.attr.javac_opts:
+        header_args.add(o)
+    header_args.add_all(ctx.files.srcs)
+    _run_elide_compile(
+        ctx,
+        mnemonic = "ElideJavacHeader",
+        subcommand = "javac",
+        tool_args = header_args,
+        inputs = depset(direct = ctx.files.srcs, transitive = [classpath, plugin_cp, elide.compile_tool_files]),
+        outputs = [header_jar],
+        progress_message = "Generating %{label} header (elide javac --abi-only)",
+    )
+    return header_jar
 
 def _friend_paths(associates):
     paths = []
@@ -285,7 +316,8 @@ def run_kotlinc(ctx, output_jar):
     incremental = ctx.attr._incremental[BuildSettingInfo].value and has_kt
 
     # Karbine ABI compile-avoidance (opt-in via //config/kotlinc:abi_compile_avoidance,
-    # rules issue #11). A dedicated codegen-free `elide kotlinc --abi-only` pass
+    # rules issue #11). A dedicated `elide kotlinc --abi-only` pass (non-inline
+    # bodies stripped before codegen)
     # emits a header jar used as JavaInfo.compile_jar (see make_java_info): a
     # body-only edit yields a byte-identical header (same digest) so Bazel prunes
     # every dependent rebuild, and dependents key on this fast action rather than
@@ -834,6 +866,13 @@ COMMON_LIBRARY_ATTRS = {
         doc = "Build setting: derive a kt-only target's compile_jar from a " +
               "dedicated `elide kotlinc --abi-only` header action (body-stable " +
               "ABI) instead of run_ijar. See //config/kotlinc:abi_compile_avoidance.",
+    ),
+    "_header_compilation": attr.label(
+        default = Label("//config/javac:header_compilation"),
+        providers = [BuildSettingInfo],
+        doc = "Build setting: derive a Java target's compile_jar from a " +
+              "dedicated `elide javac --abi-only` header action instead of " +
+              "run_ijar. See //config/javac:header_compilation.",
     ),
     "_classpath_cache": attr.label(
         default = Label("//config/javac:classpath_cache"),

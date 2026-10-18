@@ -2,6 +2,8 @@ package elide.kotlin.builder
 
 import com.google.devtools.build.lib.worker.WorkerProtocol.Input
 import java.io.File
+import java.util.jar.JarEntry
+import java.util.jar.JarOutputStream
 import java.io.FileOutputStream
 import java.nio.file.Files
 import java.nio.file.Paths
@@ -61,20 +63,25 @@ object Main {
         // Unpack generated sources from --source_jars (KAPT/KSP) so the compile can
         // resolve references to generated symbols; clean up the temp dir after.
         val srcJarDir = if (req.sourceJars.isNotEmpty()) Files.createTempDirectory("elide-srcjars").toFile() else null
-        // Ask elide to record used classpath entries so we can write a real .jdeps
-        // (Elide 1.3.2, WHIPLASH #1002/#1005). Only meaningful when there is a
-        // classpath to classify and a jdeps output is requested.
-        val usedReport = if (req.jdeps != null && req.classpath.isNotEmpty()) {
+        // Elide that writes .jdeps itself (`--jdeps`) records the classes it read, with
+        // hashes; older Elide reports used classpath entries, which Jdeps translates.
+        val elideJdeps = req.jdeps != null && ElideCapabilities.supportsJdeps(cfg.elide)
+        val usedReport = if (!elideJdeps && req.jdeps != null && req.classpath.isNotEmpty()) {
             File.createTempFile("elide-useddeps", ".txt")
         } else {
             null
         }
         try {
             val extraSources = srcJarDir?.let { ElideCompile.extractSourceJars(req.sourceJars, it) } ?: emptyList()
-            val cmds = ElideCompile.plan(req, cfg.elide, extraSources, usedReport?.path)
+            // A target with no Kotlin sources (e.g. a Java-only srcjar) has nothing for
+            // kotlinc to compile; rules_kotlin's javac action builds its classes.
+            if ((req.sources + extraSources).none { it.endsWith(".kt") }) {
+                return writeEmptyOutputs(req) to rewriteWarning
+            }
+            val cmds = ElideCompile.plan(req, cfg.elide, extraSources, usedReport?.path, req.jdeps.takeIf { elideJdeps })
             val (code, compileOut) = compileCmds(cmds, resident, inputs, wd)
             val out = rewriteWarning + compileOut
-            if (code == 0) req.jdeps?.let { jdeps ->
+            if (code == 0 && !elideJdeps) req.jdeps?.let { jdeps ->
                 // Deps.Dependencies.rule_label is the Bazel rule label (`--target_label`),
                 // not the Kotlin module name. Leave empty when absent rather than emit an
                 // incorrect value (WHIPLASH#1131 review follow-up).
@@ -90,6 +97,25 @@ object Main {
             usedReport?.delete()
             srcJarDir?.deleteRecursively()
         }
+    }
+
+    /** Empty class and ABI jars plus a stub .jdeps; packs the srcjar if requested. */
+    fun writeEmptyOutputs(req: CompileRequest): Int {
+        listOfNotNull(req.output, req.abiJar).forEach { jar ->
+            File(jar).also { it.parentFile?.mkdirs() }.outputStream().use { JarOutputStream(it).close() }
+        }
+        req.jdeps?.let { Jdeps.writeStub(it, req.targetLabel ?: "") }
+        req.srcjar?.let { sj ->
+            JarOutputStream(File(sj).also { it.parentFile?.mkdirs() }.outputStream()).use { out ->
+                req.sources.forEach { src ->
+                    // Same entry names as `elide jar --create --file <srcjar> <sources>`.
+                    out.putNextEntry(JarEntry(src.replace('\\', '/').trimStart('/')))
+                    File(src).inputStream().use { it.copyTo(out) }
+                    out.closeEntry()
+                }
+            }
+        }
+        return 0
     }
 
     /**

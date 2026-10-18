@@ -112,7 +112,13 @@ Every compile rule returns a complete `JavaInfo`:
 - `output_jar` — the full class JAR produced by `elide javac --jar` /
   `elide kotlinc -d`.
 - `compile_jar` — ABI jar derived via `java_common.run_ijar` for fast
-  downstream incremental rebuilds.
+  downstream incremental rebuilds. With
+  `--@rules_elide//config/javac:header_compilation=true` (Java) or
+  `--@rules_elide//config/kotlinc:abi_compile_avoidance=true` (Kotlin), it is
+  instead a header jar from a dedicated `elide javac --abi-only` /
+  `elide kotlinc --abi-only` action, built from source: dependents start
+  without waiting on the full compile, and body-only edits leave the header
+  byte-identical so dependents are pruned.
 - `source_jars` — sources packaged via `java_common.pack_sources`
   (IDE sync / Maven publish friendly).
 
