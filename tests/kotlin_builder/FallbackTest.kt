@@ -1,5 +1,6 @@
 package elide.kotlin.builder
 
+import java.nio.file.Files
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -23,5 +24,19 @@ class FallbackTest {
             ),
             Fallback.command(stockBuilder = "/bin/stock", flagfile = "/tmp/f", jdkFeature = 23),
         )
+    }
+
+    @Test fun readsFeatureVersionFromJavaHome() {
+        val home = Files.createTempDirectory("jdk").toFile()
+        try {
+            assertEquals(0, Fallback.jdkFeature(home.path))
+            home.resolve("release").writeText("IMPLEMENTOR=\"x\"\nJAVA_VERSION=\"21.0.5\"\n")
+            assertEquals(21, Fallback.jdkFeature(home.path))
+            home.resolve("release").writeText("JAVA_VERSION=\"25\"\n")
+            assertEquals(25, Fallback.jdkFeature(home.path))
+            assertEquals(0, Fallback.jdkFeature(null))
+        } finally {
+            home.deleteRecursively()
+        }
     }
 }

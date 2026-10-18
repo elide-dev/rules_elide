@@ -51,6 +51,7 @@ DEFAULT_CHANNEL = "nightly"
 # Hashes verified 2026-06-22 against GitHub release tag 1.3.4+20260622.
 # Hashes verified 2026-06-23 against GitHub release tag 1.3.4+20260623.
 # Hashes verified 2026-06-28 against GitHub release tag 1.3.6+20260628.
+# Hashes verified 2026-10-18 against GitHub release tag v1.6.0.
 ELIDE_VERSIONS = {
     "1.2.0+20260602": {
         ("linux", "amd64"): "sha256-yIQZwU4nM0SN19Zj2rdikdWBpj9d+fVlJK0d10p3DRA=",
@@ -106,11 +107,35 @@ ELIDE_VERSIONS = {
         ("macos", "arm64"): "sha256-IPUIc9kYzc1mxpva0PX88yGA7UsWS+dneXTfhJxUxRA=",
         ("windows", "amd64"): "sha256-mKvMV80P8OFl0Qw1fTjH33qRw239sIPqJ0m18VAhlt8=",
     },
+    "1.6.0": {
+        ("linux", "amd64"): "sha256-vus2eTze9Kis/OrmBPolmfF2O9EGgEwO+fu35fe/2X4=",
+        ("linux", "arm64"): "sha256-iAwLDYkqhlIeLVb/sXxLvN+dbr2eyd+fLfvNOpZCVTE=",
+        ("macos", "arm64"): "sha256-cTEKx6IkaKmuuoXCh7s6UvE819POiUBE5p6ZjGkOvts=",
+        ("windows", "amd64"): "sha256-YcH7aJ0G/SAUwU8jX5PmT9xvLhW8Dlzfy7vhI2a0cC8=",
+    },
 }
+
+# Versions whose GitHub release tag differs from the version string. Nightly tags
+# (`1.3.6+20260628`) are the version itself; release candidates and releases are
+# tagged with a leading `v`.
+RELEASE_TAGS = {
+    "1.6.0": "v1.6.0",
+}
+
+def release_tag(version):
+    """Returns the GitHub release tag that publishes `version`.
+
+    Args:
+        version: str. An Elide version, e.g. `1.6.0` or `1.3.6+20260628`.
+
+    Returns:
+        str. The release tag, which the `{version}` URL token expands to.
+    """
+    return RELEASE_TAGS.get(version, version)
 
 # Default version used when consumers call elide.install() without a version.
 # Points at the most-recently verified entry in ELIDE_VERSIONS above.
-DEFAULT_VERSION = "1.3.6+20260628"
+DEFAULT_VERSION = "1.6.0"
 
 # GitHub releases serve each tag as an immutable artifact. The {channel} token
 # is accepted but unused here; it remains available for consumers who override
@@ -118,6 +143,57 @@ DEFAULT_VERSION = "1.3.6+20260628"
 DEFAULT_URL_TEMPLATE = (
     "https://github.com/elide-dev/elide/releases/download/{version}/elide.{os}-{cpu}.{ext}"
 )
+
+def download_url(url_template, channel, version, os, cpu):
+    """Expands a release URL template for one platform.
+
+    The built-in template points at GitHub releases, so `{version}` becomes the
+    release tag there. A custom template gets the version exactly as pinned.
+
+    Args:
+        url_template: str. A custom template, or empty for the built-in one.
+        channel: str. Release channel; empty means DEFAULT_CHANNEL.
+        version: str. An Elide version from ELIDE_VERSIONS.
+        os: str. OS token, e.g. `linux`.
+        cpu: str. CPU token, e.g. `amd64`.
+
+    Returns:
+        str. The archive URL.
+    """
+    return (url_template or DEFAULT_URL_TEMPLATE).format(
+        channel = channel or DEFAULT_CHANNEL,
+        version = version if url_template else release_tag(version),
+        os = os,
+        cpu = cpu,
+        ext = archive_ext(os),
+    )
+
+def _parse_semver(version):
+    """Parses `X.Y.Z` (with optional `-prerelease` / `+metadata`) into a comparable tuple.
+
+    Non-numeric or short versions sort lexically after numeric ones; this gives
+    `1.10.0` > `1.9.0` while still keeping `latest` predictably greatest. A
+    prerelease sorts below the release it precedes (`1.6.0-rc.2` < `1.6.0`).
+    """
+    if version == "latest":
+        return (999999999, 0, 0, 1, "")
+    base = version.split("+", 1)[0]
+    core = base.split("-", 1)[0]
+    stable = 0 if "-" in base else 1
+    parts = core.split(".")
+    nums = []
+    for p in parts:
+        if p.isdigit():
+            nums.append(int(p))
+        else:
+            return (-1, 0, 0, 0, version)
+    if len(nums) < 3:
+        nums = nums + [0] * (3 - len(nums))
+    return (nums[0], nums[1], nums[2], stable, version)
+
+def select_version(versions):
+    """Returns the highest of `versions`, ranking releases above their prereleases."""
+    return sorted(versions, key = _parse_semver)[-1]
 
 def archive_ext(os):
     """Returns the canonical archive extension for the given OS token."""

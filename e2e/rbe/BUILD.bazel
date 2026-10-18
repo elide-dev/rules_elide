@@ -16,9 +16,9 @@ package(default_visibility = ["//visibility:public"])
 
 # Compile Java to bytecode level 11 (class file version 55). Under remote
 # execution the JUnit test runs via `elide java`, which on the public RBE image
-# (rbe-ubuntu20-04) falls back to the image's system JDK — Java 11. Elide's
+# (rbe-ubuntu24-04) falls back to the image's system JDK. Elide's
 # javac otherwise defaults to JDK 25 bytecode (class 69), which that runtime
-# can't load (UnsupportedClassVersionError). 11 is the floor the executor runs.
+# an older runtime can't load (UnsupportedClassVersionError); 11 runs anywhere.
 _JAVA11 = [
     "--release",
     "11",
