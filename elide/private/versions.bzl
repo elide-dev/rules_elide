@@ -51,7 +51,6 @@ DEFAULT_CHANNEL = "nightly"
 # Hashes verified 2026-06-22 against GitHub release tag 1.3.4+20260622.
 # Hashes verified 2026-06-23 against GitHub release tag 1.3.4+20260623.
 # Hashes verified 2026-06-28 against GitHub release tag 1.3.6+20260628.
-# Hashes verified 2026-10-12 against GitHub release tag v1.6.0-rc.2.
 # Hashes verified 2026-10-18 against GitHub release tag v1.6.0.
 ELIDE_VERSIONS = {
     "1.2.0+20260602": {
@@ -114,12 +113,6 @@ ELIDE_VERSIONS = {
         ("macos", "arm64"): "sha256-cTEKx6IkaKmuuoXCh7s6UvE819POiUBE5p6ZjGkOvts=",
         ("windows", "amd64"): "sha256-YcH7aJ0G/SAUwU8jX5PmT9xvLhW8Dlzfy7vhI2a0cC8=",
     },
-    "1.6.0-rc.2": {
-        ("linux", "amd64"): "sha256-hlwps26EHnSj+mZtqTGylHzACQAKcUrZIPWW3Q8OV5c=",
-        ("linux", "arm64"): "sha256-rVHHv97BWesWwT2s9eMW/BNYYtjivxps8xiZOeKJSSw=",
-        ("macos", "arm64"): "sha256-eWiPIObRBd6ZxAtCpSR1gtAb2S9IRufTP7KxddFrOug=",
-        ("windows", "amd64"): "sha256-KGilECOjaOLFVMy1jhiHx2dcWUbXVW9n9Hp1kOF06uw=",
-    },
 }
 
 # Versions whose GitHub release tag differs from the version string. Nightly tags
@@ -127,7 +120,6 @@ ELIDE_VERSIONS = {
 # tagged with a leading `v`.
 RELEASE_TAGS = {
     "1.6.0": "v1.6.0",
-    "1.6.0-rc.2": "v1.6.0-rc.2",
 }
 
 def release_tag(version):

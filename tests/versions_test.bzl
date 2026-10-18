@@ -39,7 +39,6 @@ _platforms_complete_test = unittest.make(_platforms_complete_test_impl)
 def _release_tag_test_impl(ctx):
     env = unittest.begin(ctx)
     asserts.equals(env, "1.3.6+20260628", release_tag("1.3.6+20260628"))
-    asserts.equals(env, "v1.6.0-rc.2", release_tag("1.6.0-rc.2"))
     asserts.equals(env, "v1.6.0", release_tag("1.6.0"))
     asserts.true(env, DEFAULT_VERSION in ELIDE_VERSIONS, "DEFAULT_VERSION has no integrity row")
     return unittest.end(env)
