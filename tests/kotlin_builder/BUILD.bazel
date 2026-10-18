@@ -135,3 +135,18 @@ elide_kotlin_test(
         "@kt_test_deps//:org_jetbrains_kotlin_kotlin_test_junit5",
     ],
 )
+
+elide_kotlin_test(
+    name = "ksp_test",
+    srcs = ["KspTest.kt"],
+    kotlinc_opts = ["-jvm-target=21"],
+    test_class = "elide.kotlin.builder.KspTest",
+    runtime_deps = [
+        "@kt_test_deps//:org_junit_platform_junit_platform_console_standalone",
+    ],
+    deps = [
+        "//elide/kotlin/builder:lib",
+        "@kt_test_deps//:org_jetbrains_kotlin_kotlin_test",
+        "@kt_test_deps//:org_jetbrains_kotlin_kotlin_test_junit5",
+    ],
+)

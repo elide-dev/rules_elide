@@ -91,11 +91,15 @@ The shim inspects every `KotlinCompile` RPC request:
 
 - **No `--processors` argument** — compiled through `elide kotlinc` (fast path).
   Plain Kotlin and mixed Kotlin/Java sources both take this route.
-- **`--processors` present (KAPT / KSP)** — delegated wholesale to the stock
-  `rules_kotlin` KotlinBuilder specified as `fallback_builder`. KAPT works
-  because `rules_kotlin` splits annotation processing (gensrc actions) from the
-  post-KAPT compile. The gensrc action carries `--processors` and goes to the
-  fallback; the post-KAPT compile does not and goes to Elide.
+- **`--processors` present (KAPT)** — delegated wholesale to the stock
+  `rules_kotlin` KotlinBuilder specified as `fallback_builder`, unless Elide runs
+  KAPT itself (below). KAPT works because `rules_kotlin` splits annotation
+  processing (gensrc actions) from the post-KAPT compile. The gensrc action
+  carries `--processors` and goes to the fallback; the post-KAPT compile does
+  not and goes to Elide.
+- **KSP2** — rules_kotlin runs KSP2 as its own `KotlinKsp2` action through the
+  toolchain's `ksp2` executable, which this toolchain also points at the shim
+  (below).
 
 No configuration is needed to enable or disable the fallback — routing is
 automatic based on the action's request payload.
@@ -117,6 +121,17 @@ generated-classes and stubs jars are written as rules_kotlin expects. Kotlin cod
 may reference classes the processors generate. Where such a reference appears in
 a signature, processors see `Any?` (KAPT shows `error.NonExistentClass`). With an
 older Elide, KAPT actions keep delegating to the stock builder.
+
+## Symbol processing (KSP2)
+
+With an Elide whose `kotlinc --help` lists `--ksp-sources`, rules_kotlin's
+`KotlinKsp2` action runs on `elide kotlinc --ksp-sources/--ksp-classes`, which
+runs KSP2 inside Elide's embedded compiler, and writes the generated-sources and
+generated-classes jars rules_kotlin expects. `kt_ksp_plugin` targets need no
+changes. rules_kotlin's KSP invoker and the KSP jars on its processor path are
+dropped, since Elide provides KSP. With an older Elide, or with
+`--@rules_elide//config/kotlinc:ksp=false`, the action runs on rules_kotlin's KSP2
+worker (`ksp2_fallback` on `register_elide_kotlin_toolchain`).
 
 ## Dependency tracking (jdeps)
 

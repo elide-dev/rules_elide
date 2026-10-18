@@ -53,6 +53,7 @@ object Main {
         val ff = rest.first { it.startsWith("--flagfile=") }.substringAfter("=")
         val req = Flagfile.parse(Flagfile.readTokens(Paths.get(ff)))
         val wd = File(".")
+        if (Ksp.isKsp(req)) return Ksp.handle(cfg, req, ff, wd)
         val route = Router.route(req, elideKapt = req.isKapt && ElideCapabilities.supportsKapt(cfg.elide)).route
         if (route == Route.FALLBACK) return Fallback.run(cfg.fallback, ff, wd)
         if (route == Route.FAST_KAPT) return compileCmds(ElideCompile.planKapt(req, cfg.elide), resident, inputs, wd)

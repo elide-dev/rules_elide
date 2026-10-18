@@ -56,3 +56,16 @@ config_setting(
     name = "warn_builtin_plugin_rewrite_disabled",
     flag_values = {":warn_builtin_plugin_rewrite": "False"},
 )
+
+# On (default): rules_kotlin's KSP2 action (`KotlinKsp2`) runs on `elide kotlinc
+# --ksp-sources/--ksp-classes`, which shares Elide's embedded compiler. An Elide
+# without those flags, or False here, keeps rules_kotlin's KSP2 worker.
+bool_flag(
+    name = "ksp",
+    build_setting_default = True,
+)
+
+config_setting(
+    name = "ksp_disabled",
+    flag_values = {":ksp": "False"},
+)

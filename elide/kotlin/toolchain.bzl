@@ -250,6 +250,8 @@ def _elide_kt_toolchain_impl(ctx):
     # `kotlinbuilder` field holds the Target of the builder (the attr is
     # `executable = True`), so we pass the launcher's Target the same way.
     fields["kotlinbuilder"] = ctx.attr.kotlinbuilder
+    if ctx.attr.ksp2:
+        fields["ksp2"] = ctx.attr.ksp2
 
     return [platform_common.ToolchainInfo(**fields)]
 
@@ -268,6 +270,11 @@ _elide_kt_toolchain = rule(
             executable = True,
             cfg = "exec",
         ),
+        "ksp2": attr.label(
+            doc = "The Elide launcher to use as the KSP2 action's executable; unset keeps the stock one.",
+            executable = True,
+            cfg = "exec",
+        ),
     },
     provides = [platform_common.ToolchainInfo],
 )
@@ -276,6 +283,7 @@ def register_elide_kotlin_toolchain(
         name,
         elide,
         fallback_builder,
+        ksp2_fallback = Label("@rules_kotlin//src/main/kotlin:ksp2"),
         resident_worker = None,
         worker_record = "",
         **kwargs):
@@ -300,6 +308,9 @@ def register_elide_kotlin_toolchain(
         fallback_builder: Label of the stock rules_kotlin KotlinBuilder
             (e.g. `@rules_kotlin//src/main/kotlin:build`), passed as
             --fallback_builder.
+        ksp2_fallback: Label of rules_kotlin's KSP2 worker, which runs KSP2
+            actions when `//config/kotlinc:ksp` is False or the Elide binary
+            lacks `kotlinc --ksp-sources`.
         resident_worker: If True, the launcher passes `--resident_worker` so the
             shim forwards kotlinc compiles to a warm
             `elide kotlinc --persistent_worker` (keeping the native image +
@@ -341,6 +352,13 @@ def register_elide_kotlin_toolchain(
     # Materialize a stock toolchain. This creates `<name>_base_impl` (the
     # ToolchainInfo provider we wrap) and `<name>_base` (a native.toolchain we
     # deliberately do NOT register).
+    _elide_kt_builder_launcher(
+        name = name + "_ksp2_launcher",
+        shim = Label("//elide/kotlin/builder:elide_kotlin_builder"),
+        elide = elide,
+        fallback_builder = ksp2_fallback,
+    )
+
     define_kt_toolchain(
         name = name + "_base",
         **kwargs
@@ -350,6 +368,10 @@ def register_elide_kotlin_toolchain(
         name = name + "_impl",
         base = ":" + name + "_base_impl",
         kotlinbuilder = ":" + name + "_launcher",
+        ksp2 = select({
+            Label("//config/kotlinc:ksp_disabled"): None,
+            "//conditions:default": ":" + name + "_ksp2_launcher",
+        }),
     )
 
     # NOTE: This declares the toolchain target but does NOT register it.

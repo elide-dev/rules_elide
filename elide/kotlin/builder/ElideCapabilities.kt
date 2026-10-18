@@ -7,9 +7,13 @@ import java.util.concurrent.ConcurrentHashMap
 object ElideCapabilities {
     private val jdeps = ConcurrentHashMap<String, Boolean>()
     private val kapt = ConcurrentHashMap<String, Boolean>()
+    private val ksp = ConcurrentHashMap<String, Boolean>()
 
     /** Whether `elide kotlinc` runs annotation processors itself (`--kapt-sources`). */
     fun supportsKapt(elide: String): Boolean = kapt.getOrPut(elide) { helpMentions(elide, "--kapt-sources") }
+
+    /** Whether `elide kotlinc` runs KSP2 processors itself (`--ksp-sources`). */
+    fun supportsKsp(elide: String): Boolean = ksp.getOrPut(elide) { helpMentions(elide, "--ksp-sources") }
 
     /** Whether `elide kotlinc` writes `.jdeps` itself (`--jdeps`). */
     fun supportsJdeps(elide: String): Boolean = jdeps.getOrPut(elide) { helpMentions(elide, "--jdeps") }
