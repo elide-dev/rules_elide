@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.7.0](https://github.com/elide-dev/rules_elide/compare/v0.6.1...v0.7.0) (2026-10-18)
+
+
+### Features
+
+* **kotlin:** extend abi compile-avoidance to mixed kotlin+java targets ([#36](https://github.com/elide-dev/rules_elide/issues/36)) ([dad26e5](https://github.com/elide-dev/rules_elide/commit/dad26e56affc8aea185a6579ece983dc516920e6))
+* support elide 1.6.0 and make it the default ([#90](https://github.com/elide-dev/rules_elide/issues/90)) ([a234522](https://github.com/elide-dev/rules_elide/commit/a23452248460302fca0ec8b93a8a76f8f9359cc1))
+
+
+### Bug Fixes
+
+* **deps:** bump default Elide runtime to 1.3.6+20260628 (latest nightly) ([#71](https://github.com/elide-dev/rules_elide/issues/71)) ([9d9c639](https://github.com/elide-dev/rules_elide/commit/9d9c639e6e3bd8feea1db8c9f65258a4da5788f2))
+* **rbe:** pin BuildBuddy RBE to managed executors ([#88](https://github.com/elide-dev/rules_elide/issues/88)) ([0bdd808](https://github.com/elide-dev/rules_elide/commit/0bdd808dd2d1b5cfa09ef9ec9ce0cc6166d5cce3))
+
 ## [0.6.1](https://github.com/elide-dev/rules_elide/compare/v0.6.0...v0.6.1) (2026-06-27)
 
 
