@@ -60,7 +60,7 @@ _install = tag_class(
         ),
         "version": attr.string(
             default = DEFAULT_VERSION,
-            doc = "Elide release version, e.g. `1.6.0-rc.2` or `1.3.6+20260628`. " +
+            doc = "Elide release version, e.g. `1.6.0` or `1.3.6+20260628`. " +
                   "Must match an entry in elide/private/versions.bzl. " +
                   "Defaults to the most-recently verified release.",
         ),
