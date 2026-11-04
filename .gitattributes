@@ -9,6 +9,7 @@ e2e/integration export-ignore
 e2e/kotlin_builder export-ignore
 e2e/rbe export-ignore
 e2e/vanilla export-ignore
+e2e/python_overlay export-ignore
 e2e/gen_fixture.py export-ignore
 tests export-ignore
 tools export-ignore
@@ -30,3 +31,8 @@ docs/BUILD.bazel export-ignore
 # language stats. Regenerate via gen_fixture.py rather than editing by hand.
 e2e/vanilla/gen/** linguist-generated=true
 e2e/integration/gen/** linguist-generated=true
+
+# Keep the README banner in source archives; social-preview setup is repo-only.
+docs/assets/rules_elide-social-banner.png export-ignore
+docs/assets/README.md export-ignore
+*.png binary

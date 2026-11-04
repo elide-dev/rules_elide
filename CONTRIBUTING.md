@@ -74,6 +74,27 @@ Starlark edit, `buildifier -mode=check -lint=warn path/to/file.bzl` is useful.
 Never commit `user.bazelrc`, credentials, generated Bazel outputs, or local
 benchmark results.
 
+## Review, security, and starter work
+
+Follow [the code of conduct](CODE_OF_CONDUCT.md) and
+[review expectations](GOVERNANCE.md#review-expectations). Use four-space Starlark
+indentation/buildifier, the surrounding Kotlin style, and ShellCheck-compatible
+Bash for executable helpers. `.editorconfig` and pre-commit define formatting and
+lint checks; do not claim a formatter enforces languages it does not check.
+
+For workflow/policy changes:
+
+```sh
+python3 -m pip install -r requirements-dev.txt
+zizmor --offline --format plain .github/workflows
+python3 -m pytest tools/repository_policy_test.py tools/sbom_enrich_test.py
+```
+
+[The OpenSSF plan](docs/openssf.md#useful-starter-contributions) lists small,
+useful contributions and the evidence still needed for higher assurance.
+Dependencies are updated through reviewed PRs; version upgrades are not
+permission to regenerate runtime checksums without verifying the artifacts.
+
 ## License
 
 By contributing, you certify that you have the right to submit your contribution

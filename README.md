@@ -1,4 +1,13 @@
+![rules_elide — Elide for Bazel, with the Elide and Bazel logos](docs/assets/rules_elide-readme-banner.png)
+
 # rules_elide
+
+[![CI](https://github.com/elide-dev/rules_elide/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/elide-dev/rules_elide/actions/workflows/ci.yml)
+[![Security checks](https://github.com/elide-dev/rules_elide/actions/workflows/security.yml/badge.svg?branch=main)](https://github.com/elide-dev/rules_elide/actions/workflows/security.yml)
+[![License: Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
+
+[Quick start](#quick-start) · [Examples](docs/examples.md) · [Python](docs/python.md) ·
+[Kotlin adapter](docs/kotlin_builder.md) · [Testing](docs/testing.md) · [Contributing](CONTRIBUTING.md)
 
 Bazel rules for [Elide](https://elide.dev) — Kotlin / Java compilation, JUnit
 Platform tests, documentation and JVM tooling, native KAPT/KSP, and Python
@@ -8,20 +17,29 @@ with the integration limitations described below.
 > **Status: evolving API.** Pin a release or specific commit and review the
 > [compatibility and coverage limits](docs/testing.md) before upgrading.
 
-## Why rules_elide?
+## Choose your integration
 
-Elide consolidates a polyglot runtime, a Kotlin/Java toolchain, formatters
-(google-java-format, ktfmt), and ahead-of-time native-image into one binary.
-For Bazel monorepos this means:
+| What you want to do | Start here |
+| --- | --- |
+| Compile Java/Kotlin directly with Elide | `elide_java_*` / `elide_kotlin_*` rules and the quick start below |
+| Keep existing `kt_jvm_*` targets | [KotlinBuilder adapter](docs/kotlin_builder.md), including native ABI, KAPT, and KSP2 |
+| Run ordinary `py_binary` / `py_test` targets on Elide | [Python runtime adapter](docs/python.md); optional matching overlay |
+| Generate docs, archives, reports, or C bindings | [JVM tools](#jvm-documentation-and-tooling) and [worked examples](docs/examples.md) |
 
-- A pinned Elide distribution for Java/Kotlin compiler actions, plus adapters
-  for existing `rules_kotlin` and `rules_python` targets.
-- Native-image and formatters as first-class rules, not separate rulesets.
-- One small set of rules to learn (`elide_kotlin_library`, `elide_java_library`,
-  `elide_native_image`, `elide_format`, ...) instead of three overlapping
-  ecosystems.
+Bazel 8+ and Bzlmod are required. Elide distributions are pinned by version and
+integrity. Current integration coverage is described in [the test map](docs/testing.md),
+including the limits for native-image, Python packages, and execution platforms.
 
 ## Quick start
+
+To try the checked-out rules immediately:
+
+```sh
+(cd e2e/integration && bazel run :app)
+```
+
+This README follows `main`; features introduced since the latest release may
+require a checkout override until the next release is published.
 
 Replace the `0.0.0` placeholder with your selected release version. To try a local
 checkout, add `local_path_override(module_name = "rules_elide", path = "/path/to/rules_elide")`.
@@ -279,7 +297,7 @@ release-pin maintenance, and [docs/testing.md](docs/testing.md) for CI coverage.
 |--------------------------|----------------------------------------------------------------------------|
 | `rules_java`             | Faster compile in steady state (~2.8x on micro-bench), JUnit 5 native, ABI ijar + source jars |
 | `rules_kotlin`           | Faster compile (~5.5x on micro-bench), compile-time-compatible JavaInfo, single Elide JDK — or keep `kt_jvm_*` rules and swap only the toolchain via `register_elide_kotlin_toolchain` |
-| `rules_graalvm`          | Native-image without a separate toolchain or GraalVM SDK download          |
+| `rules_graalvm`          | An Elide native-image rule; review the current JDK/C toolchain limitations before migrating |
 
 `rules_elide` returns `JavaInfo` from every compile rule, so existing
 `java_library` / `kt_jvm_library` consumers can depend on `elide_*` targets
@@ -321,6 +339,17 @@ See [`e2e/smoke/README.md`](e2e/smoke/README.md) for the full flow.
 Semantic versioning. `compatibility_level = 1` until a hard API break.
 
 Releases are automated via [release-please](https://github.com/googleapis/release-please) and published to [GitHub Releases](https://github.com/elide-dev/rules_elide/releases) and the [Bazel Central Registry](https://registry.bazel.build/) with Sigstore-signed build provenance and SBOMs. See [RELEASING.md](RELEASING.md) for details.
+
+## Project and security
+
+[Security policy](SECURITY.md) · [Architecture](docs/architecture.md) ·
+[Security model](docs/security-model.md) · [OpenSSF improvement plan](docs/openssf.md) ·
+[Governance](GOVERNANCE.md) · [Code of conduct](CODE_OF_CONDUCT.md)
+
+Dependabot and Renovate cover complementary dependency updates. Workflow security
+checks use zizmor and ShellCheck; CodeQL is not enabled. Scorecard monitoring is
+separate from Best Practices certification: no gold badge or target score is
+claimed without evidence. Agent contributors should start with [AGENTS.md](AGENTS.md).
 
 ## License
 

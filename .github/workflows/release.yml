@@ -73,8 +73,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
         with:
           ref: ${{ github.sha }}
-          # Push the tag as elidebot (not the default Actions token).
-          token: ${{ secrets.PUBLISH_TOKEN }}
+          persist-credentials: false
       - name: Import elidebot GPG key
         if: steps.gpg.outputs.signed == 'true'
         uses: step-security/ghaction-import-gpg@c0b4a334b9b72bfaaebec86ef022a78a5b17f828  # v7.0.0
@@ -86,15 +85,20 @@ jobs:
           git_user_signingkey: true
           git_tag_gpgsign: true
       - name: Create + push the tag
+        env:
+          SIGNED_TAG: ${{ steps.gpg.outputs.signed }}
+          GH_TOKEN: ${{ secrets.PUBLISH_TOKEN }}
         run: |
           set -o errexit -o nounset -o pipefail
-          if [ "${{ steps.gpg.outputs.signed }}" = "true" ]; then
+          if [ "$SIGNED_TAG" = "true" ]; then
             git tag -s "$TAG" -m "Release $TAG" "$GITHUB_SHA"
           else
             git -c user.name=elidebot -c user.email=elidebot@elide.dev \
               tag -a "$TAG" -m "Release $TAG" "$GITHUB_SHA"
           fi
-          git push origin "refs/tags/$TAG"
+          # Authenticate only this push; never persist the PAT in .git/config.
+          git -c credential.helper= -c 'credential.helper=!gh auth git-credential' \
+            push origin "refs/tags/$TAG"
 
   # Build + test + attest the release via bazel-contrib's canonical release_ruleset
   # workflow (TAG-referenced — this is what makes the source-archive attestation
@@ -113,7 +117,7 @@ jobs:
       contents: write       # upload release assets to the draft
       id-token: write       # OIDC for the build-provenance attestation
       attestations: write   # write the attestation
-    uses: bazel-contrib/.github/.github/workflows/release_ruleset.yaml@v7.7.0
+    uses: bazel-contrib/.github/.github/workflows/release_ruleset.yaml@v7.7.0 # zizmor: ignore[unpinned-uses] BCR requires tag-ref provenance; see docs/security-model.md.
     with:
       tag_name: ${{ needs.release-please.outputs.tag_name }}
       # Keep the release a DRAFT: publish-to-bcr uploads its attestations to the
@@ -141,7 +145,7 @@ jobs:
     # attestations record the builder ref from this `uses:`, and BCR's
     # slsa-verifier rejects a bare-SHA ref ("unexpected ref type"). A tag ref
     # (refs/tags/v1.4.1) verifies.
-    uses: bazel-contrib/publish-to-bcr/.github/workflows/publish.yaml@v1.5.1
+    uses: bazel-contrib/publish-to-bcr/.github/workflows/publish.yaml@v1.5.1 # zizmor: ignore[unpinned-uses] BCR requires tag-ref provenance; see docs/security-model.md.
     with:
       tag_name: ${{ needs.release-please.outputs.tag_name }}
       registry_fork: elide-dev/bazel-central-registry

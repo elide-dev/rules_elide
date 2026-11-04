@@ -1,0 +1,5 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Private security report
+    url: https://github.com/elide-dev/rules_elide/blob/main/SECURITY.md
+    about: Follow the private reporting process for vulnerabilities.

@@ -21,6 +21,15 @@ Run `tools/verify_integrations.sh all` from the repository root for the supporte
 real-runtime fixtures, or choose `jvm`, `kotlin`, or `python`. See
 [CONTRIBUTING.md](../CONTRIBUTING.md) for the faster root test commands.
 
+## Repository security checks
+
+`security.yml` runs on contributions, main pushes, and a weekly schedule. It
+uses zizmor (without CodeQL), ShellCheck for release/integration entrypoints,
+and `tools/repository_policy_test.py` plus the SBOM helper tests. The policy
+checks cover token defaults, checkout credentials, action pins, exact BCR tag
+exceptions, forbidden privileged triggers, and Scorecard Git-mode visibility.
+Run them with the pinned tools in `requirements-dev.txt`.
+
 ## What CI runs
 
 Pull requests get analysis tests on Linux/macOS with Bazel 8/9, smoke analysis,

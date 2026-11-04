@@ -1,0 +1,15 @@
+name: Feature request
+description: Propose a capability or documentation improvement.
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Use case
+      description: What are you trying to build, and what is currently missing?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed behavior and alternatives
+      description: Include compatibility, platform, and testing considerations if known.

@@ -1,0 +1,25 @@
+name: Bug report
+description: Report a reproducible rules, runtime adapter, or documentation defect.
+body:
+  - type: markdown
+    attributes:
+      value: "For vulnerabilities, email security@elide.dev; do not post exploit details here."
+  - type: textarea
+    id: versions
+    attributes:
+      label: Versions and platform
+      description: rules_elide release/commit, Elide, Bazel, OS/CPU, and execution mode.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Minimal reproduction
+      description: BUILD/MODULE configuration, command, expected behavior, and actual result.
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant diagnostics
+      description: Remove credentials, private paths, and sensitive source before sharing.

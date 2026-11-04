@@ -23,7 +23,8 @@ git archive --format=tar.gz --prefix="${PREFIX}/" -o "${SRC_ARCHIVE}" "${TAG}"
 
 # Docs archive (Stardoc-rendered Markdown).
 docs_stage="$(mktemp -d)"
-trap 'rm -rf "${docs_stage}"' EXIT
+syft_dir=""
+trap 'rm -rf "${docs_stage}" "${syft_dir}"' EXIT
 mkdir -p "${docs_stage}/${PREFIX}/docs"
 cp docs/*.md "${docs_stage}/${PREFIX}/docs/"
 (cd "${docs_stage}" && tar -cz -f "${OLDPWD}/${DOCS_ARCHIVE}" "${PREFIX}")
@@ -50,7 +51,7 @@ SHA256="$(openssl dgst -sha256 -hex "${SRC_ARCHIVE}" | awk '{print $NF}')"
 INTEGRITY="sha256-$(openssl dgst -binary -sha256 "${SRC_ARCHIVE}" | base64)"
 
 cat <<EOF
-## Using Bzlmod (Bazel 7+)
+## Using Bzlmod (Bazel 8+)
 
 \`\`\`starlark
 bazel_dep(name = "rules_elide", version = "${VERSION}")
@@ -60,8 +61,10 @@ bazel_dep(name = "rules_elide", version = "${VERSION}")
 
 \`\`\`starlark
 bazel_dep(name = "rules_elide", version = "${VERSION}")
-single_version_override(
+archive_override(
     module_name = "rules_elide",
+    urls = ["https://github.com/elide-dev/rules_elide/releases/download/${TAG}/${SRC_ARCHIVE}"],
+    strip_prefix = "${PREFIX}",
     integrity = "${INTEGRITY}",
 )
 \`\`\`

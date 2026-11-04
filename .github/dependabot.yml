@@ -9,17 +9,38 @@ updates:
   # Dependabot bumps the SHA and the trailing `# vX` version comment together.
   - package-ecosystem: github-actions
     directory: "/"
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: "chore(deps)"
     schedule:
       interval: weekly
     groups:
       github-actions:
         patterns: ["*"]
+        update-types: ["minor", "patch"]
 
   # Python deps for the CodSpeed walltime benchmark harness.
   - package-ecosystem: pip
     directory: "/benchmarks/codspeed"
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: "chore(deps)"
     schedule:
       interval: weekly
     groups:
       benchmark-deps:
         patterns: ["*"]
+        update-types: ["minor", "patch"]
+
+  # Repository lint and workflow-security tools.
+  - package-ecosystem: pip
+    directory: "/"
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: "chore(deps)"
+    schedule:
+      interval: weekly
+    groups:
+      dev-tools:
+        patterns: ["*"]
+        update-types: ["minor", "patch"]
