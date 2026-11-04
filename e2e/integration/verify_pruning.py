@@ -1,7 +1,8 @@
 """Check actual cache invalidation in an isolated Java dependency graph.
 
 Pass Bazel build options as arguments, e.g. --distdir=/path/to/archives.
-The working checkout is never modified.
+The working checkout is never modified. Shared caches and remote execution are
+disabled: this experiment measures local action-cache invalidation after edits.
 """
 import json
 from pathlib import Path
@@ -52,6 +53,9 @@ elide_java_library(name = "consumer", srcs = ["Consumer.java"], deps = [":used",
             "--tool_java_runtime_version=remotejdk_21",
             "--execution_log_json_file=" + str(log),
             *sys.argv[1:],
+            "--disk_cache=",
+            "--remote_cache=",
+            "--remote_executor=",
         ], cwd=work, check=True)
         return {entry.get("targetLabel") for entry in entries(log)
                 if entry.get("mnemonic") == "ElideJavac"}

@@ -16,7 +16,7 @@ with ZipFile(out / "bindings.srcjar") as jar:
 assert "greet" in (out / "bytecode.txt").read_text()
 assert "java.base" in (out / "dependencies.txt").read_text()
 assert b"uses_one_dep" in (out / "uses_one_dep.jar.jdeps").read_bytes()
-unused = (out / "uses_one_dep.jar.unused").read_text().splitlines()
+unused = (out / "uses_one_dep.unused.txt").read_text().splitlines()
 assert any(path.endswith("spare-ijar.jar") for path in unused), unused
 assert not any(path.endswith("lib-ijar.jar") for path in unused), unused
 print("JVM tools, reproducible archives, and unused-dependency reporting passed.")

@@ -132,3 +132,19 @@ elide_java_library(
         ":spare",
     ],
 )
+
+# Bazel can keep unused_inputs_list in memory on cache hits. Consume it in an
+# action so the verifier reads a normal, materialized output instead.
+filegroup(
+    name = "unused_inputs",
+    srcs = [":uses_one_dep"],
+    output_group = "unused_inputs",
+)
+
+genrule(
+    name = "unused_inputs_report",
+    srcs = [":unused_inputs"],
+    outs = ["uses_one_dep.unused.txt"],
+    cmd = "cp $(SRCS) $@",
+    tags = ["manual"],
+)

@@ -10,11 +10,11 @@ if [[ "$suite" == jvm || "$suite" == all ]]; then
     cd "$repo/e2e/integration"
     bazel build :javadoc :source_archive :dependencies :bytecode :bindings "$@"
     for workers in true false; do
-      bazel build :uses_one_dep :app :kt_app \
+      bazel build :uses_one_dep :unused_inputs_report :app :kt_app \
         --@rules_elide//elide:emit_jdeps=true \
         --@rules_elide//elide:prune_unused_inputs=true \
         --@rules_elide//elide:use_workers="$workers" \
-        --output_groups=+jdeps,+unused_inputs "$@"
+        --output_groups=+jdeps,+unused_inputs --remote_download_outputs=all "$@"
       python3 verify_jvm_tools.py
     done
     bazel build :app :kt_app \
@@ -27,8 +27,10 @@ fi
 if [[ "$suite" == kotlin || "$suite" == all ]]; then
   (
     cd "$repo/e2e/kotlin_builder"
+    # The verifier reads intermediate ABI/jdeps outputs outside Bazel. Materialize
+    # them even on disk/remote cache hits (toplevel downloads omit these files).
     bazel build :greeter :annotated :symbols :kapt_sources :ksp_sources \
-      --output_groups=+generated_classes,+stubs "$@"
+      --output_groups=+generated_classes,+stubs --remote_download_outputs=all "$@"
     python3 verify_outputs.py
   )
 fi

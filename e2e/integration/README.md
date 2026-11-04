@@ -19,10 +19,10 @@ bazel run //:app
 
 ```sh
 bazel build :javadoc :source_archive :dependencies :bytecode :bindings
-bazel build :uses_one_dep :app :kt_app \
+bazel build :uses_one_dep :unused_inputs_report :app :kt_app \
   --@rules_elide//elide:emit_jdeps=true \
   --@rules_elide//elide:prune_unused_inputs=true \
-  --output_groups=+jdeps,+unused_inputs
+  --output_groups=+jdeps,+unused_inputs --remote_download_outputs=all
 python3 verify_jvm_tools.py
 ```
 
