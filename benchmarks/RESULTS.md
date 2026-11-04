@@ -9,6 +9,21 @@ same generated source set, across three conditions:
   `elide <tool> -- <args>` per target, via `--@rules_elide//elide:use_workers=false`).
 - **elide+worker** — elide rules, persistent workers **on** (default).
 
+## CI comparison
+
+`bench.sh N RUNS` compares the vanilla rules with Elide's default worker mode.
+It prefetches all four targets before timing and disables shared disk/remote
+action caches and remote execution. Clean samples run after `bazel clean`;
+incremental samples follow an initial build and three discarded source-edit
+builds to warm the compiler. Each measured incremental build changes source
+content. Times include Bazel analysis and rule overhead, not just compiler time.
+The workflow's `benchmark-results` artifact includes individual samples and the
+commit/host/Bazel identity. Shared hosted runners still introduce timing noise.
+
+Older CI `bench.sh` results included download costs in first samples and could
+reuse the workflow's disk action cache after cleaning. Do not compare their
+clean-build averages directly with the corrected methodology.
+
 ## Suite
 
 `bench_suite.sh` drives [hyperfine](https://github.com/sharkdp/hyperfine) and

@@ -9,7 +9,7 @@
 # Two regimes are measured:
 #   cold  : `bazel clean` before each run — full from-scratch build (worst
 #           case; rare in CI).
-#   warm  : one warm-up build, then each measured run edits a single source and
+#   warm  : initial build + three discarded edit builds, then each sample edits a source and
 #           rebuilds WITHOUT cleaning — the steady-state inner dev / CI loop.
 #
 # Note: the elide compile actions run as persistent workers by default. Workers
@@ -32,6 +32,17 @@ cd "${ROOT}"
 ./gen.sh "${N}" >/dev/null
 
 BAZEL="${BAZELISK:-bazelisk}"
+# Measure compilation, not shared-cache restoration. Keep repository downloads
+# cached, but disable disk/remote action caches and remote execution explicitly.
+BUILD_FLAGS=(--disk_cache= --remote_cache= --remote_executor=)
+BUILD_LOG="$(mktemp)"
+trap 'rm -f "$BUILD_LOG"; ./gen.sh "$N" >/dev/null' EXIT
+build_target() {
+  if ! "$BAZEL" build "$@" "${BUILD_FLAGS[@]}" >"$BUILD_LOG" 2>&1; then
+    cat "$BUILD_LOG" >&2
+    return 1
+  fi
+}
 
 JAVA_SRC="${ROOT}/sources/java/sample/JavaClass1.java"
 KOTLIN_SRC="${ROOT}/sources/kotlin/sample/KotlinClass1.kt"
@@ -46,7 +57,7 @@ measure_cold() {
     "${BAZEL}" clean >/dev/null 2>&1
     local start_ns end_ns
     start_ns=$(date +%s%N)
-    "${BAZEL}" build "${target}" >/dev/null 2>&1
+    build_target "${target}"
     end_ns=$(date +%s%N)
     local elapsed_ns=$(( end_ns - start_ns ))
     total_ns=$(( total_ns + elapsed_ns ))
@@ -64,7 +75,12 @@ measure_warm() {
   local label="$2"
   local src="$3"
   "${BAZEL}" clean >/dev/null 2>&1
-  "${BAZEL}" build "${target}" >/dev/null 2>&1  # warm-up (discarded)
+  build_target "${target}"  # warm-up (discarded)
+  # Warm the actual incremental compile path, including JVM JIT, before timing.
+  for i in 1 2 3; do
+    printf '\n// discarded warm-up edit %d\n' "$i" >> "$src"
+    build_target "$target"
+  done
   local total_ns=0
   for i in $(seq 1 "${RUNS}"); do
     # Content edit (not just mtime) so Bazel re-runs the compile action; a
@@ -72,7 +88,7 @@ measure_warm() {
     printf '\n// bench warm edit %d\n' "${i}" >> "${src}"
     local start_ns end_ns
     start_ns=$(date +%s%N)
-    "${BAZEL}" build "${target}" >/dev/null 2>&1
+    build_target "${target}"
     end_ns=$(date +%s%N)
     local elapsed_ns=$(( end_ns - start_ns ))
     total_ns=$(( total_ns + elapsed_ns ))
@@ -85,6 +101,12 @@ measure_warm() {
 
 echo "Benchmark: ${N} java + ${N} kotlin sources, ${RUNS} runs per target"
 echo "============================================================"
+echo "Commit: $(git rev-parse HEAD)"
+echo "Host: $(uname -srm)"
+echo "Bazel: $("$BAZEL" --version)"
+echo "Shared action caches/execution disabled; dependencies prefetched; 3 incremental warm-ups."
+# Download dependencies and initialize each toolchain before measured cleans.
+build_target //:vanilla_java_lib //:elide_java_lib //:vanilla_kotlin_lib //:elide_kotlin_lib
 echo
 echo "-- cold (clean before each run; fresh worker per run) ------"
 echo
