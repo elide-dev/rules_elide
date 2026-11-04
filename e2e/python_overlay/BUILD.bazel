@@ -1,4 +1,8 @@
 load("@rules_elide//elide:defs.bzl", "elide_java_library")
+load("@rules_elide//elide/python:toolchain.bzl", "register_elide_python_toolchain")
+load("@rules_python//python:py_binary.bzl", "py_binary")
+load("@rules_python//python:py_library.bzl", "py_library")
+load("@rules_python//python:py_test.bzl", "py_test")
 load(":probe.bzl", "python_overlay_probe")
 
 python_overlay_probe(
@@ -10,4 +14,56 @@ python_overlay_probe(
 elide_java_library(
     name = "java",
     srcs = ["Hello.java"],
+)
+
+register_elide_python_toolchain(
+    name = "elide_py",
+    elide = "@elide_linux_amd64//:bin/elide",
+    runtime_files = "@elide_linux_amd64//:elide_python_files",
+    target_compatible_with = [
+        "@platforms//os:linux",
+        "@platforms//cpu:x86_64",
+    ],
+)
+
+py_library(
+    name = "leaf",
+    srcs = ["leaf.py"],
+    data = ["message.txt"],
+)
+
+py_library(
+    name = "library",
+    srcs = ["library.py"],
+    deps = [":leaf"],
+)
+
+py_binary(
+    name = "app",
+    srcs = ["app.py"],
+    deps = [":library"],
+)
+
+py_test(
+    name = "runtime_test",
+    size = "small",
+    srcs = ["runtime_test.py"],
+    deps = [":library"],
+)
+
+py_test(
+    name = "versioned_test",
+    size = "small",
+    srcs = ["runtime_test.py"],
+    main = "runtime_test.py",
+    python_version = "3.13",
+    deps = [":library"],
+)
+
+# Elide must not intercept targets that request another language version.
+py_test(
+    name = "other_version_test",
+    size = "small",
+    srcs = ["other_version_test.py"],
+    python_version = "3.11",
 )

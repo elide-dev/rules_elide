@@ -12,3 +12,26 @@ the smaller JVM compile input set.
 No local `elide setup` or mutable environment is required. To use previously
 downloaded archives, pass `--distdir=/path/to/archives`; retain the published
 filenames for both the base and Python archives.
+
+## rules_python adapter
+
+This Linux x86_64 workspace also registers Elide as a Python 3.13 runtime.
+Its `.bazelrc` selects the shell bootstrap, avoiding host Python at startup.
+
+```sh
+bazel test //:runtime_test //:versioned_test //:other_version_test
+bazel run //:app -- "space argument" --flag
+python3 verify_no_host_python.py
+```
+
+The tests cover transitive libraries, data runfiles, stdlib imports, `-m`,
+subprocess argument and exit-code forwarding through `sys.executable`, and
+selection of CPython for an explicitly requested different Python version.
+The verification script launches the built binary/test with no Python on PATH
+and with deliberately invalid ambient Python/virtualenv paths.
+
+To exercise the legacy bootstrap (which requires host Python to start):
+
+```sh
+bazel test //:runtime_test --@rules_python//python/config_settings:bootstrap_impl=system_python
+```

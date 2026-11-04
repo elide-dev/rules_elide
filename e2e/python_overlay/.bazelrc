@@ -1,0 +1,3 @@
+# Use a shell bootstrap: starting Elide must not require host Python.
+build --@rules_python//python/config_settings:bootstrap_impl=script
+build --@rules_python//python/config_settings:python_version=3.13

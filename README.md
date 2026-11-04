@@ -127,8 +127,8 @@ Custom Bazel rules that execute Python should use
 `ctx.toolchains["@rules_elide//elide:toolchain_type"].elide_info.python_tool_files`
 as action inputs along with the toolchain binary. This set includes Python
 resources and `conf/components/python`; JVM compile inputs remain separate.
-This provides the distribution and runtime inputs, not a `rules_python`
-interpreter registration or Python dependency management.
+Use [the Python runtime adapter](docs/python.md) to register this distribution
+with `rules_python`. Package resolution remains with `rules_python`.
 
 See [the sandbox smoke fixture](e2e/python_overlay/README.md) for an example.
 
@@ -289,7 +289,7 @@ See [`e2e/smoke/README.md`](e2e/smoke/README.md) for the full flow.
 | Generated source jars | Supported by KotlinBuilder; native Kotlin rules still require individual sources. |
 | Stable Elide releases | Pinned through 1.6.2 alongside selected nightlies. |
 | Native image | Existing rule; hermetic JDK/C toolchain integration remains work. |
-| Python | Optional distribution overlay and runtime inputs; language rules deferred. |
+| Python | Pinned overlay and opt-in rules_python runtime adapter; pure-Python binaries/tests. |
 | Windows | Release pins and some launchers exist; KotlinBuilder still requires Bash and needs native Windows validation. |
 
 ## Versioning

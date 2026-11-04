@@ -75,6 +75,7 @@ filegroup(
         ":native_image_doc",
         ":processing_doc",
         ":providers_doc",
+        ":python_toolchain_doc",
         ":toolchain_doc",
     ],
 )
@@ -91,4 +92,11 @@ stardoc(
     out = "processing.md",
     input = "//elide/rules:processing.bzl",
     deps = ["//elide/rules:processing"] + _DOC_DEPS,
+)
+
+stardoc(
+    name = "python_toolchain_doc",
+    out = "python_toolchain.md",
+    input = "//elide/python:toolchain.bzl",
+    deps = ["//elide/python:toolchain"] + _DOC_DEPS,
 )

@@ -131,6 +131,13 @@ jobs:
         # See README "Roadmap" entry "elide native-image under Bazel".
         run: bazel build -- //... -//:native_app
 
+      - name: Python runtime adapter
+        working-directory: e2e/python_overlay
+        run: |
+          bazel test //:runtime_test //:versioned_test //:other_version_test
+          bazel build //:app
+          python3 verify_no_host_python.py
+
   kotlin-builder:
     name: kotlin-builder e2e (rules_kotlin toolchain swap)
     runs-on: ubuntu-24.04

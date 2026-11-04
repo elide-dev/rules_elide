@@ -11,6 +11,12 @@ elide.install(
     python = True,
     version = "1.6.2",
 )
-use_repo(elide, "elide_toolchains")
+use_repo(elide, "elide_linux_amd64", "elide_toolchains")
 
 register_toolchains("@elide_toolchains//:all")
+
+bazel_dep(name = "rules_python", version = "1.7.0")
+
+register_toolchains("//:elide_py")
+
+bazel_dep(name = "platforms", version = "1.1.0")
