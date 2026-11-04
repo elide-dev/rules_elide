@@ -75,30 +75,43 @@ class ElideCompileTest {
 
     // --- ABI jar (jvm-abi-gen) tests ---
 
-    @Test fun abiJarInjectsXpluginWhenPluginJarFound() {
-        // Stub elidePath to point at the real Elide binary so findJvmAbiGenJar can locate
-        // lib/resources/kotlin/<ver>/lib/jvm-abi-gen.jar from the distribution root.
-        val elideBin = System.getenv("ELIDE_BINARY_PATH")
-            ?: return  // skip if not running under Bazel with the toolchain present
-        val req = CompileRequest(output = "out.jar", abiJar = "abi.jar", sources = listOf("A.kt"))
-        val kotlinc = ElideCompile.plan(req, elidePath = elideBin).first { it.contains("kotlinc") }
-        assertTrue(kotlinc.any { it.startsWith("-Xplugin=") && it.contains("jvm-abi-gen") },
-            "expected -Xplugin=...jvm-abi-gen.jar in kotlinc argv")
-        val pIdx = kotlinc.indexOf("-P")
-        assertTrue(pIdx >= 0, "expected -P flag")
-        assertTrue(kotlinc[pIdx + 1].contains("org.jetbrains.kotlin.jvm.abi") &&
-            kotlinc[pIdx + 1].contains("outputDir=abi.jar"),
-            "expected plugin option -P plugin:org.jetbrains.kotlin.jvm.abi:outputDir=abi.jar")
+    @Test fun nativeAbiAndJdepsDoNotNeedPluginDiscovery() {
+        val req = CompileRequest(output = "out.jar", abiJar = "abi.jar", jdeps = "out.jdeps",
+            targetLabel = "//app:lib", sources = listOf("A.kt"))
+        val kt = ElideCompile.plan(req, "/nonexistent/elide").first()
+        assertTrue(kt.indexOf("--emit-abi") > kt.indexOf("--"))
+        assertEquals("abi.jar", kt[kt.indexOf("--emit-abi") + 1])
+        assertEquals("out.jdeps", kt[kt.indexOf("--jdeps") + 1])
+        assertTrue("--target-label=//app:lib" in kt)
+        assertTrue(kt.none { it.contains("jvm-abi-gen") })
     }
 
-    @Test fun abiJarThrowsWhenPluginJarMissing() {
-        // Use a non-existent path — findJvmAbiGenJar returns null, plan() must throw immediately.
-        val req = CompileRequest(output = "out.jar", abiJar = "abi.jar", sources = listOf("A.kt"))
-        val ex = assertFailsWith<IllegalStateException> {
-            ElideCompile.plan(req, elidePath = "/nonexistent/bin/elide")
+    @Test fun legacyAbiStillRequiresPlugin() {
+        assertFailsWith<IllegalStateException> {
+            ElideCompile.plan(CompileRequest(output = "out.jar", abiJar = "abi.jar"),
+                "/nonexistent/elide", nativeTools = false)
         }
-        assertTrue(ex.message?.contains("jvm-abi-gen.jar") == true,
-            "expected error message to mention jvm-abi-gen.jar, got: ${ex.message}")
+    }
+
+    @Test fun kaptProducesAllDeclaredOutputsWithoutAFullCompile() {
+        val req = CompileRequest(kaptSources = "sources.jar", kaptClasses = "classes.jar",
+            kaptStubs = "stubs.jar", processors = listOf("example.Processor"),
+            processorPath = listOf("processor.jar"), processorOptions = listOf("name=Hello"), sources = listOf("A.kt"))
+        val kt = ElideCompile.plan(req, "/bin/elide").single()
+        assertTrue(kt.hasAll("--kapt-sources", "sources.jar", "--kapt-classes", "classes.jar", "--kapt-stubs", "stubs.jar"))
+        assertTrue(kt.hasAll("--processor-option", "name=Hello", "--processors", "example.Processor"))
+        assertTrue("-d" !in kt)
+    }
+
+    @Test fun kspProducesGeneratedSourcesAndResources() {
+        val req = Flagfile.parse(listOf("--generated_sources_output", "sources.jar",
+            "--generated_classes_output", "classes.jar", "--processor_classpath", "processor.jar",
+            "--libraries", "dep.jar", "--ksp_options", "key=value", "--sources", "A.kt",
+            "--language_version", "2.4", "--jvm_target", "21"))
+        val kt = ElideCompile.plan(req, "/bin/elide").single()
+        assertTrue(kt.hasAll("--ksp-sources", "sources.jar", "--ksp-classes", "classes.jar"))
+        assertTrue(kt.hasAll("--processorpath", "processor.jar", "--processor-option", "key=value"))
+        assertTrue(kt.hasAll("-classpath", "dep.jar", "-language-version", "2.4", "-jvm-target", "21"))
     }
 
     @Test fun noAbiJarFlagsWhenAbiJarNotRequested() {

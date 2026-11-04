@@ -80,20 +80,17 @@ object ElideCompile {
      * Returns the list of subprocess argv lists to execute for the given [req].
      * Pure — no side effects; safe to unit-test without a real Elide binary.
      *
-     * Emits:
-     *  1. An `elide kotlinc` command to compile sources to [CompileRequest.output].
-     *     When [CompileRequest.abiJar] is set AND `jvm-abi-gen.jar` is discoverable
-     *     in the Elide distribution, injects `-Xplugin=<jar>` and
-     *     `-P plugin:org.jetbrains.kotlin.jvm.abi:outputDir=<abiJar>` into the
-     *     kotlinc flags so both the full jar and the ABI-stripped jar are produced
-     *     in one compiler pass. Verified against Elide 1.3.0 / Kotlin 2.4.0.
-     *  2. An `elide jar` command to pack sources into [CompileRequest.srcjar], if set.
+     * Native mode uses Elide's ABI, jdeps, KAPT and KSP2 APIs. Legacy mode
+     * retains the bundled jvm-abi-gen plugin and translated dependency report.
+     * Processing requests produce their declared source/class/stub jars only;
+     * compilation requests produce implementation/ABI jars and optional srcjar.
      */
     fun plan(
         req: CompileRequest,
         elidePath: String,
         extraSources: List<String> = emptyList(),
         usedDepsReport: String? = null,
+        nativeTools: Boolean = true,
     ): List<List<String>> {
         val cmds = mutableListOf<List<String>>()
         val sep = File.pathSeparator
@@ -107,12 +104,37 @@ object ElideCompile {
         // --- kotlinc command ---
         // Elide top-level options precede the `--` separator; kotlinc TOOL_ARGS follow it.
         val kt = mutableListOf(elidePath, "kotlinc")
+        val processing = req.kaptSources != null || req.kspSources != null
+        if (nativeTools) {
+            when {
+                req.kspSources != null -> {
+                    kt += listOf("--ksp-sources", req.kspSources)
+                    req.kspClasses?.let { kt += listOf("--ksp-classes", it) }
+                }
+                req.kaptSources != null -> {
+                    kt += listOf("--kapt-sources", req.kaptSources)
+                    req.kaptClasses?.let { kt += listOf("--kapt-classes", it) }
+                    req.kaptStubs?.let { kt += listOf("--kapt-stubs", it) }
+                    if (req.processors.isNotEmpty()) kt += listOf("--processors", req.processors.joinToString(","))
+                }
+                else -> {
+                    req.jdeps?.let { kt += listOf("--jdeps", it) }
+                    req.targetLabel?.let { kt += "--target-label=$it" }
+                }
+            }
+            if (processing) {
+                if (req.processorPath.isNotEmpty()) kt += listOf("--processorpath", req.processorPath.joinToString(sep))
+                req.processorOptions.forEach { kt += listOf("--processor-option", it) }
+            }
+        }
         // Used-dependency report for real .jdeps (Elide 1.3.2, WHIPLASH #1002/#1005).
         usedDepsReport?.let { kt += listOf("--report-used-deps", it) }
         val builtins = BuiltinPlugins.builtinNames(rewrites)
         if (builtins.isNotEmpty()) kt += "--plugins=${builtins.joinToString(",")}"
         kt += "--"
-        kt += listOf("-d", req.output ?: error("--output required"))
+        // Kotlin parses --emit-abi in TOOL_ARGS (unlike javac).
+        if (nativeTools && !processing) req.abiJar?.let { kt += listOf("--emit-abi", it) }
+        if (!processing) kt += listOf("-d", req.output ?: error("--output required"))
         if (req.classpath.isNotEmpty()) {
             kt += "-classpath"
             kt += req.classpath.joinToString(sep)
@@ -127,7 +149,7 @@ object ElideCompile {
         //     -Xplugin=<distRoot>/lib/resources/kotlin/<kver>/lib/jvm-abi-gen.jar
         //     -P plugin:org.jetbrains.kotlin.jvm.abi:outputDir=<abi.jar>
         //     <srcs>
-        req.abiJar?.let { abiJarPath ->
+        req.abiJar?.takeIf { !nativeTools }?.let { abiJarPath ->
             val distRoot = File(elidePath).parentFile?.parentFile
             val pluginJar = findJvmAbiGenJar(elidePath)
                 ?: error(
@@ -154,6 +176,7 @@ object ElideCompile {
         }
         // Requested Kotlin api/language version (#8); without these elide kotlinc
         // falls back to its built-in default (warns + can change semantics).
+        req.jvmTarget?.let { kt += listOf("-jvm-target", it) }
         req.apiVersion?.let { kt += listOf("-api-version", it) }
         req.languageVersion?.let { kt += listOf("-language-version", it) }
         kt += req.passthroughFlags.filterNot { BuiltinPlugins.isRewrittenXplugin(it) }
@@ -163,8 +186,8 @@ object ElideCompile {
         cmds += kt
 
         // --- srcjar: pack sources when requested ---
-        req.srcjar?.let { sj ->
-            cmds += listOf(elidePath, "jar", "--", "--create", "--file", sj) + req.sources
+        req.srcjar?.takeIf { !processing }?.let { sj ->
+            cmds += listOf(elidePath, "jar", "--", "--create", "--date=1980-01-01T00:00:02Z", "--file", sj) + req.sources
         }
 
         return cmds

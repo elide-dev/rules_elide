@@ -1,17 +1,21 @@
+load("@rules_elide//elide:defs.bzl", "elide_kapt", "elide_ksp")
+load("@rules_kotlin//kotlin:core.bzl", "kt_ksp_plugin")
 load("@rules_elide//elide/kotlin:toolchain.bzl", "register_elide_kotlin_toolchain")
 load("@rules_java//java:defs.bzl", "java_library", "java_plugin")
 load("@rules_kotlin//kotlin:jvm.bzl", "kt_jvm_library")
 
-# Smoke-build target for the wrapping Elide Kotlin toolchain. This only
-# exercises analysis (macro expansion, rule resolution, ToolchainInfo re-emit);
-# actually compiling a kt_jvm_library through it is the next (e2e) task.
+# Exercises native ABI/jdeps, KAPT, and the separate KSP2 worker with real Elide.
 register_elide_kotlin_toolchain(
     name = "elide_kt",
+    api_version = "2.4",
     # TODO(e2e): platform-pinned label. The elide binary is exposed per-platform
     # by @elide_toolchains as @elide_<os>_<cpu>//:bin/elide. This smoke test runs
     # on linux/amd64. The e2e task should make this select() on the exec platform.
     elide = "@elide_linux_amd64//:bin/elide",
+    experimental_use_abi_jars = True,
     fallback_builder = "@rules_kotlin//src/main/kotlin:build",
+    jvm_target = "21",
+    language_version = "2.4",
 )
 
 kt_jvm_library(
@@ -19,8 +23,7 @@ kt_jvm_library(
     srcs = ["sample/Greeter.kt"],
 )
 
-# --- KAPT fallback: an annotation processor forces the shim to delegate to the
-# stock rules_kotlin KotlinBuilder (Router detects --processors). ---
+# --- Header-based KAPT through Elide, including generated-source resolution. ---
 
 java_library(
     name = "marker_anno",
@@ -39,4 +42,40 @@ kt_jvm_library(
     srcs = ["sample/Annotated.kt"],
     plugins = [":marker_processor"],
     deps = [":marker_anno"],
+)
+
+kt_jvm_library(
+    name = "symbol_processor",
+    srcs = ["proc/Generate.kt"],
+    resource_strip_prefix = "proc",
+    resources = ["proc/META-INF/services/com.google.devtools.ksp.processing.SymbolProcessorProvider"],
+    deps = ["@rules_kotlin//kotlin/compiler:symbol-processing-api"],
+)
+
+kt_ksp_plugin(
+    name = "symbol_plugin",
+    options = {"message": "from-ksp"},
+    processor_class = "proc.GenerateProvider",
+    deps = [":symbol_processor"],
+)
+
+kt_jvm_library(
+    name = "symbols",
+    srcs = ["sample/Symbols.kt"],
+    plugins = [":symbol_plugin"],
+)
+
+elide_kapt(
+    name = "kapt_sources",
+    srcs = ["sample/Annotated.kt"],
+    processor_jars = [":marker_processor"],
+    processors = ["proc.MarkerProcessor"],
+    deps = [":marker_anno"],
+)
+
+elide_ksp(
+    name = "ksp_sources",
+    srcs = ["sample/Symbols.kt"],
+    processor_deps = [":symbol_processor"],
+    processor_options = {"message": "from-ksp"},
 )

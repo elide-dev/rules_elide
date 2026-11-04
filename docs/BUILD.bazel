@@ -70,9 +70,25 @@ filegroup(
         ":extensions_doc",
         ":format_doc",
         ":java_doc",
+        ":jvm_tools_doc",
         ":kotlin_doc",
         ":native_image_doc",
+        ":processing_doc",
         ":providers_doc",
         ":toolchain_doc",
     ],
+)
+
+stardoc(
+    name = "jvm_tools_doc",
+    out = "jvm_tools.md",
+    input = "//elide/rules:jvm_tools.bzl",
+    deps = ["//elide/rules:jvm_tools"] + _DOC_DEPS,
+)
+
+stardoc(
+    name = "processing_doc",
+    out = "processing.md",
+    input = "//elide/rules:processing.bzl",
+    deps = ["//elide/rules:processing"] + _DOC_DEPS,
 )

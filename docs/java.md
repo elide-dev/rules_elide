@@ -3,7 +3,7 @@
 Java compile rules for rules_elide.
 
 `elide_java_library` / `_binary` / `_test` drive `elide javac` to compile
-`.java` sources. Every rule returns `JavaInfo` (with an `ijar`-derived
+`.java` sources. Every rule returns `JavaInfo` (with an ABI-header or `ijar`-derived
 `compile_jar` and a packed `source_jar`) so downstream `java_*` / `kt_*`
 rules consume the outputs without any adapter, plus `ElideInfo` for
 Elide-specific metadata propagation.

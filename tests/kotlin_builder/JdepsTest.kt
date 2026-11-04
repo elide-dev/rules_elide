@@ -37,4 +37,25 @@ class JdepsTest {
             report.delete(); jd.delete()
         }
     }
+    @Test fun nativeStrictDepsChecksExplicitReferencesOnly() {
+        val file = File.createTempFile("native-deps", ".jdeps")
+        try {
+            val report = Deps.Dependencies.newBuilder().setSuccess(true)
+                .addDependency(Deps.Dependency.newBuilder().setPath("direct.jar").setKind(Deps.Dependency.Kind.EXPLICIT))
+                .addDependency(Deps.Dependency.newBuilder().setPath("transitive.jar").setKind(Deps.Dependency.Kind.EXPLICIT))
+                .addDependency(Deps.Dependency.newBuilder().setPath("implicit.jar").setKind(Deps.Dependency.Kind.IMPLICIT))
+                .build()
+            file.writeBytes(report.toByteArray())
+            val cp = listOf("direct.jar", "transitive.jar", "implicit.jar")
+            assertEquals(0, Jdeps.check(file.path, listOf("direct.jar"), cp, "off").first)
+            val (code, message) = Jdeps.check(file.path, listOf("direct.jar"), cp, "error")
+            assertEquals(1, code)
+            assertTrue("transitive.jar" in message)
+            assertTrue("implicit.jar" !in message)
+            assertEquals(0, Jdeps.check(file.path, listOf("direct.jar"), cp, "warn").first)
+            assertEquals(0, Jdeps.check(file.path, cp, cp, "error").first)
+        } finally {
+            file.delete()
+        }
+    }
 }

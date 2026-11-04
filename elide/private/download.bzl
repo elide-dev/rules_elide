@@ -2,7 +2,7 @@
 
 """Repository rule that downloads one elide release artifact for one platform."""
 
-load(":versions.bzl", "binary_ext", "download_url")
+load(":versions.bzl", "binary_ext", "download_url", "python_download_url")
 
 visibility(["//elide/...", "//tests/..."])
 
@@ -49,6 +49,13 @@ filegroup(
     ),
 )
 
+# Runtime inputs for Python-capable actions, including the component marker.
+# Kept separate so JVM compilation does not ship the Python standard library.
+filegroup(
+    name = "elide_python_files",
+    srcs = glob(["bin/**", "lib/**", "conf/**"]),
+)
+
 filegroup(
     name = "kotlin_stdlib_jars",
     srcs = glob(["lib/resources/kotlin/*/lib/kotlin-stdlib.jar"]),
@@ -69,6 +76,15 @@ def _elide_download_impl(ctx):
             cpu = cpu,
         ),
     )
+
+    # Apply the matching overlay after the base: it replaces bin/elide and
+    # supplies Python resources and conf/components/python in the same tree.
+    if ctx.attr.python_integrity:
+        ctx.download_and_extract(
+            url = python_download_url(ctx.attr.python_url_template, ctx.attr.channel, ctx.attr.version, os, cpu),
+            integrity = ctx.attr.python_integrity,
+            canonical_id = "elide-python-{}-{}-{}".format(ctx.attr.version, os, cpu),
+        )
 
     # Wrapper scripts under bin/ (java, javac, kotlinc, ...) ship without an
     # exec bit in the CDN archive; restore it so consumers (notably the
@@ -153,6 +169,12 @@ elide_download = repository_rule(
         "cpu": attr.string(mandatory = True),
         "integrity": attr.string(mandatory = True),
         "os": attr.string(mandatory = True),
+        "python_integrity": attr.string(
+            doc = "SRI for the matching Python overlay; empty disables the overlay.",
+        ),
+        "python_url_template": attr.string(
+            doc = "Optional Python overlay URL template; same tokens as url_template.",
+        ),
         "strip_prefix": attr.string(
             default = "",
             doc = "Top-level archive directory to strip. Default empty (CDN " +

@@ -1,3 +1,4 @@
+load("@rules_elide//elide:defs.bzl", "elide_jar", "elide_javadoc", "elide_javap", "elide_jdeps", "elide_jextract")
 load(
     "@rules_elide//elide:defs.bzl",
     "elide_format",
@@ -70,4 +71,60 @@ elide_kotlin_library(
 elide_java_library(
     name = "gen_java",
     srcs = glob(["gen/java/*.java"]),
+)
+
+elide_javadoc(
+    name = "javadoc",
+    srcs = ["sample/Hello.java"],
+)
+
+elide_javadoc(
+    name = "javadoc_theme",
+    srcs = ["sample/Hello.java"],
+    tags = ["manual"],
+    theme = "elide",
+)
+
+elide_jar(
+    name = "source_archive",
+    srcs = [
+        "sample/Hello.java",
+        "sample/Main.java",
+    ],
+    strip_prefix = "sample",
+)
+
+elide_jdeps(
+    name = "dependencies",
+    srcs = [":lib"],
+    opts = ["-s"],
+)
+
+elide_javap(
+    name = "bytecode",
+    classes = ["sample.Hello"],
+    opts = ["-c"],
+    deps = [":lib"],
+)
+
+elide_jextract(
+    name = "bindings",
+    srcs = ["sample/api.h"],
+    hdrs = ["sample/types.h"],
+    header_class = "Api",
+    package = "sample.bindings",
+)
+
+elide_java_library(
+    name = "spare",
+    srcs = ["sample/Spare.java"],
+)
+
+elide_java_library(
+    name = "uses_one_dep",
+    srcs = ["sample/UsesOne.java"],
+    deps = [
+        ":lib",
+        ":spare",
+    ],
 )

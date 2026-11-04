@@ -20,6 +20,10 @@ def _provider_shape_test_impl(ctx):
     asserts.true(env, info.binary != None, "binary must not be None")
     asserts.true(env, hasattr(info, "tool_files"), "tool_files field missing")
     asserts.true(env, hasattr(info, "kotlin_stdlib_jars"), "kotlin_stdlib_jars field missing")
+    python_files = info.python_tool_files.to_list()
+    asserts.true(env, info.binary in python_files)
+    asserts.true(env, any([f.basename == "python-resource.txt" for f in python_files]))
+    asserts.false(env, any([f.basename == "python-resource.txt" for f in info.compile_tool_files.to_list()]))
     return analysistest.end(env)
 
 _provider_shape_test = analysistest.make(_provider_shape_test_impl)
@@ -49,10 +53,18 @@ def elide_toolchain_test_suite(name):
         testonly = True,
         tags = ["manual"],
     )
+    write_file(
+        name = "_python_resource",
+        out = "python-resource.txt",
+        content = ["Python runtime fixture"],
+        testonly = True,
+        tags = ["manual"],
+    )
     elide_toolchain(
         name = "_fixture_toolchain",
         binary = ":_stub_elide",
         version = "1.2.3",
+        python_tool_files = [":_python_resource"],
         testonly = True,
         tags = ["manual"],
     )

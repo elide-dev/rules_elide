@@ -4,7 +4,7 @@
 
 load("//elide/private:download.bzl", "elide_download", "elide_local")
 load("//elide/private:hub.bzl", "elide_toolchains_hub")
-load("//elide/private:versions.bzl", "DEFAULT_CHANNEL", "DEFAULT_VERSION", "ELIDE_VERSIONS", "PLATFORMS", "select_version")
+load("//elide/private:versions.bzl", "DEFAULT_CHANNEL", "DEFAULT_VERSION", "ELIDE_VERSIONS", "PLATFORMS", "PYTHON_VERSIONS", "select_version")
 
 # `elide.use` — bring-your-own Elide: a custom release (your own tarballs + hashes
 # via `version` + `url_template` + `integrity`), or a locally-extracted
@@ -29,6 +29,14 @@ _use = tag_class(
                   "toolchain uses it directly with no download (build becomes " +
                   "non-reproducible); takes precedence over url_template/integrity.",
         ),
+        "python_integrity": attr.string_dict(
+            doc = "Optional matching Python overlay SRI hashes keyed by <os>_<cpu>. " +
+                  "Requires python_url_template and one hash for every base platform.",
+        ),
+        "python_url_template": attr.string(
+            doc = "URL template for matching Python overlays. Same tokens as url_template. " +
+                  "For local_path, apply overlays to the local distribution yourself.",
+        ),
         "repo_prefix": attr.string(
             default = "elide",
             doc = "Prefix used to name per-platform toolchain repos.",
@@ -49,6 +57,13 @@ _install = tag_class(
         "channel": attr.string(
             default = DEFAULT_CHANNEL,
             doc = "Release channel: nightly, preview, or release.",
+        ),
+        "python": attr.bool(
+            default = False,
+            doc = "Install the checksum-pinned Python overlay matching the selected Elide version.",
+        ),
+        "python_url_template": attr.string(
+            doc = "Optional mirror URL template for the pinned Python overlay; same tokens as url_template.",
         ),
         "repo_prefix": attr.string(
             default = "elide",
@@ -89,6 +104,8 @@ def _wire_use(ctx, t):
     """Wires the toolchain from a root `elide.use` tag (BYO release or local dir)."""
     prefix = t.repo_prefix
     if t.local_path:
+        if t.python_integrity or t.python_url_template:
+            fail("elide.use(local_path) requires an already overlaid distribution; overlay download options cannot be combined with local_path.")
         os, cpu = _host_platform(ctx)
         if os == None or cpu == None:
             fail("elide.use(local_path) could not map host os.name={}, os.arch={} to a supported platform.".format(
@@ -110,6 +127,13 @@ def _wire_use(ctx, t):
     if not t.url_template or not t.integrity:
         fail("elide.use requires either `local_path`, or `url_template` together with " +
              "`integrity` (per-platform `<os>_<cpu>` -> SRI hashes).")
+    if bool(t.python_integrity) != bool(t.python_url_template):
+        fail("elide.use Python overlays require both python_url_template and python_integrity.")
+    if t.python_integrity and sorted(t.python_integrity.keys()) != sorted(t.integrity.keys()):
+        fail("elide.use python_integrity must cover exactly the same platforms as integrity.")
+    for key, integrity in t.python_integrity.items():
+        if not integrity:
+            fail("elide.use python_integrity must provide a non-empty checksum for {}.".format(key))
     plats = []
     for key in t.integrity:
         os, cpu = key.split("_", 1)
@@ -121,6 +145,8 @@ def _wire_use(ctx, t):
             cpu = cpu,
             integrity = t.integrity[key],
             url_template = t.url_template,
+            python_integrity = t.python_integrity.get(key, ""),
+            python_url_template = t.python_url_template,
         )
         plats.append(key)
     elide_toolchains_hub(
@@ -137,13 +163,17 @@ def _elide_impl(ctx):
     repo_prefix = "elide"
     url_template = ""
     use_tag = None
+    python = False
+    python_url_template = ""
     for mod in ctx.modules:
         for tag in mod.tags.install:
             versions.append(tag.version)
+            python = python or tag.python
             if mod.is_root:
                 channel = tag.channel
                 repo_prefix = tag.repo_prefix
                 url_template = tag.url_template
+                python_url_template = tag.python_url_template
         if mod.is_root:
             for tag in mod.tags.use:
                 use_tag = tag  # last root `use` wins
@@ -163,6 +193,11 @@ def _elide_impl(ctx):
             ("Unknown elide version '{}'. Pin a release recorded in " +
              "elide/private/versions.bzl, or contribute a new entry.").format(version),
         )
+    python_integrities = PYTHON_VERSIONS.get(version, {}) if python else {}
+    if python:
+        for platform in integrity_for_version:
+            if not python_integrities.get(platform):
+                fail("No pinned Python overlay for Elide {} on {}/{}. Choose a version with Python overlays or use elide.use with explicit overlay hashes.".format(version, platform[0], platform[1]))
     for (os, cpu) in PLATFORMS:
         integrity = integrity_for_version.get((os, cpu))
         if integrity == None:
@@ -175,6 +210,8 @@ def _elide_impl(ctx):
             cpu = cpu,
             integrity = integrity,
             url_template = url_template,
+            python_integrity = python_integrities.get((os, cpu), ""),
+            python_url_template = python_url_template,
         )
     elide_toolchains_hub(
         name = "elide_toolchains",

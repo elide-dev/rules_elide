@@ -9,6 +9,7 @@ ElideToolchainInfo = provider(
         "compile_tool_files": "depset[File]. Inputs for JVM compile actions (javac, kotlinc, jar). " +
                               "Excludes native-image-only subtrees (lib/svm, lib/truffle, doc).",
         "kotlin_stdlib_jars": "depset[File]. Kotlin stdlib jar(s) bundled with this Elide release.",
+        "python_tool_files": "depset[File]. Python runtime inputs, including resources and component markers.",
         "tool_files": "depset[File]. Inputs for native-image actions (includes lib/svm, include/).",
         "version": "string. Semantic version of the elide binary.",
     },

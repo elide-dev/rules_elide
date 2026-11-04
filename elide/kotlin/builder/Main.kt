@@ -24,11 +24,13 @@ object Main {
         // default (warn); the toolchain launcher injects `--quiet_plugin_rewrite`
         // when //config/kotlinc:warn_builtin_plugin_rewrite=false.
         val quietPluginRewrite: Boolean = false,
+        val nativeTools: Boolean = false,
     )
 
     fun splitConfig(argv: List<String>): Pair<Config, List<String>> {
         var elide = ""; var fallback = ""; var resident = false; var record = ""
         var quietPluginRewrite = false
+        var nativeTools = false
         val rest = mutableListOf<String>()
         for (a in argv) when {
             a.startsWith("--elide=") -> elide = a.substringAfter("=")
@@ -36,9 +38,10 @@ object Main {
             a == "--resident_worker" -> resident = true
             a.startsWith("--worker_record=") -> record = a.substringAfter("=")
             a == "--quiet_plugin_rewrite" -> quietPluginRewrite = true
+            a == "--native_tools" -> nativeTools = true
             else -> rest += a
         }
-        return Config(elide, fallback, resident, record, quietPluginRewrite) to rest
+        return Config(elide, fallback, resident, record, quietPluginRewrite, nativeTools) to rest
     }
 
     /** Handle one unit of work. Returns (exitCode, capturedOutput). */
@@ -51,7 +54,7 @@ object Main {
         val ff = rest.first { it.startsWith("--flagfile=") }.substringAfter("=")
         val req = Flagfile.parse(Flagfile.readTokens(Paths.get(ff)))
         val wd = File(".")
-        if (Router.route(req).route == Route.FALLBACK) return Fallback.run(cfg.fallback, ff, wd)
+        if (Router.route(req, cfg.nativeTools).route == Route.FALLBACK) return Fallback.run(cfg.fallback, ff, wd)
 
         // -Xplugin jars duplicating an Elide builtin are rewritten to `--plugins=`
         // in ElideCompile.plan; surface that once as a Bazel `[warning]` (unless
@@ -64,17 +67,17 @@ object Main {
         // Ask elide to record used classpath entries so we can write a real .jdeps
         // (Elide 1.3.2, WHIPLASH #1002/#1005). Only meaningful when there is a
         // classpath to classify and a jdeps output is requested.
-        val usedReport = if (req.jdeps != null && req.classpath.isNotEmpty()) {
+        val usedReport = if (!cfg.nativeTools && req.jdeps != null && req.classpath.isNotEmpty()) {
             File.createTempFile("elide-useddeps", ".txt")
         } else {
             null
         }
         try {
             val extraSources = srcJarDir?.let { ElideCompile.extractSourceJars(req.sourceJars, it) } ?: emptyList()
-            val cmds = ElideCompile.plan(req, cfg.elide, extraSources, usedReport?.path)
+            val cmds = ElideCompile.plan(req, cfg.elide, extraSources, usedReport?.path, cfg.nativeTools)
             val (code, compileOut) = compileCmds(cmds, resident, inputs, wd)
             val out = rewriteWarning + compileOut
-            if (code == 0) req.jdeps?.let { jdeps ->
+            if (code == 0 && !cfg.nativeTools) req.jdeps?.let { jdeps ->
                 // Deps.Dependencies.rule_label is the Bazel rule label (`--target_label`),
                 // not the Kotlin module name. Leave empty when absent rather than emit an
                 // incorrect value (WHIPLASH#1131 review follow-up).
@@ -84,6 +87,10 @@ object Main {
                 } else {
                     Jdeps.writeStub(jdeps, ruleLabel)
                 }
+            }
+            if (code == 0 && cfg.nativeTools && req.jdeps != null) {
+                val (depsCode, diagnostic) = Jdeps.check(req.jdeps, req.directDependencies, req.classpath, req.strictKotlinDeps)
+                return depsCode to (out + diagnostic)
             }
             return code to out
         } finally {
@@ -140,6 +147,7 @@ object Main {
                         cfg.resident || cfg2.resident,
                         cfg.record.ifEmpty { cfg2.record },
                         cfg.quietPluginRewrite || cfg2.quietPluginRewrite,
+                        cfg.nativeTools || cfg2.nativeTools,
                     )
                     if (resident == null && merged.resident && merged.elide.isNotEmpty()) {
                         // Record path: the `--worker_record=` startup flag (reaches the

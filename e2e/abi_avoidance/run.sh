@@ -46,7 +46,7 @@ assert_abi() {
   printf '%s\n' "$orig" > "$f"; local a; a="$(abi_digest "$f")"
   printf '%s\n' "$edit" > "$f"; local b; b="$(abi_digest "$f")"
   local got; [ "$a" = "$b" ] && got="same" || got="diff"
-  if [ "$got" = "$want" ]; then
+  if [ "$a" != "COMPILE-FAIL" ] && [ "$b" != "COMPILE-FAIL" ] && [ "$got" = "$want" ]; then
     printf '  ok   %-22s abi %-4s (%s)\n' "$name" "$got" "$why"
   else
     printf '  FAIL %-22s abi %-4s, wanted %s (%s)\n' "$name" "$got" "$want" "$why" >&2
@@ -113,6 +113,26 @@ if [ "$has_k" = 1 ] && [ "$has_l" = 1 ]; then
 else
   echo "  FAIL mixed-kt-and-java     expected K.class and L.class (K=$has_k L=$has_l)" >&2; rc=1
 fi
+
+echo "=== Java source ABI compilation ==="
+java_abi_digest() {
+  local body="$1" jar="$WORK/java_abi.jar"
+  printf 'package s; public class JavaAbi { %s }\n' "$body" > "$WORK/JavaAbi.java"
+  "$ELIDE" javac --abi-only --jar "$jar" -- -classpath . "$WORK/JavaAbi.java" >/dev/null 2>&1 || { echo "COMPILE-FAIL"; return; }
+  sha256sum "$jar" | cut -d' ' -f1
+}
+a="$(java_abi_digest 'public static final int V = 1; public int f() { return 1; }')"
+b="$(java_abi_digest 'public static final int V = 1; public int f() { return 99; }')"
+c="$(java_abi_digest 'public static final int V = 2; public int f() { return 99; }')"
+d="$(java_abi_digest 'public static final int V = 2; public long f() { return 99; }')"
+if [[ "$a $b $c $d" != *COMPILE-FAIL* ]] && [ "$a" = "$b" ] && [ "$b" != "$c" ] && [ "$c" != "$d" ]; then
+  echo "  ok   Java ABI preserves body stability and tracks constants/signatures"
+else
+  echo "  FAIL Java ABI compilation or digest assertions" >&2; rc=1
+fi
+# A downstream javac must accept the header on its compile classpath.
+printf 'package s; public class Caller { public long f() { return new JavaAbi().f(); } }\n' > "$WORK/Caller.java"
+"$ELIDE" javac --jar "$WORK/caller.jar" -- -classpath "$WORK/java_abi.jar" "$WORK/Caller.java"
 
 echo
 [ "$rc" -eq 0 ] && echo "ABI avoidance: all assertions passed." || echo "ABI avoidance: FAILURES above." >&2

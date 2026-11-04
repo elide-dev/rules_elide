@@ -5,7 +5,7 @@
 load("@bazel_skylib//lib:unittest.bzl", "asserts", "unittest")
 
 # buildifier: disable=bzl-visibility
-load("//elide/private:versions.bzl", "DEFAULT_VERSION", "ELIDE_VERSIONS", "PLATFORMS", "archive_ext", "binary_ext", "download_url", "release_tag", "select_version")
+load("//elide/private:versions.bzl", "DEFAULT_VERSION", "ELIDE_VERSIONS", "PLATFORMS", "PYTHON_VERSIONS", "archive_ext", "binary_ext", "download_url", "python_download_url", "release_tag", "select_version")
 
 def _archive_ext_test_impl(ctx):
     env = unittest.begin(ctx)
@@ -40,6 +40,9 @@ def _release_tag_test_impl(ctx):
     env = unittest.begin(ctx)
     asserts.equals(env, "1.3.6+20260628", release_tag("1.3.6+20260628"))
     asserts.equals(env, "v1.6.0", release_tag("1.6.0"))
+    asserts.equals(env, "v1.6.1", release_tag("1.6.1"))
+    asserts.equals(env, "v1.6.2", release_tag("1.6.2"))
+    asserts.equals(env, "1.6.2+20261103", release_tag("1.6.2+20261103"))
     asserts.true(env, DEFAULT_VERSION in ELIDE_VERSIONS, "DEFAULT_VERSION has no integrity row")
     return unittest.end(env)
 
@@ -72,6 +75,33 @@ def _download_url_test_impl(ctx):
 
 _download_url_test = unittest.make(_download_url_test_impl)
 
+def _python_overlay_test_impl(ctx):
+    env = unittest.begin(ctx)
+    for version, integrities in PYTHON_VERSIONS.items():
+        asserts.true(env, version in ELIDE_VERSIONS)
+        asserts.equals(env, sorted(ELIDE_VERSIONS[version].keys()), sorted(integrities.keys()))
+        for integrity in integrities.values():
+            asserts.true(env, integrity.startswith("sha256-"))
+            asserts.equals(env, 51, len(integrity))
+    asserts.equals(
+        env,
+        "https://github.com/elide-dev/elide/releases/download/v1.6.2/elide.python.windows-amd64.zip",
+        python_download_url("", "", "1.6.2", "windows", "amd64"),
+    )
+    asserts.equals(
+        env,
+        "https://github.com/elide-dev/elide/releases/download/1.6.2+20261103/elide.python.linux-amd64.tgz",
+        python_download_url("", "", "1.6.2+20261103", "linux", "amd64"),
+    )
+    asserts.equals(
+        env,
+        "file:///nightly/1.6.2/python.macos-arm64.tgz",
+        python_download_url("file:///{channel}/{version}/python.{os}-{cpu}.{ext}", "nightly", "1.6.2", "macos", "arm64"),
+    )
+    return unittest.end(env)
+
+_python_overlay_test = unittest.make(_python_overlay_test_impl)
+
 def versions_test_suite(name):
     """Wires unit tests for versions.bzl helpers.
 
@@ -83,6 +113,7 @@ def versions_test_suite(name):
     _platforms_complete_test(name = "platforms_complete_test")
     _release_tag_test(name = "release_tag_test")
     _select_version_test(name = "select_version_test")
+    _python_overlay_test(name = "python_overlay_test")
     _download_url_test(name = "download_url_test")
     native.test_suite(
         name = name,
@@ -92,6 +123,7 @@ def versions_test_suite(name):
             ":platforms_complete_test",
             ":release_tag_test",
             ":select_version_test",
+            ":python_overlay_test",
             ":download_url_test",
         ],
     )

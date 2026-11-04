@@ -1,0 +1,16 @@
+module(name = "rules_elide_python_overlay")
+
+bazel_dep(name = "rules_elide", version = "0.0.0")
+local_path_override(
+    module_name = "rules_elide",
+    path = "../..",
+)
+
+elide = use_extension("@rules_elide//elide:extensions.bzl", "elide")
+elide.install(
+    python = True,
+    version = "1.6.2",
+)
+use_repo(elide, "elide_toolchains")
+
+register_toolchains("@elide_toolchains//:all")

@@ -19,6 +19,7 @@ load(
     "TOOLCHAIN_TYPE",
     "build_launcher",
     "build_test_launcher",
+    "compile_output_groups",
     "make_elide_info",
     "make_java_info",
     "pack_source_jar",
@@ -33,11 +34,12 @@ _KOTLIN_TOOLCHAINS = [TOOLCHAIN_TYPE, "@bazel_tools//tools/jdk:toolchain_type"]
 
 def _elide_kotlin_library_impl(ctx):
     output_jar = ctx.actions.declare_file(ctx.label.name + ".jar")
-    abi_jar = run_kotlinc(ctx, output_jar)
+    compilation = run_kotlinc(ctx, output_jar)
     source_jar = pack_source_jar(ctx)
     return [
-        make_java_info(ctx, output_jar, source_jar = source_jar, compile_jar_override = abi_jar),
+        make_java_info(ctx, output_jar, source_jar = source_jar, compile_jar_override = compilation.abi_jar, reports = compilation.reports),
         make_elide_info(ctx),
+        compile_output_groups(compilation),
         DefaultInfo(files = depset([output_jar])),
     ]
 
@@ -74,12 +76,13 @@ elide_kotlin_library = rule(
 
 def _elide_kotlin_binary_impl(ctx):
     output_jar = ctx.actions.declare_file(ctx.label.name + ".jar")
-    abi_jar = run_kotlinc(ctx, output_jar)
+    compilation = run_kotlinc(ctx, output_jar)
     source_jar = pack_source_jar(ctx)
     launcher, runfiles = build_launcher(ctx, output_jar)
     return [
-        make_java_info(ctx, output_jar, source_jar = source_jar, compile_jar_override = abi_jar),
+        make_java_info(ctx, output_jar, source_jar = source_jar, compile_jar_override = compilation.abi_jar, reports = compilation.reports),
         make_elide_info(ctx),
+        compile_output_groups(compilation),
         DefaultInfo(executable = launcher, runfiles = runfiles, files = depset([launcher])),
     ]
 
@@ -97,12 +100,13 @@ elide_kotlin_binary = rule(
 
 def _elide_kotlin_test_impl(ctx):
     output_jar = ctx.actions.declare_file(ctx.label.name + ".jar")
-    abi_jar = run_kotlinc(ctx, output_jar)
+    compilation = run_kotlinc(ctx, output_jar)
     source_jar = pack_source_jar(ctx)
     launcher, runfiles = build_test_launcher(ctx, output_jar)
     return [
-        make_java_info(ctx, output_jar, source_jar = source_jar, compile_jar_override = abi_jar),
+        make_java_info(ctx, output_jar, source_jar = source_jar, compile_jar_override = compilation.abi_jar, reports = compilation.reports),
         make_elide_info(ctx),
+        compile_output_groups(compilation),
         DefaultInfo(executable = launcher, runfiles = runfiles, files = depset([launcher])),
     ]
 

@@ -78,7 +78,7 @@ export ELIDE_BAZEL=1
 exec "$(rlocation {shim})" \\
   --elide="$(rlocation {elide})" \\
   --fallback_builder="$(rlocation {fallback})" \\
-{resident_line}{record_line}{quiet_line}  "$@"
+{native_line}{resident_line}{record_line}{quiet_line}  "$@"
 """
 
 def _elide_kt_builder_launcher_impl(ctx):
@@ -107,6 +107,7 @@ def _elide_kt_builder_launcher_impl(ctx):
         jdk_home_key = ctx.workspace_name + "/" + java_home
 
     content = _LAUNCHER_TEMPLATE.format(
+        native_line = "  --native_tools \\\n" if ctx.attr.native_tools else "",
         runfiles_init = _RUNFILES_INIT,
         jdk_java = jdk_home_key + "/bin/java",
         shim = _rlocation_path(ctx.executable.shim),
@@ -171,6 +172,7 @@ _elide_kt_builder_launcher = rule(
                   "warning emitted when a rules_kotlin `-Xplugin` jar duplicating " +
                   "an Elide builtin is rewritten to `--plugins=`.",
         ),
+        "native_tools": attr.bool(default = True, doc = "Use Elide 1.6.2+ native ABI, jdeps, and processing APIs."),
         "resident_worker": attr.bool(
             default = False,
             doc = "Inject the shim's `--resident_worker` flag so kotlinc compiles " +
@@ -250,6 +252,8 @@ def _elide_kt_toolchain_impl(ctx):
     # `kotlinbuilder` field holds the Target of the builder (the attr is
     # `executable = True`), so we pass the launcher's Target the same way.
     fields["kotlinbuilder"] = ctx.attr.kotlinbuilder
+    if ctx.attr.ksp2:
+        fields["ksp2"] = ctx.attr.ksp2
 
     return [platform_common.ToolchainInfo(**fields)]
 
@@ -262,6 +266,7 @@ _elide_kt_toolchain = rule(
             mandatory = True,
             providers = [platform_common.ToolchainInfo],
         ),
+        "ksp2": attr.label(executable = True, cfg = "exec"),
         "kotlinbuilder": attr.label(
             doc = "The Elide builder launcher to use as kotlinbuilder.",
             mandatory = True,
@@ -278,6 +283,7 @@ def register_elide_kotlin_toolchain(
         fallback_builder,
         resident_worker = None,
         worker_record = "",
+        native_tools = True,
         **kwargs):
     """Defines an Elide-backed Kotlin toolchain.
 
@@ -310,6 +316,7 @@ def register_elide_kotlin_toolchain(
         worker_record: If set, the launcher passes `--worker_record=<path>` so the
             shim tees the forwarded WorkRequest stream to this path for offline
             PGO replay. Default "" (disabled).
+        native_tools: Use native ABI, dependency reports, KAPT, and KSP2 (Elide 1.6.2+). Set False for older Elide.
         **kwargs: Forwarded to `define_kt_toolchain` (language_version,
             api_version, jvm_target, etc.).
     """
@@ -331,12 +338,23 @@ def register_elide_kotlin_toolchain(
         elide = elide,
         fallback_builder = fallback_builder,
         resident_worker = resident_worker,
+        native_tools = native_tools,
         worker_record = worker_record,
         quiet_plugin_rewrite = select({
             Label("//config/kotlinc:warn_builtin_plugin_rewrite_disabled"): True,
             "//conditions:default": False,
         }),
     )
+
+    if native_tools:
+        _elide_kt_builder_launcher(
+            name = name + "_ksp2_launcher",
+            shim = Label("//elide/kotlin/builder:elide_kotlin_builder"),
+            elide = elide,
+            fallback_builder = Label("@rules_kotlin//src/main/kotlin:ksp2"),
+            native_tools = True,
+            resident_worker = resident_worker,
+        )
 
     # Materialize a stock toolchain. This creates `<name>_base_impl` (the
     # ToolchainInfo provider we wrap) and `<name>_base` (a native.toolchain we
@@ -350,6 +368,7 @@ def register_elide_kotlin_toolchain(
         name = name + "_impl",
         base = ":" + name + "_base_impl",
         kotlinbuilder = ":" + name + "_launcher",
+        ksp2 = ":" + name + "_ksp2_launcher" if native_tools else None,
     )
 
     # NOTE: This declares the toolchain target but does NOT register it.

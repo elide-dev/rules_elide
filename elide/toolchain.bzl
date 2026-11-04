@@ -21,6 +21,7 @@ def _elide_toolchain_impl(ctx):
             kotlin_stdlib_jars = kotlin_stdlib_jars,
             version = ctx.attr.version,
             tool_files = tool_files,
+            python_tool_files = depset(direct = [ctx.executable.binary] + ctx.files.python_tool_files),
         ),
     )]
 
@@ -43,6 +44,12 @@ elide_toolchain = rule(
         "kotlin_stdlib": attr.label_list(
             doc = "Kotlin stdlib jars bundled with this Elide release (from kotlin_stdlib_jars filegroup).",
             allow_files = [".jar"],
+            cfg = "exec",
+        ),
+        "python_tool_files": attr.label_list(
+            doc = "Python runtime inputs from the elide_python_files filegroup. " +
+                  "Include these when running Python through the toolchain binary.",
+            allow_files = True,
             cfg = "exec",
         ),
         "tool_files": attr.label_list(

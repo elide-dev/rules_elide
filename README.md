@@ -28,7 +28,7 @@ For Bazel monorepos this means:
 bazel_dep(name = "rules_elide", version = "0.0.0")
 
 elide = use_extension("@rules_elide//elide:extensions.bzl", "elide")
-elide.install(version = "latest", channel = "nightly")
+elide.install(version = "1.6.2")
 use_repo(elide, "elide_toolchains")
 register_toolchains("@elide_toolchains//:all")
 ```
@@ -75,21 +75,16 @@ Top-level entry point: [`@rules_elide//elide:defs.bzl`](docs/defs.md).
 
 ## Toolchain resolution
 
-The `elide` module extension downloads the elide release artifact for the
-host platform from the public Elide CDN:
+The `elide` module extension downloads pinned releases from GitHub:
 
 ```
-https://elide.zip/artifacts/{channel}/{version}/elide.{os}-{cpu}.{ext}
+https://github.com/elide-dev/elide/releases/download/{tag}/elide.{os}-{cpu}.{ext}
 ```
 
-Each artifact is verified against an in-tree SRI integrity table.
-
-- **channel**: `nightly`, `preview`, or `release`. Pre-alpha: only
-  `nightly` and `preview` are populated upstream.
-- **version**: any concrete revision (e.g. `1.2.0-beta`) or the rolling
-  pointer `latest`. With `latest`, integrity reflects the snapshot
-  captured in `elide/private/versions.bzl`; if the CDN advances, regenerate
-  the integrity row.
+Each artifact is verified against an in-tree SRI integrity table. Stable versions
+use `v`-prefixed release tags; dated nightly versions use the version verbatim.
+Choose a version recorded in `elide/private/versions.bzl`, or use `elide.use`
+with a custom distribution. The `channel` option applies to custom URL templates.
 
 Supported platforms:
 
@@ -105,6 +100,38 @@ launcher templates are POSIX `sh` only. See `Roadmap` below.
 `MODULE.bazel.lock` records the resolved hashes (the extension marks itself
 `reproducible = True`).
 
+The default Elide version is **1.6.2**. Pins also include 1.6.0, 1.6.1,
+and the 1.6.2 nightlies dated 20261102 and 20261103.
+
+## Python overlays
+
+Enable the matching Python runtime when installing a pinned release:
+
+```starlark
+elide.install(version = "1.6.2", python = True)
+```
+
+Python overlays are pinned for 1.6.0, 1.6.1, 1.6.2, and the supported 1.6.2
+nightlies on all four release platforms. The overlay is verified separately and
+extracted after the base archive, replacing its executable and adding Python
+resources and the component marker. Missing overlay pins fail during module
+resolution. The default installation remains base-only; any module requesting
+Python enables it for the selected version.
+
+Custom releases can provide `python_url_template` and a `python_integrity` map
+alongside `elide.use(url_template = ..., integrity = ...)`. The overlay map must
+cover the same platforms as the base map. For `elide.use(local_path = ...)`,
+point at an already-overlaid distribution; the local tree is never modified.
+
+Custom Bazel rules that execute Python should use
+`ctx.toolchains["@rules_elide//elide:toolchain_type"].elide_info.python_tool_files`
+as action inputs along with the toolchain binary. This set includes Python
+resources and `conf/components/python`; JVM compile inputs remain separate.
+This provides the distribution and runtime inputs, not a `rules_python`
+interpreter registration or Python dependency management.
+
+See [the sandbox smoke fixture](e2e/python_overlay/README.md) for an example.
+
 ## Compile-rule outputs (`JavaInfo`)
 
 Every compile rule returns a complete `JavaInfo`:
@@ -112,9 +139,77 @@ Every compile rule returns a complete `JavaInfo`:
 - `output_jar` — the full class JAR produced by `elide javac --jar` /
   `elide kotlinc -d`.
 - `compile_jar` — ABI jar derived via `java_common.run_ijar` for fast
-  downstream incremental rebuilds.
+  downstream incremental rebuilds, or a source ABI header when enabled.
 - `source_jars` — sources packaged via `java_common.pack_sources`
   (IDE sync / Maven publish friendly).
+
+To enable source ABI compilation with Elide 1.6.2, pass:
+
+```sh
+bazel build //... \
+  --@rules_elide//config/javac:abi_compile_avoidance=true \
+  --@rules_elide//config/kotlinc:abi_compile_avoidance=true
+```
+
+These opt-in settings use separate `javac --abi-only` / `kotlinc --abi-only`
+actions for compile jars. Runtime jars still contain the full implementation.
+Kotlin supports both Kotlin-only and mixed Kotlin/Java sources. Java targets
+with compiler plugins, annotation-processing options, or `resource_jars` retain
+`ijar` so their compile jars include generated or supplied classes. Both worker
+and one-shot compilation are supported. Leave the settings off for older Elide
+versions that do not support these ABI options.
+
+## JVM documentation and tooling
+
+Load these rules from `@rules_elide//elide:defs.bzl`:
+
+| Rule | Output |
+| --- | --- |
+| `elide_javadoc` | HTML directory and optional reproducible `-javadoc.jar`; supports dependency classpaths, doclets, and themes |
+| `elide_jar` | Reproducible archive with fixed timestamps, path stripping, and optional manifest/main class |
+| `elide_jdeps` | Text dependency report for jars/classes |
+| `elide_javap` | Text bytecode/API inspection report for named classes |
+| `elide_jextract` | Java bindings `.srcjar` plus a generated-source directory output group |
+| `elide_kapt` / `elide_ksp` | Generated `.srcjar`, with class/resource and stub jar output groups |
+
+```starlark
+elide_javadoc(name = "api_docs", srcs = glob(["src/**/*.java"]), deps = [":api"])
+elide_javap(name = "api_bytecode", deps = [":api"], classes = ["example.Api"], opts = ["-c"])
+elide_jextract(name = "bindings", srcs = ["include/api.h"], hdrs = ["include/types.h"], package = "example.nativeapi")
+```
+
+See [tool attributes](docs/jvm_tools.md) and [processor attributes](docs/processing.md).
+All input headers, processor resources, doclet files, and offline link metadata
+must be declared. `jextract` runs on the execution platform; it does not infer a
+cross-compilation sysroot. Its FFM bindings require an appropriate JDK (22+).
+The `elide` Javadoc theme requires a distribution/doclet classpath containing
+`dev.elide.doclet.ElideDoclet`; the published 1.6.2 archive cannot load that
+class, so use the default theme with that release.
+
+Processor rules are generation steps: consume their source jars in
+`rules_java`/`rules_kotlin` and use `generated_classes` for processor resources.
+The native `elide_kotlin_*` rules still take individual source files.
+KotlinBuilder also supports native KAPT/KSP directly; see
+[builder integration](docs/kotlin_builder.md).
+
+## Compiler dependency metadata
+
+Elide 1.6.2+ native Java/Kotlin rules support:
+
+```sh
+bazel build //... \
+  --@rules_elide//elide:emit_jdeps=true \
+  --@rules_elide//elide:prune_unused_inputs=true \
+  --output_groups=+jdeps,+unused_inputs
+```
+
+Reports are available through `OutputGroupInfo.jdeps` and `unused_inputs`.
+Single-compiler targets also attach their dependency proto to `JavaInfo`;
+mixed targets expose separate Java and Kotlin reports rather than an incomplete
+combined proto. Header reports populate `compile_jdeps` when available.
+Pruning connects Elide's conservative `--unused-inputs` report to Bazel's
+`unused_inputs_list`. It stays disabled for processor/plugin and incremental
+configurations. Both flags default off for compatibility with older releases.
 
 ## JUnit Platform tests
 
@@ -182,24 +277,20 @@ ELIDE_DEV_BIN=/abs/path/to/elide bazel test  //... --config=dev
 
 See [`e2e/smoke/README.md`](e2e/smoke/README.md) for the full flow.
 
-## Roadmap
+## Roadmap and compatibility
 
-| Item                                 | Status                                                |
-|--------------------------------------|-------------------------------------------------------|
-| Persistent worker protocol           | Done for `javac`/`kotlinc` (singleplex, `proto`); non-worker fallback pending elide `@flagfile`/WorkRequest parity |
-| `elide native-image` under Bazel     | Blocked on upstream Elide CLI `JavaCommand` NPE under sandbox env |
-| Kotlin `srcjars` (extract+compile)   | Pending                                               |
-| Stable `release` channel populated   | Pending upstream                                      |
-| BCR (Bazel Central Registry)         | Templates in `.bcr/`; first publication after release |
-| KotlinBuilder jdeps (per-dep tracking) | Pending Elide used-classpath reporting (WHIPLASH #998); strict_kotlin_deps / unused-deps currently off on Elide fast path |
-| KotlinBuilder Windows workers        | Pending POSIX-only launcher replacement               |
-
-## Compatibility
-
-| Layer                       | Status                                                                  |
-|-----------------------------|-------------------------------------------------------------------------|
-| Bazel                       | 8.0.0+ (Bzlmod-only; legacy `WORKSPACE` is not supported)               |
-| `rules_kotlin` interop      | Drop-in builder for non-AP targets; AP targets via fallback; jdeps/strict-deps pending WHIPLASH #998 |
+| Area | Status |
+| --- | --- |
+| Bazel | 8+; Bzlmod only. Current checks run on Bazel 9.3.0. |
+| Java/Kotlin workers | Persistent and one-shot compilation supported. |
+| ABI compilation | Opt-in separate header actions; KotlinBuilder supports native combined ABI output. |
+| Dependency tracking | Native jdeps and opt-in unused-input pruning; KotlinBuilder strict-deps checks. |
+| Annotation processing | Native KAPT/KSP2; fallback retained for unsupported builder configurations. |
+| Generated source jars | Supported by KotlinBuilder; native Kotlin rules still require individual sources. |
+| Stable Elide releases | Pinned through 1.6.2 alongside selected nightlies. |
+| Native image | Existing rule; hermetic JDK/C toolchain integration remains work. |
+| Python | Optional distribution overlay and runtime inputs; language rules deferred. |
+| Windows | Release pins and some launchers exist; KotlinBuilder still requires Bash and needs native Windows validation. |
 
 ## Versioning
 

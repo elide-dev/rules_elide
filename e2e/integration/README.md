@@ -14,3 +14,18 @@ scheduled CI runs rather than every PR.
 bazel build //...
 bazel run //:app
 ```
+
+## JVM tools and compiler metadata (Elide 1.6.2+)
+
+```sh
+bazel build :javadoc :source_archive :dependencies :bytecode :bindings
+bazel build :uses_one_dep :app :kt_app \
+  --@rules_elide//elide:emit_jdeps=true \
+  --@rules_elide//elide:prune_unused_inputs=true \
+  --output_groups=+jdeps,+unused_inputs
+python3 verify_jvm_tools.py
+```
+
+Repeat the metadata build with `--@rules_elide//elide:use_workers=false` to
+exercise one-shot compilation. The manual `:javadoc_theme` target probes the
+Elide theme; the 1.6.2 distribution currently lacks a loadable ElideDoclet.

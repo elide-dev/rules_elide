@@ -29,7 +29,8 @@ Elide-specific metadata emitted by rules_elide build rules.
 <pre>
 load("@rules_elide//elide:providers.bzl", "ElideToolchainInfo")
 
-ElideToolchainInfo(<a href="#ElideToolchainInfo-binary">binary</a>, <a href="#ElideToolchainInfo-compile_tool_files">compile_tool_files</a>, <a href="#ElideToolchainInfo-kotlin_stdlib_jars">kotlin_stdlib_jars</a>, <a href="#ElideToolchainInfo-tool_files">tool_files</a>, <a href="#ElideToolchainInfo-version">version</a>)
+ElideToolchainInfo(<a href="#ElideToolchainInfo-binary">binary</a>, <a href="#ElideToolchainInfo-compile_tool_files">compile_tool_files</a>, <a href="#ElideToolchainInfo-kotlin_stdlib_jars">kotlin_stdlib_jars</a>, <a href="#ElideToolchainInfo-python_tool_files">python_tool_files</a>, <a href="#ElideToolchainInfo-tool_files">tool_files</a>,
+                   <a href="#ElideToolchainInfo-version">version</a>)
 </pre>
 
 Resolved Elide toolchain information.
@@ -41,5 +42,6 @@ Resolved Elide toolchain information.
 | <a id="ElideToolchainInfo-binary"></a>binary |  File. The elide binary executable.    |
 | <a id="ElideToolchainInfo-compile_tool_files"></a>compile_tool_files |  depset[File]. Inputs for JVM compile actions (javac, kotlinc, jar). Excludes native-image-only subtrees (lib/svm, lib/truffle, doc).    |
 | <a id="ElideToolchainInfo-kotlin_stdlib_jars"></a>kotlin_stdlib_jars |  depset[File]. Kotlin stdlib jar(s) bundled with this Elide release.    |
+| <a id="ElideToolchainInfo-python_tool_files"></a>python_tool_files |  depset[File]. Python runtime inputs, including resources and component markers.    |
 | <a id="ElideToolchainInfo-tool_files"></a>tool_files |  depset[File]. Inputs for native-image actions (includes lib/svm, include/).    |
 | <a id="ElideToolchainInfo-version"></a>version |  string. Semantic version of the elide binary.    |

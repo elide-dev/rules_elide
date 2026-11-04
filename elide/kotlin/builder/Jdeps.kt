@@ -4,6 +4,19 @@ import com.google.devtools.build.lib.view.proto.Deps
 import java.io.File
 
 object Jdeps {
+    /** Enforce source-level direct dependencies using Elide's native classification. */
+    fun check(path: String, directDeps: List<String>, classpath: List<String>, mode: String): Pair<Int, String> {
+        if (mode.equals("off", ignoreCase = true)) return 0 to ""
+        val report = File(path).inputStream().use { Deps.Dependencies.parseFrom(it) }
+        val missing = report.dependencyList.filter {
+            it.kind == Deps.Dependency.Kind.EXPLICIT && it.path in classpath && it.path !in directDeps
+        }.map { it.path }.distinct()
+        if (missing.isEmpty()) return 0 to ""
+        val error = mode.equals("error", ignoreCase = true)
+        return (if (error) 1 else 0) to
+            "[${if (error) "error" else "warning"}] strict Kotlin deps: add direct dependencies for ${missing.joinToString()}\n"
+    }
+
     /**
      * Writes a real `.jdeps` (`Deps.Dependencies`) classifying each classpath entry,
      * using the set of actually-referenced entries that `elide kotlinc/javac

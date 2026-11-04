@@ -13,10 +13,9 @@ its toolchain. `rules_elide` provides:
 
 1. **`elide_kotlin_builder`** — a persistent-worker shim that implements the
    `KotlinBuilder` RPC contract expected by `rules_kotlin`. On each
-   `KotlinCompile` action it inspects the request: targets without annotation
-   processors compile through `elide kotlinc` (the fast path); targets that
-   carry annotation-processor arguments (`--processors`) are transparently
-   delegated to the stock `rules_kotlin` KotlinBuilder (the fallback path).
+   `KotlinCompile` action it routes compilation, supported KAPT requests, and
+   KSP2 processing through Elide. Specialized processor requests retain the
+   stock `rules_kotlin` worker fallback described below.
 2. **`register_elide_kotlin_toolchain`** — a Starlark macro in
    `@rules_elide//elide/kotlin:toolchain.bzl` that wires the shim into a
    standard `kt_toolchain`. It wraps `define_kt_toolchain` from `rules_kotlin`,
@@ -35,6 +34,8 @@ register_elide_kotlin_toolchain(
     name = "elide_kt",
     elide = "@elide_linux_amd64//:bin/elide",   # platform-specific — see caveats
     fallback_builder = "@rules_kotlin//src/main/kotlin:build",
+    language_version = "2.4",
+    api_version = "2.4",
 )
 ```
 
@@ -42,13 +43,14 @@ register_elide_kotlin_toolchain(
 to `define_kt_toolchain` unchanged, so you can tune the underlying toolchain
 exactly as you would a plain `rules_kotlin` one.
 
-The macro creates four targets from one `name`:
+The macro creates these targets from one `name`:
 
 | Target | Purpose |
 |---|---|
 | `<name>` | The registered `toolchain()` — this is what you pass to `register_toolchains` |
 | `<name>_impl` | The wrapping impl rule that swaps `kotlinbuilder` |
 | `<name>_launcher` | The POSIX launcher that resolves runfiles and execs the shim |
+| `<name>_ksp2_launcher` | Native-mode launcher for the separate KSP2 worker |
 | `<name>_base` / `<name>_base_impl` | The stock `kt_toolchain` materialized by `define_kt_toolchain`; only `_base_impl` is consumed internally |
 
 ### Step 2 — register in MODULE.bazel
@@ -87,44 +89,43 @@ No BUILD file changes to existing `kt_jvm_library` targets are needed.
 
 ## Routing and fallback
 
-The shim inspects every `KotlinCompile` RPC request:
+The shim compiles plain Kotlin and mixed Kotlin/Java targets through Elide.
+In native mode, supported KAPT and KSP2 requests also use Elide. Specialized
+processor options retain the stock worker fallback; legacy mode delegates all
+processing to the stock workers. Routing is automatic from the request payload.
 
-- **No `--processors` argument** — compiled through `elide kotlinc` (fast path).
-  Plain Kotlin and mixed Kotlin/Java sources both take this route.
-- **`--processors` present (KAPT / KSP)** — delegated wholesale to the stock
-  `rules_kotlin` KotlinBuilder specified as `fallback_builder`. KAPT works
-  because `rules_kotlin` splits annotation processing (gensrc actions) from the
-  post-KAPT compile. The gensrc action carries `--processors` and goes to the
-  fallback; the post-KAPT compile does not and goes to Elide.
+## Native compiler and processor APIs
 
-No configuration is needed to enable or disable the fallback — routing is
-automatic based on the action's request payload.
+`register_elide_kotlin_toolchain` defaults to `native_tools = True`, requiring
+Elide 1.6.2 or later. Use `native_tools = False` for older pinned distributions;
+that retains the ABI plugin, translated dependency reports, and stock processor
+workers. Set `language_version` and `api_version` to versions supported by the
+embedded compiler (the 1.6.2 smoke fixture uses `2.4`; the stock rules_kotlin
+`2.1` default is too old for that compiler).
 
-## ABI jars
+With `experimental_use_abi_jars = True`, native mode emits the full jar and ABI
+jar with `kotlinc -- --emit-abi <jar>`. There is no filesystem search for
+`jvm-abi-gen.jar`. These outputs belong to the same action; use the native
+`elide_kotlin_*` ABI compile-avoidance setting when separate header actions are
+needed to start downstream compilation early.
 
-When the `kt_toolchain` is configured with `experimental_use_abi_jars = True`,
-the shim produces ABI (header) jars using Elide's embedded `jvm-abi-gen`. The
-ABI jar is used as the `compile_jar` in the emitted `JavaInfo`, enabling
-downstream incremental rebuilds without waiting for the full class jar.
+Native mode asks Elide for `--jdeps` directly and preserves its dependency
+classification and any extended fields. The shim checks explicit references
+against `--direct_dependencies` when `strict_kotlin_deps` is `warn` or `error`.
+The older `--report-used-deps` translation remains available in legacy mode.
 
-## Dependency tracking (jdeps)
+KAPT requests map generated source, class, and stub jars to `--kapt-sources`,
+`--kapt-classes`, and `--kapt-stubs`. Processor paths, names, and `-A` options
+are forwarded. Requests with custom stub plugins or other javac options retain
+the stock fallback rather than silently dropping those settings.
 
-As of Elide 1.3.2 the shim writes a **real** `.jdeps` (`Deps.Dependencies`)
-protobuf for every fast-path compile. It passes `--report-used-deps` to
-`elide kotlinc` (which records the classpath entries the output actually
-references — WHIPLASH #998, fixed in #1002/#1005) and classifies each classpath
-entry as `EXPLICIT` (used and a direct dependency), `IMPLICIT` (used transitive
-dependency), or `UNUSED`. This is the data Bazel/`rules_kotlin` consume for
-`unused_deps` reporting and `experimental_reduce_classpath_mode`.
-
-Notes:
-
-- When a target has no classpath (or no jdeps output is requested) the shim
-  writes a valid empty `Deps` proto.
-- The accuracy of the classification follows Elide's `--report-used-deps`
-  analysis (`jdeps`-based). The shim does not itself fail the build on
-  strict-deps violations; it emits the data and leaves enforcement to the
-  consuming `rules_kotlin` configuration.
+The wrapper also replaces the separate rules_kotlin KSP2 worker in native mode.
+It forwards generated source/class jars, processor dependencies and options,
+module name, JVM target, language/API versions, and source jars. Requests for
+the stock worker's experimental PSI-resolution mode use the stock KSP2 worker.
+Old KSP compiler-plugin requests continue to use the KotlinBuilder fallback.
+Processor failures are reported as build failures, not retried using another
+processor implementation.
 
 ## Caveats
 
@@ -147,6 +148,8 @@ register_elide_kotlin_toolchain(
         "@platforms//os:macos": "@elide_macos_arm64//:bin/elide",
     }),
     fallback_builder = "@rules_kotlin//src/main/kotlin:build",
+    language_version = "2.4",
+    api_version = "2.4",
 )
 ```
 
@@ -173,7 +176,7 @@ supported.
 Load path: `@rules_elide//elide/kotlin:toolchain.bzl`
 
 ```
-register_elide_kotlin_toolchain(name, elide, fallback_builder, **kwargs)
+register_elide_kotlin_toolchain(name, elide, fallback_builder, native_tools = True, **kwargs)
 ```
 
 | Argument | Type | Description |
@@ -181,8 +184,10 @@ register_elide_kotlin_toolchain(name, elide, fallback_builder, **kwargs)
 | `name` | string | Base name for the generated targets (see target table above). |
 | `elide` | label | The `elide` binary, resolved via runfiles rlocation and passed as `--elide` to the shim. |
 | `fallback_builder` | label | Stock `rules_kotlin` KotlinBuilder, passed as `--fallback_builder` to the shim (e.g. `@rules_kotlin//src/main/kotlin:build`). |
+| `native_tools` | `True` | Elide 1.6.2+ native ABI, jdeps, KAPT, and KSP2; False retains legacy behavior. |
 | `**kwargs` | — | Forwarded to `define_kt_toolchain` (`language_version`, `api_version`, `jvm_target`, `experimental_use_abi_jars`, etc.). |
 
 The e2e workspace at `e2e/kotlin_builder/` exercises the macro, the plain
-compile path (`//:greeter`), and the KAPT/annotation-processor fallback path
-(`//:annotated`).
+compile and ABI path (`//:greeter`), native KAPT (`//:annotated`), native
+KSP2 (`//:symbols`), and standalone processor rules. See its README for
+commands and output verification.

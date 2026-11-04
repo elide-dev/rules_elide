@@ -4,3 +4,4 @@ e2e/smoke
 e2e/kotlin_builder
 e2e/rbe
 e2e/vanilla
+e2e/python_overlay

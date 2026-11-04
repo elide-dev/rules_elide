@@ -21,6 +21,17 @@ bool_flag(
     build_setting_default = True,
 )
 
+# Elide 1.6.2+: opt-in native compiler dependency metadata and input pruning.
+bool_flag(
+    name = "emit_jdeps",
+    build_setting_default = False,
+)
+
+bool_flag(
+    name = "prune_unused_inputs",
+    build_setting_default = False,
+)
+
 # Note: incremental Kotlin compilation is gated by
 # `//config/kotlinc:incremental` (see //config/kotlinc/BUILD.bazel).
 
@@ -62,8 +73,10 @@ bzl_library(
         ":toolchain",
         "//elide/rules:format",
         "//elide/rules:java",
+        "//elide/rules:jvm_tools",
         "//elide/rules:kotlin",
         "//elide/rules:native_image",
+        "//elide/rules:processing",
         "@bazel_skylib//rules:common_settings",
     ],
 )

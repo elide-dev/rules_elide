@@ -123,17 +123,44 @@ _WORKER_EXEC_REQUIREMENTS = {
 # action env, not the scrubbed ambient env).
 _ELIDE_BAZEL_ENV = {"ELIDE_BAZEL": "1"}
 
-def _tool_args(ctx):
-    """Begins a buffer for a compile action's tool args.
+def _metadata(ctx, output):
+    jdeps = ctx.actions.declare_file(output.basename + ".jdeps", sibling = output) if ctx.attr._emit_jdeps[BuildSettingInfo].value else None
 
-    Holds the args destined for the embedded tool (javac/kotlinc), including
-    any leading Elide options (e.g. `--jar`) and the `--` separator that
-    precedes the bare TOOL_ARGS. Callers are responsible for adding `--`
-    themselves; `_run_elide_compile` delivers this buffer verbatim, deciding
-    only how it is transported (worker params-file WorkRequest vs one-shot
-    inline).
+    # Processors/plugins can read resources outside class signatures. IC can
+    # reuse undeclared state. Keep all inputs for these configurations.
+    opts = getattr(ctx.attr, "javac_opts", []) + getattr(ctx.attr, "kotlinc_opts", [])
+    opaque = bool(ctx.attr.plugins) or _has_exported_processors(ctx.attr.deps) or bool(getattr(ctx.attr, "builtin_plugins", []))
+    opaque = opaque or ctx.attr._incremental[BuildSettingInfo].value or any([
+        opt.startswith(prefix)
+        for opt in opts
+        for prefix in ["-processor", "--processor", "-proc:", "-A", "-Xplugin", "-P"]
+    ])
+    unused = ctx.actions.declare_file(output.basename + ".unused", sibling = output) if ctx.attr._prune_unused_inputs[BuildSettingInfo].value and not opaque else None
+    return struct(jdeps = jdeps, unused = unused, files = [f for f in [jdeps, unused] if f != None])
+
+def _tool_args(ctx, output):
+    args = ctx.actions.args()
+    metadata = _metadata(ctx, output)
+    if metadata.jdeps:
+        args.add("--jdeps", metadata.jdeps)
+        args.add("--target-label=" + str(ctx.label))
+    if metadata.unused:
+        args.add("--unused-inputs", metadata.unused)
+    return args
+
+def compile_output_groups(compilation):
+    """Exposes compiler reports without adding them to runtime jars.
+
+    Args:
+        compilation: Result of run_javac or run_kotlinc.
+
+    Returns:
+        OutputGroupInfo with jdeps and unused_inputs groups.
     """
-    return ctx.actions.args()
+    return OutputGroupInfo(
+        jdeps = depset([f for f in compilation.reports if f.extension == "jdeps"]),
+        unused_inputs = depset([f for f in compilation.reports if f.extension == "unused"]),
+    )
 
 def _run_elide_compile(ctx, mnemonic, subcommand, tool_args, inputs, outputs, progress_message):
     """Runs `elide <subcommand>` to compile, as a worker or a one-shot process.
@@ -163,6 +190,8 @@ def _run_elide_compile(ctx, mnemonic, subcommand, tool_args, inputs, outputs, pr
         outputs: list[File]. Declared action outputs.
         progress_message: str. Bazel progress message.
     """
+    metadata = _metadata(ctx, outputs[0])
+    outputs = outputs + metadata.files
     elide = ctx.toolchains[TOOLCHAIN_TYPE].elide_info
     lead = ctx.actions.args()
     lead.add(subcommand)
@@ -176,6 +205,7 @@ def _run_elide_compile(ctx, mnemonic, subcommand, tool_args, inputs, outputs, pr
             arguments = [lead, tool_args],
             inputs = inputs,
             outputs = outputs,
+            unused_inputs_list = metadata.unused,
             progress_message = progress_message,
             execution_requirements = _WORKER_EXEC_REQUIREMENTS,
             env = _ELIDE_BAZEL_ENV,
@@ -187,9 +217,11 @@ def _run_elide_compile(ctx, mnemonic, subcommand, tool_args, inputs, outputs, pr
             arguments = [lead, tool_args],
             inputs = inputs,
             outputs = outputs,
+            unused_inputs_list = metadata.unused,
             progress_message = progress_message,
             env = _ELIDE_BAZEL_ENV,
         )
+    return metadata.files
 
 def run_javac(ctx, output_jar):
     """Runs `elide javac --jar` to compile `.java` sources into `output_jar`.
@@ -206,6 +238,9 @@ def run_javac(ctx, output_jar):
     Args:
         ctx: rule context. Must expose srcs/deps/javac_opts/plugins.
         output_jar: File. Declared output classes jar.
+
+    Returns:
+        Struct with optional abi_jar and compiler reports.
     """
     elide = ctx.toolchains[TOOLCHAIN_TYPE].elide_info
     classpath = compile_classpath(ctx.attr.deps)
@@ -216,7 +251,7 @@ def run_javac(ctx, output_jar):
     class_jar = ctx.actions.declare_file(ctx.label.name + "_classes.jar") if has_res else output_jar
 
     # `elide javac --jar <class_jar> [--classpath-cache] -- -classpath <cp> <javac_opts> <srcs>`.
-    javac_args = _tool_args(ctx)
+    javac_args = _tool_args(ctx, class_jar)
     javac_args.add("--jar", class_jar)
     if ctx.attr._classpath_cache[BuildSettingInfo].value:
         javac_args.add("--classpath-cache")
@@ -227,7 +262,7 @@ def run_javac(ctx, output_jar):
         javac_args.add(o)
     javac_args.add_all(ctx.files.srcs)
 
-    _run_elide_compile(
+    reports = _run_elide_compile(
         ctx,
         mnemonic = "ElideJavac",
         subcommand = "javac",
@@ -239,6 +274,35 @@ def run_javac(ctx, output_jar):
 
     if has_res:
         _merge_resources(ctx, [class_jar], output_jar)
+
+    # Header compilation cannot reproduce arbitrary annotation processors or
+    # classes supplied through resource_jars. Keep the full-compile ijar there.
+    abi_jar = None
+    processors = bool(ctx.attr.plugins) or _has_exported_processors(ctx.attr.deps)
+    processor_opts = any([
+        o.startswith(prefix)
+        for o in ctx.attr.javac_opts
+        for prefix in ["-processor", "--processor", "-proc:", "-A", "-Xplugin"]
+    ])
+    if ctx.attr._java_abi_compile_avoidance[BuildSettingInfo].value and ctx.files.srcs and not processors and not processor_opts and not ctx.files.resource_jars:
+        abi_jar = ctx.actions.declare_file(ctx.label.name + "_abi.jar")
+        abi_args = _tool_args(ctx, abi_jar)
+        abi_args.add("--abi-only")
+        abi_args.add("--jar", abi_jar)
+        abi_args.add("--")
+        abi_args.add_joined("-classpath", classpath, join_with = sep)
+        abi_args.add_all(ctx.attr.javac_opts)
+        abi_args.add_all(ctx.files.srcs)
+        reports += _run_elide_compile(
+            ctx,
+            mnemonic = "ElideJavacAbi",
+            subcommand = "javac",
+            tool_args = abi_args,
+            inputs = depset(direct = ctx.files.srcs, transitive = [classpath, elide.compile_tool_files]),
+            outputs = [abi_jar],
+            progress_message = "Generating %{label} ABI header (elide javac --abi-only)",
+        )
+    return struct(abi_jar = abi_jar, reports = reports)
 
 def _friend_paths(associates):
     paths = []
@@ -260,9 +324,7 @@ def run_kotlinc(ctx, output_jar):
         output_jar: File. Declared output JAR.
 
     Returns:
-        File or None. The `--abi-only` header jar when ABI compile-avoidance is
-        enabled for a kt-only target (pass to make_java_info as
-        compile_jar_override); otherwise None.
+        Struct containing an optional abi_jar and per-action dependency reports.
     """
     elide = ctx.toolchains[TOOLCHAIN_TYPE].elide_info
     classpath = compile_classpath(ctx.attr.deps)
@@ -295,10 +357,11 @@ def run_kotlinc(ctx, output_jar):
     # so it covers mixed kt+java targets as well as kt-only ones.
     abi_avoidance = ctx.attr._abi_compile_avoidance[BuildSettingInfo].value and has_kt
 
+    reports = []
     abi_jar = None
     if abi_avoidance:
         abi_jar = ctx.actions.declare_file(ctx.label.name + "_abi.jar")
-        abi_args = _tool_args(ctx)
+        abi_args = _tool_args(ctx, abi_jar)
         abi_builtin_plugins = getattr(ctx.attr, "builtin_plugins", [])
         if abi_builtin_plugins:
             abi_args.add_joined(abi_builtin_plugins, join_with = ",", format_joined = "--plugins=%s")
@@ -317,7 +380,7 @@ def run_kotlinc(ctx, output_jar):
         for o in ctx.attr.kotlinc_opts:
             abi_args.add(o)
         abi_args.add_all(kt_srcs + java_srcs)
-        _run_elide_compile(
+        reports += _run_elide_compile(
             ctx,
             mnemonic = "ElideKotlincAbi",
             subcommand = "kotlinc",
@@ -339,7 +402,7 @@ def run_kotlinc(ctx, output_jar):
         kt_classes = ctx.actions.declare_directory(ctx.label.name + "_kt_classes") if incremental else None
         compile_out = kt_classes if incremental else kt_jar
 
-        args = _tool_args(ctx)
+        args = _tool_args(ctx, compile_out)
         if incremental:
             # Undeclared worker-scoped scratch (sibling of the classes dir);
             # relative to the worker cwd (exec root), so it persists across
@@ -376,7 +439,7 @@ def run_kotlinc(ctx, output_jar):
 
         args.add_all(ctx.files.srcs)
 
-        _run_elide_compile(
+        reports += _run_elide_compile(
             ctx,
             mnemonic = "ElideKotlinc",
             subcommand = "kotlinc",
@@ -411,20 +474,22 @@ def run_kotlinc(ctx, output_jar):
             )
 
     if single_kt_only:
-        return abi_jar
+        return struct(abi_jar = abi_jar, reports = reports)
 
     class_jars = []
     if has_kt:
         class_jars.append(kt_jar)
     if has_java:
-        class_jars.append(_compile_java_aux(ctx, java_srcs, kt_jar))
+        java = _compile_java_aux(ctx, java_srcs, kt_jar)
+        class_jars.append(java.jar)
+        reports += java.reports
 
     _merge_resources(ctx, class_jars, output_jar)
-    return abi_jar
+    return struct(abi_jar = abi_jar, reports = reports)
 
 def _compile_java_aux(ctx, java_srcs, kt_jar):
     if _has_exported_processors(ctx.attr.deps):
-        return _compile_java_processed(ctx, java_srcs, kt_jar)
+        return struct(jar = _compile_java_processed(ctx, java_srcs, kt_jar), reports = [])
 
     elide = ctx.toolchains[TOOLCHAIN_TYPE].elide_info
     classpath = compile_classpath(ctx.attr.deps)
@@ -436,7 +501,7 @@ def _compile_java_aux(ctx, java_srcs, kt_jar):
     full_cp = depset(direct = kt_jars, transitive = [classpath, plugin_cp, elide.kotlin_stdlib_jars])
 
     # `elide javac --jar <java_jar> [--classpath-cache] -- -classpath <cp> -proc:none <javac_opts> <srcs>`.
-    javac_args = _tool_args(ctx)
+    javac_args = _tool_args(ctx, java_jar)
     javac_args.add("--jar", java_jar)
     if ctx.attr._classpath_cache[BuildSettingInfo].value:
         javac_args.add("--classpath-cache")
@@ -447,7 +512,7 @@ def _compile_java_aux(ctx, java_srcs, kt_jar):
         javac_args.add(o)
     javac_args.add_all(java_srcs)
 
-    _run_elide_compile(
+    reports = _run_elide_compile(
         ctx,
         mnemonic = "ElideKotlinJavac",
         subcommand = "javac",
@@ -459,7 +524,7 @@ def _compile_java_aux(ctx, java_srcs, kt_jar):
         outputs = [java_jar],
         progress_message = "Compiling %{label} java sources (elide javac)",
     )
-    return java_jar
+    return struct(jar = java_jar, reports = reports)
 
 def _compile_java_processed(ctx, java_srcs, kt_jar):
     elide = ctx.toolchains[TOOLCHAIN_TYPE].elide_info
@@ -480,13 +545,14 @@ def _compile_java_processed(ctx, java_srcs, kt_jar):
     )
     return java_jar
 
-def make_java_info(ctx, output_jar, source_jar = None, compile_jar_override = None):
+def make_java_info(ctx, output_jar, source_jar = None, compile_jar_override = None, reports = []):
     """Builds the JavaInfo emitted by elide compile rules.
 
     Args:
         ctx: rule context.
         output_jar: File. Compiled classes jar.
         source_jar: File or None. Optional sources jar (sets JavaInfo.source_jar).
+        reports: Per-action compiler dependency reports.
         compile_jar_override: File or None. When set (the Karbine `--abi-only`
             header jar from run_kotlinc, under ABI compile-avoidance), it is used
             verbatim as `compile_jar` instead of deriving one with run_ijar. The
@@ -506,9 +572,16 @@ def make_java_info(ctx, output_jar, source_jar = None, compile_jar_override = No
             target_label = ctx.label,
             java_toolchain = java_toolchain,
         )
+
+    # Mixed targets have separate Java/Kotlin reports. Expose those in output
+    # groups rather than advertising an incomplete combined dependency proto.
+    header_reports = [f for f in reports if compile_jar_override != None and f.path == compile_jar_override.path + ".jdeps"]
+    implementation_reports = [f for f in reports if f.extension == "jdeps" and f not in header_reports]
     return JavaInfo(
         output_jar = output_jar,
         compile_jar = compile_jar,
+        jdeps = implementation_reports[0] if len(implementation_reports) == 1 else None,
+        compile_jdeps = header_reports[0] if header_reports else None,
         source_jar = source_jar,
         deps = _merge_java_infos(ctx.attr.deps),
         runtime_deps = _merge_java_infos(ctx.attr.runtime_deps),
@@ -831,9 +904,21 @@ COMMON_LIBRARY_ATTRS = {
     "_abi_compile_avoidance": attr.label(
         default = Label("//config/kotlinc:abi_compile_avoidance"),
         providers = [BuildSettingInfo],
-        doc = "Build setting: derive a kt-only target's compile_jar from a " +
+        doc = "Build setting: derive a Kotlin or mixed target's compile_jar from a " +
               "dedicated `elide kotlinc --abi-only` header action (body-stable " +
               "ABI) instead of run_ijar. See //config/kotlinc:abi_compile_avoidance.",
+    ),
+    "_java_abi_compile_avoidance": attr.label(
+        default = Label("//config/javac:abi_compile_avoidance"),
+        providers = [BuildSettingInfo],
+    ),
+    "_emit_jdeps": attr.label(
+        default = Label("//elide:emit_jdeps"),
+        providers = [BuildSettingInfo],
+    ),
+    "_prune_unused_inputs": attr.label(
+        default = Label("//elide:prune_unused_inputs"),
+        providers = [BuildSettingInfo],
     ),
     "_classpath_cache": attr.label(
         default = Label("//config/javac:classpath_cache"),

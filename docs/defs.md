@@ -26,6 +26,30 @@ elide_format(<a href="#elide_format-name">name</a>, <a href="#elide_format-srcs"
 | <a id="elide_format-srcs"></a>srcs |  Source files to format. All must be .java or all .kt/.kts.   | <a href="https://bazel.build/concepts/labels">List of labels</a> | required |  |
 
 
+<a id="elide_jar"></a>
+
+## elide_jar
+
+<pre>
+load("@rules_elide//elide:defs.bzl", "elide_jar")
+
+elide_jar(<a href="#elide_jar-name">name</a>, <a href="#elide_jar-srcs">srcs</a>, <a href="#elide_jar-main_class">main_class</a>, <a href="#elide_jar-manifest">manifest</a>, <a href="#elide_jar-strip_prefix">strip_prefix</a>)
+</pre>
+
+
+
+**ATTRIBUTES**
+
+
+| Name  | Description | Type | Mandatory | Default |
+| :------------- | :------------- | :------------- | :------------- | :------------- |
+| <a id="elide_jar-name"></a>name |  A unique name for this target.   | <a href="https://bazel.build/concepts/labels#target-names">Name</a> | required |  |
+| <a id="elide_jar-srcs"></a>srcs |  Files or directory artifacts to archive; input jars are stored, not merged.   | <a href="https://bazel.build/concepts/labels">List of labels</a> | required |  |
+| <a id="elide_jar-main_class"></a>main_class |  -   | String | optional |  `""`  |
+| <a id="elide_jar-manifest"></a>manifest |  -   | <a href="https://bazel.build/concepts/labels">Label</a> | optional |  `None`  |
+| <a id="elide_jar-strip_prefix"></a>strip_prefix |  Prefix removed from workspace-relative file paths. Directory contents are stored at the archive root.   | String | optional |  `""`  |
+
+
 <a id="elide_java_binary"></a>
 
 ## elide_java_binary
@@ -129,6 +153,141 @@ elide_java_test(<a href="#elide_java_test-name">name</a>, <a href="#elide_java_t
 | <a id="elide_java_test-resource_strip_prefix"></a>resource_strip_prefix |  Workspace-root-relative path prefix stripped from each `resources` entry when computing its in-JAR location (mirrors java_library.resource_strip_prefix). Empty -> use the full short_path.   | String | optional |  `""`  |
 | <a id="elide_java_test-runtime_deps"></a>runtime_deps |  Runtime-only dependencies (excluded from compile classpath).   | <a href="https://bazel.build/concepts/labels">List of labels</a> | optional |  `[]`  |
 | <a id="elide_java_test-test_class"></a>test_class |  Single JUnit Platform test class to select. Empty -> --scan-classpath.   | String | optional |  `""`  |
+
+
+<a id="elide_javadoc"></a>
+
+## elide_javadoc
+
+<pre>
+load("@rules_elide//elide:defs.bzl", "elide_javadoc")
+
+elide_javadoc(<a href="#elide_javadoc-name">name</a>, <a href="#elide_javadoc-deps">deps</a>, <a href="#elide_javadoc-srcs">srcs</a>, <a href="#elide_javadoc-data">data</a>, <a href="#elide_javadoc-doclet">doclet</a>, <a href="#elide_javadoc-doclet_deps">doclet_deps</a>, <a href="#elide_javadoc-jar">jar</a>, <a href="#elide_javadoc-opts">opts</a>, <a href="#elide_javadoc-theme">theme</a>)
+</pre>
+
+
+
+**ATTRIBUTES**
+
+
+| Name  | Description | Type | Mandatory | Default |
+| :------------- | :------------- | :------------- | :------------- | :------------- |
+| <a id="elide_javadoc-name"></a>name |  A unique name for this target.   | <a href="https://bazel.build/concepts/labels#target-names">Name</a> | required |  |
+| <a id="elide_javadoc-deps"></a>deps |  Compile classpath for documented sources.   | <a href="https://bazel.build/concepts/labels">List of labels</a> | optional |  `[]`  |
+| <a id="elide_javadoc-srcs"></a>srcs |  Java source files to document.   | <a href="https://bazel.build/concepts/labels">List of labels</a> | required |  |
+| <a id="elide_javadoc-data"></a>data |  Declared doclet resources and offline link metadata.   | <a href="https://bazel.build/concepts/labels">List of labels</a> | optional |  `[]`  |
+| <a id="elide_javadoc-doclet"></a>doclet |  Optional custom doclet class.   | String | optional |  `""`  |
+| <a id="elide_javadoc-doclet_deps"></a>doclet_deps |  Custom doclet runtime dependencies.   | <a href="https://bazel.build/concepts/labels">List of labels</a> | optional |  `[]`  |
+| <a id="elide_javadoc-jar"></a>jar |  Also produce a reproducible -javadoc.jar.   | Boolean | optional |  `True`  |
+| <a id="elide_javadoc-opts"></a>opts |  Additional javadoc options; declare referenced files in data.   | List of strings | optional |  `[]`  |
+| <a id="elide_javadoc-theme"></a>theme |  -   | String | optional |  `"default"`  |
+
+
+<a id="elide_javap"></a>
+
+## elide_javap
+
+<pre>
+load("@rules_elide//elide:defs.bzl", "elide_javap")
+
+elide_javap(<a href="#elide_javap-name">name</a>, <a href="#elide_javap-deps">deps</a>, <a href="#elide_javap-srcs">srcs</a>, <a href="#elide_javap-data">data</a>, <a href="#elide_javap-classes">classes</a>, <a href="#elide_javap-opts">opts</a>)
+</pre>
+
+
+
+**ATTRIBUTES**
+
+
+| Name  | Description | Type | Mandatory | Default |
+| :------------- | :------------- | :------------- | :------------- | :------------- |
+| <a id="elide_javap-name"></a>name |  A unique name for this target.   | <a href="https://bazel.build/concepts/labels#target-names">Name</a> | required |  |
+| <a id="elide_javap-deps"></a>deps |  Runtime classpath used to resolve classes.   | <a href="https://bazel.build/concepts/labels">List of labels</a> | optional |  `[]`  |
+| <a id="elide_javap-srcs"></a>srcs |  Jars or class files to analyze with jdeps.   | <a href="https://bazel.build/concepts/labels">List of labels</a> | optional |  `[]`  |
+| <a id="elide_javap-data"></a>data |  -   | <a href="https://bazel.build/concepts/labels">List of labels</a> | optional |  `[]`  |
+| <a id="elide_javap-classes"></a>classes |  Fully qualified classes to inspect with javap.   | List of strings | optional |  `[]`  |
+| <a id="elide_javap-opts"></a>opts |  -   | List of strings | optional |  `[]`  |
+
+
+<a id="elide_jdeps"></a>
+
+## elide_jdeps
+
+<pre>
+load("@rules_elide//elide:defs.bzl", "elide_jdeps")
+
+elide_jdeps(<a href="#elide_jdeps-name">name</a>, <a href="#elide_jdeps-deps">deps</a>, <a href="#elide_jdeps-srcs">srcs</a>, <a href="#elide_jdeps-data">data</a>, <a href="#elide_jdeps-classes">classes</a>, <a href="#elide_jdeps-opts">opts</a>)
+</pre>
+
+
+
+**ATTRIBUTES**
+
+
+| Name  | Description | Type | Mandatory | Default |
+| :------------- | :------------- | :------------- | :------------- | :------------- |
+| <a id="elide_jdeps-name"></a>name |  A unique name for this target.   | <a href="https://bazel.build/concepts/labels#target-names">Name</a> | required |  |
+| <a id="elide_jdeps-deps"></a>deps |  Runtime classpath used to resolve classes.   | <a href="https://bazel.build/concepts/labels">List of labels</a> | optional |  `[]`  |
+| <a id="elide_jdeps-srcs"></a>srcs |  Jars or class files to analyze with jdeps.   | <a href="https://bazel.build/concepts/labels">List of labels</a> | optional |  `[]`  |
+| <a id="elide_jdeps-data"></a>data |  -   | <a href="https://bazel.build/concepts/labels">List of labels</a> | optional |  `[]`  |
+| <a id="elide_jdeps-classes"></a>classes |  Fully qualified classes to inspect with javap.   | List of strings | optional |  `[]`  |
+| <a id="elide_jdeps-opts"></a>opts |  -   | List of strings | optional |  `[]`  |
+
+
+<a id="elide_jextract"></a>
+
+## elide_jextract
+
+<pre>
+load("@rules_elide//elide:defs.bzl", "elide_jextract")
+
+elide_jextract(<a href="#elide_jextract-name">name</a>, <a href="#elide_jextract-srcs">srcs</a>, <a href="#elide_jextract-data">data</a>, <a href="#elide_jextract-hdrs">hdrs</a>, <a href="#elide_jextract-defines">defines</a>, <a href="#elide_jextract-header_class">header_class</a>, <a href="#elide_jextract-includes">includes</a>, <a href="#elide_jextract-opts">opts</a>, <a href="#elide_jextract-package">package</a>)
+</pre>
+
+
+
+**ATTRIBUTES**
+
+
+| Name  | Description | Type | Mandatory | Default |
+| :------------- | :------------- | :------------- | :------------- | :------------- |
+| <a id="elide_jextract-name"></a>name |  A unique name for this target.   | <a href="https://bazel.build/concepts/labels#target-names">Name</a> | required |  |
+| <a id="elide_jextract-srcs"></a>srcs |  Entry-point C headers.   | <a href="https://bazel.build/concepts/labels">List of labels</a> | required |  |
+| <a id="elide_jextract-data"></a>data |  -   | <a href="https://bazel.build/concepts/labels">List of labels</a> | optional |  `[]`  |
+| <a id="elide_jextract-hdrs"></a>hdrs |  Transitive included headers; their directories are added to the include path.   | <a href="https://bazel.build/concepts/labels">List of labels</a> | optional |  `[]`  |
+| <a id="elide_jextract-defines"></a>defines |  Preprocessor definitions, NAME or NAME=VALUE.   | List of strings | optional |  `[]`  |
+| <a id="elide_jextract-header_class"></a>header_class |  Generated header class name.   | String | optional |  `""`  |
+| <a id="elide_jextract-includes"></a>includes |  Additional execroot-relative include directories; declare all files in hdrs/data.   | List of strings | optional |  `[]`  |
+| <a id="elide_jextract-opts"></a>opts |  Additional jextract options, such as symbol filters and library names.   | List of strings | optional |  `[]`  |
+| <a id="elide_jextract-package"></a>package |  Generated Java package.   | String | optional |  `""`  |
+
+
+<a id="elide_kapt"></a>
+
+## elide_kapt
+
+<pre>
+load("@rules_elide//elide:defs.bzl", "elide_kapt")
+
+elide_kapt(<a href="#elide_kapt-name">name</a>, <a href="#elide_kapt-deps">deps</a>, <a href="#elide_kapt-srcs">srcs</a>, <a href="#elide_kapt-data">data</a>, <a href="#elide_kapt-kotlinc_opts">kotlinc_opts</a>, <a href="#elide_kapt-processor_deps">processor_deps</a>, <a href="#elide_kapt-processor_jars">processor_jars</a>, <a href="#elide_kapt-processor_options">processor_options</a>,
+           <a href="#elide_kapt-processors">processors</a>)
+</pre>
+
+
+
+**ATTRIBUTES**
+
+
+| Name  | Description | Type | Mandatory | Default |
+| :------------- | :------------- | :------------- | :------------- | :------------- |
+| <a id="elide_kapt-name"></a>name |  A unique name for this target.   | <a href="https://bazel.build/concepts/labels#target-names">Name</a> | required |  |
+| <a id="elide_kapt-deps"></a>deps |  Source compile classpath.   | <a href="https://bazel.build/concepts/labels">List of labels</a> | optional |  `[]`  |
+| <a id="elide_kapt-srcs"></a>srcs |  -   | <a href="https://bazel.build/concepts/labels">List of labels</a> | required |  |
+| <a id="elide_kapt-data"></a>data |  Additional files read by processors.   | <a href="https://bazel.build/concepts/labels">List of labels</a> | optional |  `[]`  |
+| <a id="elide_kapt-kotlinc_opts"></a>kotlinc_opts |  -   | List of strings | optional |  `[]`  |
+| <a id="elide_kapt-processor_deps"></a>processor_deps |  Processor runtime dependencies.   | <a href="https://bazel.build/concepts/labels">List of labels</a> | optional |  `[]`  |
+| <a id="elide_kapt-processor_jars"></a>processor_jars |  Additional processor jars.   | <a href="https://bazel.build/concepts/labels">List of labels</a> | optional |  `[]`  |
+| <a id="elide_kapt-processor_options"></a>processor_options |  Processor options passed as key=value.   | <a href="https://bazel.build/rules/lib/core/dict">Dictionary: String -> String</a> | optional |  `{}`  |
+| <a id="elide_kapt-processors"></a>processors |  KAPT processor class names; empty means service discovery.   | List of strings | optional |  `[]`  |
 
 
 <a id="elide_kotlin_binary"></a>
@@ -251,6 +410,35 @@ elide_kotlin_test(<a href="#elide_kotlin_test-name">name</a>, <a href="#elide_ko
 | <a id="elide_kotlin_test-test_class"></a>test_class |  Single JUnit Platform test class to select. Empty -> --scan-classpath.   | String | optional |  `""`  |
 
 
+<a id="elide_ksp"></a>
+
+## elide_ksp
+
+<pre>
+load("@rules_elide//elide:defs.bzl", "elide_ksp")
+
+elide_ksp(<a href="#elide_ksp-name">name</a>, <a href="#elide_ksp-deps">deps</a>, <a href="#elide_ksp-srcs">srcs</a>, <a href="#elide_ksp-data">data</a>, <a href="#elide_ksp-kotlinc_opts">kotlinc_opts</a>, <a href="#elide_ksp-processor_deps">processor_deps</a>, <a href="#elide_ksp-processor_jars">processor_jars</a>, <a href="#elide_ksp-processor_options">processor_options</a>,
+          <a href="#elide_ksp-processors">processors</a>)
+</pre>
+
+
+
+**ATTRIBUTES**
+
+
+| Name  | Description | Type | Mandatory | Default |
+| :------------- | :------------- | :------------- | :------------- | :------------- |
+| <a id="elide_ksp-name"></a>name |  A unique name for this target.   | <a href="https://bazel.build/concepts/labels#target-names">Name</a> | required |  |
+| <a id="elide_ksp-deps"></a>deps |  Source compile classpath.   | <a href="https://bazel.build/concepts/labels">List of labels</a> | optional |  `[]`  |
+| <a id="elide_ksp-srcs"></a>srcs |  -   | <a href="https://bazel.build/concepts/labels">List of labels</a> | required |  |
+| <a id="elide_ksp-data"></a>data |  Additional files read by processors.   | <a href="https://bazel.build/concepts/labels">List of labels</a> | optional |  `[]`  |
+| <a id="elide_ksp-kotlinc_opts"></a>kotlinc_opts |  -   | List of strings | optional |  `[]`  |
+| <a id="elide_ksp-processor_deps"></a>processor_deps |  Processor runtime dependencies.   | <a href="https://bazel.build/concepts/labels">List of labels</a> | optional |  `[]`  |
+| <a id="elide_ksp-processor_jars"></a>processor_jars |  Additional processor jars.   | <a href="https://bazel.build/concepts/labels">List of labels</a> | optional |  `[]`  |
+| <a id="elide_ksp-processor_options"></a>processor_options |  Processor options passed as key=value.   | <a href="https://bazel.build/rules/lib/core/dict">Dictionary: String -> String</a> | optional |  `{}`  |
+| <a id="elide_ksp-processors"></a>processors |  KAPT processor class names; empty means service discovery.   | List of strings | optional |  `[]`  |
+
+
 <a id="elide_native_image"></a>
 
 ## elide_native_image
@@ -281,7 +469,8 @@ elide_native_image(<a href="#elide_native_image-name">name</a>, <a href="#elide_
 <pre>
 load("@rules_elide//elide:defs.bzl", "elide_toolchain")
 
-elide_toolchain(<a href="#elide_toolchain-name">name</a>, <a href="#elide_toolchain-binary">binary</a>, <a href="#elide_toolchain-compile_tool_files">compile_tool_files</a>, <a href="#elide_toolchain-kotlin_stdlib">kotlin_stdlib</a>, <a href="#elide_toolchain-tool_files">tool_files</a>, <a href="#elide_toolchain-version">version</a>)
+elide_toolchain(<a href="#elide_toolchain-name">name</a>, <a href="#elide_toolchain-binary">binary</a>, <a href="#elide_toolchain-compile_tool_files">compile_tool_files</a>, <a href="#elide_toolchain-kotlin_stdlib">kotlin_stdlib</a>, <a href="#elide_toolchain-python_tool_files">python_tool_files</a>, <a href="#elide_toolchain-tool_files">tool_files</a>,
+                <a href="#elide_toolchain-version">version</a>)
 </pre>
 
 
@@ -295,6 +484,7 @@ elide_toolchain(<a href="#elide_toolchain-name">name</a>, <a href="#elide_toolch
 | <a id="elide_toolchain-binary"></a>binary |  Executable target for the elide binary.   | <a href="https://bazel.build/concepts/labels">Label</a> | required |  |
 | <a id="elide_toolchain-compile_tool_files"></a>compile_tool_files |  Inputs for JVM compile actions (javac, kotlinc, jar). Should reference the elide_compile_files filegroup.   | <a href="https://bazel.build/concepts/labels">List of labels</a> | optional |  `[]`  |
 | <a id="elide_toolchain-kotlin_stdlib"></a>kotlin_stdlib |  Kotlin stdlib jars bundled with this Elide release (from kotlin_stdlib_jars filegroup).   | <a href="https://bazel.build/concepts/labels">List of labels</a> | optional |  `[]`  |
+| <a id="elide_toolchain-python_tool_files"></a>python_tool_files |  Python runtime inputs from the elide_python_files filegroup. Include these when running Python through the toolchain binary.   | <a href="https://bazel.build/concepts/labels">List of labels</a> | optional |  `[]`  |
 | <a id="elide_toolchain-tool_files"></a>tool_files |  Inputs for native-image actions (includes lib/svm, include/). Should reference the elide_native_image_files filegroup.   | <a href="https://bazel.build/concepts/labels">List of labels</a> | optional |  `[]`  |
 | <a id="elide_toolchain-version"></a>version |  Semantic version of the elide binary.   | String | required |  |
 
@@ -326,7 +516,8 @@ Elide-specific metadata emitted by rules_elide build rules.
 <pre>
 load("@rules_elide//elide:defs.bzl", "ElideToolchainInfo")
 
-ElideToolchainInfo(<a href="#ElideToolchainInfo-binary">binary</a>, <a href="#ElideToolchainInfo-compile_tool_files">compile_tool_files</a>, <a href="#ElideToolchainInfo-kotlin_stdlib_jars">kotlin_stdlib_jars</a>, <a href="#ElideToolchainInfo-tool_files">tool_files</a>, <a href="#ElideToolchainInfo-version">version</a>)
+ElideToolchainInfo(<a href="#ElideToolchainInfo-binary">binary</a>, <a href="#ElideToolchainInfo-compile_tool_files">compile_tool_files</a>, <a href="#ElideToolchainInfo-kotlin_stdlib_jars">kotlin_stdlib_jars</a>, <a href="#ElideToolchainInfo-python_tool_files">python_tool_files</a>, <a href="#ElideToolchainInfo-tool_files">tool_files</a>,
+                   <a href="#ElideToolchainInfo-version">version</a>)
 </pre>
 
 Resolved Elide toolchain information.
@@ -338,5 +529,6 @@ Resolved Elide toolchain information.
 | <a id="ElideToolchainInfo-binary"></a>binary |  File. The elide binary executable.    |
 | <a id="ElideToolchainInfo-compile_tool_files"></a>compile_tool_files |  depset[File]. Inputs for JVM compile actions (javac, kotlinc, jar). Excludes native-image-only subtrees (lib/svm, lib/truffle, doc).    |
 | <a id="ElideToolchainInfo-kotlin_stdlib_jars"></a>kotlin_stdlib_jars |  depset[File]. Kotlin stdlib jar(s) bundled with this Elide release.    |
+| <a id="ElideToolchainInfo-python_tool_files"></a>python_tool_files |  depset[File]. Python runtime inputs, including resources and component markers.    |
 | <a id="ElideToolchainInfo-tool_files"></a>tool_files |  depset[File]. Inputs for native-image actions (includes lib/svm, include/).    |
 | <a id="ElideToolchainInfo-version"></a>version |  string. Semantic version of the elide binary.    |

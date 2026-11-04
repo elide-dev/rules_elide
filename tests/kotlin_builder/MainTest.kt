@@ -42,4 +42,10 @@ class MainTest {
         val (cfg, _) = Main.splitConfig(listOf("--elide=/bin/elide", "--flagfile=/tmp/f"))
         assertFalse(cfg.quietPluginRewrite, "warn (quiet off) by default")
     }
+    @Test fun nativeToolsIsAnExplicitStartupSetting() {
+        val (cfg, rest) = Main.splitConfig(listOf("--native_tools", "--flagfile=f"))
+        assertTrue(cfg.nativeTools)
+        assertEquals(listOf("--flagfile=f"), rest)
+        assertFalse(Main.splitConfig(emptyList()).first.nativeTools)
+    }
 }

@@ -52,6 +52,7 @@ DEFAULT_CHANNEL = "nightly"
 # Hashes verified 2026-06-23 against GitHub release tag 1.3.4+20260623.
 # Hashes verified 2026-06-28 against GitHub release tag 1.3.6+20260628.
 # Hashes verified 2026-10-18 against GitHub release tag v1.6.0.
+# 1.6.1/1.6.2 release and nightly hashes from GitHub asset digests, 2026-11-04.
 ELIDE_VERSIONS = {
     "1.2.0+20260602": {
         ("linux", "amd64"): "sha256-yIQZwU4nM0SN19Zj2rdikdWBpj9d+fVlJK0d10p3DRA=",
@@ -113,6 +114,64 @@ ELIDE_VERSIONS = {
         ("macos", "arm64"): "sha256-cTEKx6IkaKmuuoXCh7s6UvE819POiUBE5p6ZjGkOvts=",
         ("windows", "amd64"): "sha256-YcH7aJ0G/SAUwU8jX5PmT9xvLhW8Dlzfy7vhI2a0cC8=",
     },
+    "1.6.1": {
+        ("linux", "amd64"): "sha256-GmC5bRnyouw+Gwmc8A50p1rjHuXX+GAhzQl/r7Yo+F0=",
+        ("linux", "arm64"): "sha256-28FjUUP+bOACRHXbKeJZwt7OUNgr2gbKBitcMpRHgsk=",
+        ("macos", "arm64"): "sha256-NDba6kd2GEQx0Qgitvs4WhgskWwtrH5pekyZF9pQqAY=",
+        ("windows", "amd64"): "sha256-M/E21TnlG1dxMmIjxzkkn7p8uZ/lLevSWfpiluPtk0k=",
+    },
+    "1.6.2": {
+        ("linux", "amd64"): "sha256-pxUjqiqNMZS8wP3O0X9pgJiER+7XSla/s9tVbFwQn2Q=",
+        ("linux", "arm64"): "sha256-oN75/opmbBJ2TC0j4lQSmVYph+x9YKMDztXyg17QnMk=",
+        ("macos", "arm64"): "sha256-02+nhbgrRix1MvL+oaNL9A0kpgfE4GLzqeNJToNUIas=",
+        ("windows", "amd64"): "sha256-H6N9UxXnwSPfSe+CCvgjhlKsl7c609n6t0vZD60n53I=",
+    },
+    "1.6.2+20261102": {
+        ("linux", "amd64"): "sha256-SjxCCwEiAkC72KAZ8snyhIsE5oIHidtvz5EQ/cnFtic=",
+        ("linux", "arm64"): "sha256-PZ0Iz0MI0wzuh5yfrsaWVoTtY32QEfbFDjnp3W9fFUI=",
+        ("macos", "arm64"): "sha256-GT7f9pI1qnqlSODT28QmqRfHHbJVolAlk5ty2cRb12M=",
+        ("windows", "amd64"): "sha256-l4PudXm+w7Z+rW06YfWb36gIsnxPej/wFXPzm7A1THw=",
+    },
+    "1.6.2+20261103": {
+        ("linux", "amd64"): "sha256-f4KH8UbrtZvzWtsMpNCznuHJt5hkwJ0lfVP4qL0OV5g=",
+        ("linux", "arm64"): "sha256-/j9RtVcwRWYbPeYsE9awPZWIDxcwFKCyZUqHQRQC5ts=",
+        ("macos", "arm64"): "sha256-GnVUGQRvtprtA+yHMPyl2hd+0nOKnXlg6GS0TAZ5YVQ=",
+        ("windows", "amd64"): "sha256-QGpc+878ce0fY1FCRGl26jPF/hpwfmI7K8kQzoz+WwU=",
+    },
+}
+
+# Optional Python overlays, matched to the base release; GitHub asset digests.
+PYTHON_VERSIONS = {
+    "1.6.0": {
+        ("linux", "amd64"): "sha256-gLotWfj25gSuN2VUNXQ3skRY2UDCrJF73aUBdR91lls=",
+        ("linux", "arm64"): "sha256-wNRIowaC+HNHUi5tNKLvKxEJgEvy82DTfFD8+M8C4mk=",
+        ("macos", "arm64"): "sha256-fd6qoReJbl4Gvz3NzMGerAkN+eE9jok0ZazhXsk8c+M=",
+        ("windows", "amd64"): "sha256-+xqLXAfKTJCDX78DkghTsW/YnVMNJOaWgp0x+0F96qk=",
+    },
+    "1.6.1": {
+        ("linux", "amd64"): "sha256-YmIOPh42td7fdeANOarqPlZX/cT+qR0pos3Zsg7iXwE=",
+        ("linux", "arm64"): "sha256-1TwZj3BPXozxvbAHyUBhRsH2duzwBOxU5E/1Ro0iR7Y=",
+        ("macos", "arm64"): "sha256-fGecSbblca907ZvQZGbdel1HIWFoiEIHG/mYR9P+d3o=",
+        ("windows", "amd64"): "sha256-3JhE1eG76dKt6APP7T9peXwuDRfgCZaBwaUV1L6NPaM=",
+    },
+    "1.6.2": {
+        ("linux", "amd64"): "sha256-EVdxVQsuz+zcqOSb0uJwNz/vOVdzD+auplmEFGPCmUI=",
+        ("linux", "arm64"): "sha256-2oxQeHkidDuVyvVK5LIuauA5QotnWMz+JNl/LAhS7s4=",
+        ("macos", "arm64"): "sha256-rHmobVfNDoiCp5P4r+N56JxaSn4Bw85TYcb0C086qpE=",
+        ("windows", "amd64"): "sha256-0VnDnF0gRk9k+1evvUdR7XxCZwbwDLMsBTbwcAmS/fU=",
+    },
+    "1.6.2+20261102": {
+        ("linux", "amd64"): "sha256-KiPGUzh4Dba33VEUCKSsBW/C+sQ58dNbVsUMmYBYQEs=",
+        ("linux", "arm64"): "sha256-Wm8dV0vSrTIR5h05eVcCpjT+Hv7FWrnOefa1yjKzHUY=",
+        ("macos", "arm64"): "sha256-AC9hl/B6I7kC/60hy9LidBIE/Rhk6jqwz/cfuIcGGZ8=",
+        ("windows", "amd64"): "sha256-2yGUN2NR/6UHTcKjHYufeyRv+qI2lfmC6la0NW+iEek=",
+    },
+    "1.6.2+20261103": {
+        ("linux", "amd64"): "sha256-jxgGFOuGbGETtMhksa7fXv5kFooTgu+Oo9ccYJkWP7w=",
+        ("linux", "arm64"): "sha256-TcPJK1ww0de8sjfkRCTB8IpCNofvzL7SUajpwqA1dV8=",
+        ("macos", "arm64"): "sha256-OcgC4rg0spTC7jQjL1El57QXwL+EL/incoh7fpIR5ME=",
+        ("windows", "amd64"): "sha256-hgxcgJCeTff+YsXLxZ3ImHxL3RhUeuK29FsfpQ2xkFY=",
+    },
 }
 
 # Versions whose GitHub release tag differs from the version string. Nightly tags
@@ -120,6 +179,8 @@ ELIDE_VERSIONS = {
 # tagged with a leading `v`.
 RELEASE_TAGS = {
     "1.6.0": "v1.6.0",
+    "1.6.1": "v1.6.1",
+    "1.6.2": "v1.6.2",
 }
 
 def release_tag(version):
@@ -134,8 +195,8 @@ def release_tag(version):
     return RELEASE_TAGS.get(version, version)
 
 # Default version used when consumers call elide.install() without a version.
-# Points at the most-recently verified entry in ELIDE_VERSIONS above.
-DEFAULT_VERSION = "1.6.0"
+# Points at the most-recently verified stable release in ELIDE_VERSIONS above.
+DEFAULT_VERSION = "1.6.2"
 
 # GitHub releases serve each tag as an immutable artifact. The {channel} token
 # is accepted but unused here; it remains available for consumers who override
@@ -202,3 +263,20 @@ def archive_ext(os):
 def binary_ext(os):
     """Returns the canonical executable extension for the given OS token."""
     return ".exe" if os == "windows" else ""
+
+def python_download_url(url_template, channel, version, os, cpu):
+    """Expands a version-matched Python overlay URL.
+
+    Args:
+        url_template: Optional custom overlay URL template.
+        channel: Release channel for a custom template.
+        version: Base Elide version.
+        os: Platform OS token.
+        cpu: Platform CPU token.
+
+    Returns:
+        The overlay archive URL, using the same tag mapping as base archives.
+    """
+    if url_template:
+        return download_url(url_template, channel, version, os, cpu)
+    return download_url("", channel, version, os, cpu).replace("/elide.", "/elide.python.")

@@ -21,3 +21,11 @@ config_setting(
     name = "classpath_cache_enabled",
     flag_values = {":classpath_cache": "True"},
 )
+
+# Opt-in source header compilation via Elide javac --abi-only. Dependents
+# compile against the header while runtime consumers retain the full jar.
+# Annotation processors and resource_jars fall back to the full-compile ijar.
+bool_flag(
+    name = "abi_compile_avoidance",
+    build_setting_default = False,
+)

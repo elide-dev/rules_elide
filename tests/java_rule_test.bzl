@@ -77,6 +77,47 @@ def _library_action_test_impl(ctx):
 
 _library_action_test = analysistest.make(_library_action_test_impl)
 
+def _abi_test_impl(ctx):
+    env = analysistest.begin(ctx)
+    actions = analysistest.target_actions(env)
+    headers = [a for a in actions if a.mnemonic == "ElideJavacAbi"]
+    asserts.equals(env, 1, len(headers))
+    header = headers[0]
+    asserts.true(env, header.argv.index("--abi-only") < header.argv.index("--"))
+    asserts.true(env, "--jar" in header.argv)
+    info = analysistest.target_under_test(env)[JavaInfo]
+    asserts.equals(env, header.outputs.to_list(), info.compile_jars.to_list())
+    asserts.false(env, any([a.mnemonic == "JavaIjar" for a in actions]))
+    asserts.true(env, any([a.mnemonic == "ElideJavac" for a in actions]))
+    asserts.false(env, any([f.basename.endswith("_abi.jar") for f in info.transitive_runtime_jars.to_list()]))
+    return analysistest.end(env)
+
+_abi_test = analysistest.make(
+    _abi_test_impl,
+    config_settings = {"@@//config/javac:abi_compile_avoidance": True},  # buildifier: disable=canonical-repository
+)
+
+_abi_no_worker_test = analysistest.make(
+    _abi_test_impl,
+    config_settings = {
+        "@@//config/javac:abi_compile_avoidance": True,  # buildifier: disable=canonical-repository
+        "@@//elide:use_workers": False,  # buildifier: disable=canonical-repository
+    },
+)
+
+def _abi_fallback_test_impl(ctx):
+    env = analysistest.begin(ctx)
+    actions = analysistest.target_actions(env)
+    asserts.false(env, any([a.mnemonic == "ElideJavacAbi" for a in actions]))
+    info = analysistest.target_under_test(env)[JavaInfo]
+    asserts.false(env, any([f.basename.endswith("_abi.jar") for f in info.compile_jars.to_list()]))
+    return analysistest.end(env)
+
+_abi_fallback_test = analysistest.make(
+    _abi_fallback_test_impl,
+    config_settings = {"@@//config/javac:abi_compile_avoidance": True},  # buildifier: disable=canonical-repository
+)
+
 def _classpath_cache_test_impl(ctx):
     env = analysistest.begin(ctx)
     actions = analysistest.target_actions(env)
@@ -219,9 +260,51 @@ def java_rule_test_suite(name):
         name = "test_rule_executable_test",
         target_under_test = ":_test_fixture",
     )
+    for kind in ["lib", "bin", "test"]:
+        _abi_test(
+            name = "java_abi_" + kind + "_test",
+            target_under_test = ":_" + kind + "_fixture",
+        )
+    _abi_no_worker_test(
+        name = "java_abi_no_worker_test",
+        target_under_test = ":_lib_fixture",
+    )
+    elide_java_library(
+        name = "_processor_fixture",
+        srcs = [":_hello_src"],
+        javac_opts = ["-processor", "example.Processor"],
+        testonly = True,
+        tags = ["manual"],
+    )
+    _abi_fallback_test(
+        name = "java_abi_processor_fallback_test",
+        target_under_test = ":_processor_fixture",
+    )
+    for kind, attrs in [
+        ("plugin", {"plugins": [":_dep_lib_fixture"]}),
+        ("resource_jar", {"resource_jars": [":_dep_lib_fixture"]}),
+    ]:
+        elide_java_library(
+            name = "_abi_" + kind + "_fixture",
+            srcs = [":_hello_src"],
+            testonly = True,
+            tags = ["manual"],
+            **attrs
+        )
+        _abi_fallback_test(
+            name = "java_abi_" + kind + "_fallback_test",
+            target_under_test = ":_abi_" + kind + "_fixture",
+        )
     native.test_suite(
         name = name,
         tests = [
+            ":java_abi_lib_test",
+            ":java_abi_plugin_fallback_test",
+            ":java_abi_resource_jar_fallback_test",
+            ":java_abi_bin_test",
+            ":java_abi_test_test",
+            ":java_abi_no_worker_test",
+            ":java_abi_processor_fallback_test",
             ":library_providers_test",
             ":library_action_test",
             ":library_action_no_worker_test",

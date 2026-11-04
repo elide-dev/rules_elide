@@ -27,6 +27,19 @@ load(
     _elide_native_image = "elide_native_image",
 )
 load(
+    "//elide/rules:jvm_tools.bzl",
+    _elide_jar = "elide_jar",
+    _elide_javadoc = "elide_javadoc",
+    _elide_javap = "elide_javap",
+    _elide_jdeps = "elide_jdeps",
+    _elide_jextract = "elide_jextract",
+)
+load(
+    "//elide/rules:processing.bzl",
+    _elide_kapt = "elide_kapt",
+    _elide_ksp = "elide_ksp",
+)
+load(
     ":providers.bzl",
     _ElideInfo = "ElideInfo",
     _ElideToolchainInfo = "ElideToolchainInfo",
@@ -44,3 +57,10 @@ elide_kotlin_library = _elide_kotlin_library
 elide_kotlin_test = _elide_kotlin_test
 elide_native_image = _elide_native_image
 elide_toolchain = _elide_toolchain
+elide_javadoc = _elide_javadoc
+elide_jar = _elide_jar
+elide_jdeps = _elide_jdeps
+elide_javap = _elide_javap
+elide_jextract = _elide_jextract
+elide_kapt = _elide_kapt
+elide_ksp = _elide_ksp

@@ -1,0 +1,13 @@
+load("@rules_elide//elide:defs.bzl", "elide_java_library")
+load(":probe.bzl", "python_overlay_probe")
+
+python_overlay_probe(
+    name = "python",
+    src = "probe.py",
+)
+
+# The replacement executable must still support the smaller JVM input set.
+elide_java_library(
+    name = "java",
+    srcs = ["Hello.java"],
+)
