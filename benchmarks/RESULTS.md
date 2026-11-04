@@ -24,6 +24,12 @@ Older CI `bench.sh` results included download costs in first samples and could
 reuse the workflow's disk action cache after cleaning. Do not compare their
 clean-build averages directly with the corrected methodology.
 
+## Dependency-graph edits
+
+See [the incremental matrix](INCREMENTAL.md) for body-only, ABI, module-boundary,
+inline/constant, unused-dependency, and multi-file edit scenarios, with timings
+and compiler-action counts across vanilla and Elide optimization modes.
+
 ## Suite
 
 `bench_suite.sh` drives [hyperfine](https://github.com/sharkdp/hyperfine) and

@@ -305,6 +305,8 @@ unchanged.
 
 See [`benchmarks/RESULTS.md`](benchmarks/RESULTS.md) for methodology, recorded
 numbers, and how to reproduce locally via `./benchmarks/bench.sh`.
+The [incremental edit matrix](benchmarks/INCREMENTAL.md) covers ABI changes,
+module boundaries, dependency pruning, and multi-file edits with action logs.
 
 ## Local development against a non-released elide
 
