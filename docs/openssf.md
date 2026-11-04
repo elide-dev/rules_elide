@@ -1,7 +1,7 @@
 # OpenSSF improvement plan
 
 Reviewed 2026-11-04. This repository does **not** claim a Best Practices badge,
-a newly achieved Scorecard score, or SLSA certification.
+or SLSA certification. Scorecard results below are tied to specific commits.
 
 [Scorecard](https://github.com/ossf/scorecard/blob/main/docs/checks.md) measures
 repository/security practices. The [Best Practices badge](https://www.bestpractices.dev/en/criteria)
@@ -21,6 +21,16 @@ A likely cause is archive-mode scanning combined with `.github export-ignore`:
 `git archive HEAD .github` produces no workflow entries. The Scorecard workflow
 now requests `file_mode: git` so it can inspect those files. A future report may
 expose new findings; this is an accuracy fix, not a promised score increase.
+
+## Verified main-branch result
+
+The [2026-11-04 workflow run](https://github.com/elide-dev/rules_elide/actions/runs/41931882811)
+produced a Scorecard JSON artifact for `36f54fe8e2013ba38dcfdd031b06b84abcb5ead1`
+with **8.3/10**. Git-mode scanning detected the workflows: Dangerous-Workflow
+and Token-Permissions scored 10, Pinned-Dependencies scored 8, and SAST scored 9.
+Best Practices and Fuzzing remain 0; Branch-Protection is 5 and Code-Review is 6.
+Direct maintainer commits do not count as independent review. The public service
+may lag the workflow artifact; this result does not establish a badge or certification.
 
 ## Implemented in the repository
 
