@@ -1,11 +1,12 @@
 # rules_elide
 
 Bazel rules for [Elide](https://elide.dev) — Kotlin / Java compilation, JUnit
-Platform tests, code formatting, and native-image builds powered by the Elide
-runtime.
+Platform tests, documentation and JVM tooling, native KAPT/KSP, and Python
+runtime integration powered by Elide. Native-image rules are also available
+with the integration limitations described below.
 
-> **Status: pre-alpha.** Public API is unstable. Pin a specific commit or wait
-> for the first tagged release.
+> **Status: evolving API.** Pin a release or specific commit and review the
+> [compatibility and coverage limits](docs/testing.md) before upgrading.
 
 ## Why rules_elide?
 
@@ -13,14 +14,18 @@ Elide consolidates a polyglot runtime, a Kotlin/Java toolchain, formatters
 (google-java-format, ktfmt), and ahead-of-time native-image into one binary.
 For Bazel monorepos this means:
 
-- One hermetic toolchain instead of separate `rules_java`, `rules_kotlin`,
-  and `rules_graalvm` toolchains, each with their own JDK pin.
+- A pinned Elide distribution for Java/Kotlin compiler actions, plus adapters
+  for existing `rules_kotlin` and `rules_python` targets.
 - Native-image and formatters as first-class rules, not separate rulesets.
 - One small set of rules to learn (`elide_kotlin_library`, `elide_java_library`,
   `elide_native_image`, `elide_format`, ...) instead of three overlapping
   ecosystems.
 
 ## Quick start
+
+Replace the `0.0.0` placeholder with your selected release version. To try a local
+checkout, add `local_path_override(module_name = "rules_elide", path = "/path/to/rules_elide")`.
+The checked-in [sample workspaces](docs/examples.md) already use a local override.
 
 `MODULE.bazel`:
 
@@ -67,6 +72,7 @@ bazel run //:app
 | `elide_kotlin_test`   | `_library` + JUnit Platform launcher                              | [docs/kotlin.md](docs/kotlin.md) |
 | `elide_native_image`  | Native AOT binary from JavaInfo deps (via `elide native-image`)   | [docs/native_image.md](docs/native_image.md) |
 | `elide_format`        | In-place format `.java` (google-java-format) or `.kt` (ktfmt)     | [docs/format.md](docs/format.md) |
+| `register_elide_python_toolchain` | Opt-in Python 3.13 runtime for ordinary rules_python targets | [docs/python.md](docs/python.md) |
 | `elide_toolchain`     | Wrap an elide binary as a Bazel toolchain                         | [docs/toolchain.md](docs/toolchain.md) |
 | `register_elide_kotlin_toolchain` | Drop-in `rules_kotlin` toolchain swap — `kt_jvm_*` targets compile via Elide with no BUILD changes | [docs/kotlin_builder.md](docs/kotlin_builder.md) |
 
@@ -232,7 +238,7 @@ load("@rules_elide//elide:defs.bzl", "elide_format")
 
 elide_format(
     name = "format",
-    srcs = glob(["src/**/*.kt"]) + glob(["src/**/*.java"]),
+    srcs = glob(["src/**/*.kt"]),
 )
 ```
 
@@ -240,14 +246,32 @@ elide_format(
 google-java-format; `.kt`/`.kts` route through ktfmt. A single target may
 not mix languages — split into two `elide_format` targets if needed.
 
-## Hermetic and RBE / Buildfarm compatible
+## Execution platforms and hermeticity
 
-- No host JDK detection. No `repository_ctx.which`. The full extracted
-  elide distribution is declared as runfiles of the toolchain.
-- Platform-resolved via `@platforms//os:*` + `@platforms//cpu:*`.
-- All file paths are relative; no developer-machine paths leak into
-  outputs. Should run unchanged under Buildfarm, BuildBuddy RBE, or
-  EngFlow remote execution.
+Compiler actions declare their toolchain files and select an execution platform
+through Bazel constraints. Python runtime files are selected for the target
+platform and carried in runfiles. The Python shell bootstrap does not require
+host Python; native-image still needs further hermetic JDK/C toolchain work.
+
+The repository has a BuildBuddy RBE fixture, but that does not validate every
+new JVM tool or Python target remotely. See [the coverage map](docs/testing.md)
+for tested configurations and remaining platform limitations.
+
+## Examples and development
+
+[Sample use cases](docs/examples.md) cover Java API documentation, C bindings,
+KAPT/KSP generation, Python binaries/tests, and dependency diagnostics. Each
+links to a runnable workspace with explicit output checks.
+
+```sh
+# Fast action/provider tests; the stub compiler does not execute Elide.
+bazel test //tests:all --extra_toolchains=//tests:_test_elide_toolchain
+# Real Linux x86_64 fixtures (downloads pinned distributions).
+./tools/verify_integrations.sh all
+```
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for full tests, docs regeneration, and
+release-pin maintenance, and [docs/testing.md](docs/testing.md) for CI coverage.
 
 ## How it compares
 

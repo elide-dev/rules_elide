@@ -1,7 +1,7 @@
 load("@rules_elide//elide:defs.bzl", "elide_kapt", "elide_ksp")
-load("@rules_kotlin//kotlin:core.bzl", "kt_ksp_plugin")
 load("@rules_elide//elide/kotlin:toolchain.bzl", "register_elide_kotlin_toolchain")
 load("@rules_java//java:defs.bzl", "java_library", "java_plugin")
+load("@rules_kotlin//kotlin:core.bzl", "kt_ksp_plugin")
 load("@rules_kotlin//kotlin:jvm.bzl", "kt_jvm_library")
 
 # Exercises native ABI/jdeps, KAPT, and the separate KSP2 worker with real Elide.

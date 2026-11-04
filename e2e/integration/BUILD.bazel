@@ -1,10 +1,14 @@
-load("@rules_elide//elide:defs.bzl", "elide_jar", "elide_javadoc", "elide_javap", "elide_jdeps", "elide_jextract")
 load(
     "@rules_elide//elide:defs.bzl",
     "elide_format",
+    "elide_jar",
     "elide_java_binary",
     "elide_java_library",
     "elide_java_test",
+    "elide_javadoc",
+    "elide_javap",
+    "elide_jdeps",
+    "elide_jextract",
     "elide_kotlin_binary",
     "elide_kotlin_library",
     "elide_native_image",

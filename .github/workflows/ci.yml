@@ -108,9 +108,8 @@ jobs:
   integration:
     name: integration (real elide toolchain)
     runs-on: ubuntu-24.04
-    # Slow: downloads ~500 MB elide binary at repo-rule time. Run on schedule
-    # and on main pushes; PRs only get the analysis-level signal from
-    # the `e2e` job above.
+    # Downloads the Elide distribution and Python overlay on main pushes.
+    # PRs get the analysis-level signal from the jobs above.
     if: github.event_name != 'pull_request'
     steps:
       - name: Harden the runner (Audit all outbound calls)
@@ -124,19 +123,12 @@ jobs:
           bazelisk-cache: true
           disk-cache: ci-integration
           repository-cache: true
-      - name: bazel build //... (excluding :native_app, blocked upstream)
-        working-directory: e2e/integration
-        # //:native_app is gated on an upstream Elide CLI fix (NPE in
-        # JavaCommand.selectDelegateJvm under Bazel sandbox env).
-        # See README "Roadmap" entry "elide native-image under Bazel".
-        run: bazel build -- //... -//:native_app
-
+      - name: KotlinBuilder unit and protocol tests
+        run: bazel test //tests/kotlin_builder:all --java_runtime_version=remotejdk_21 --tool_java_runtime_version=remotejdk_21
+      - name: JVM tools, metadata, and pruning
+        run: ./tools/verify_integrations.sh jvm
       - name: Python runtime adapter
-        working-directory: e2e/python_overlay
-        run: |
-          bazel test //:runtime_test //:versioned_test //:other_version_test
-          bazel build //:app
-          python3 verify_no_host_python.py
+        run: ./tools/verify_integrations.sh python
 
   kotlin-builder:
     name: kotlin-builder e2e (rules_kotlin toolchain swap)
@@ -157,12 +149,8 @@ jobs:
           bazelisk-cache: true
           disk-cache: ci-kotlin-builder
           repository-cache: true
-      - name: bazel build //:greeter //:annotated
-        working-directory: e2e/kotlin_builder
-        # //:greeter — plain kt_jvm_library, takes the Elide fast path.
-        # //:annotated — kt_jvm_library with annotation processors, exercises
-        # the transparent KAPT fallback to the stock rules_kotlin KotlinBuilder.
-        run: bazel build //:greeter //:annotated
+      - name: Native ABI, KAPT, KSP2, and standalone processors
+        run: ./tools/verify_integrations.sh kotlin
 
   rbe:
     name: rbe (BuildBuddy)

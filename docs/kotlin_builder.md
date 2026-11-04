@@ -72,7 +72,7 @@ wins over `rules_kotlin`'s default toolchain registration automatically.
 module(name = "my_module")
 
 bazel_dep(name = "rules_elide", version = "0.0.0")
-bazel_dep(name = "rules_kotlin", version = "2.3.20")
+bazel_dep(name = "rules_kotlin", version = "2.4.0")
 
 elide = use_extension("@rules_elide//elide:extensions.bzl", "elide")
 elide.install(channel = "nightly")
@@ -160,7 +160,7 @@ a `bin/java`, or a JDK whose `java` binary lives at an unexpected relative path)
 may require revisiting the launcher logic in
 `elide/kotlin/toolchain.bzl`.
 
-**ToolchainInfo field list is pinned to rules_kotlin 2.3.20.**
+**ToolchainInfo field list is pinned to rules_kotlin 2.4.0.**
 The `_elide_kt_toolchain` rule in `elide/kotlin/toolchain.bzl` enumerates the
 fields of `rules_kotlin`'s internal `ToolchainInfo` in order to copy them and
 override `kotlinbuilder`. This list must be re-validated whenever `rules_kotlin`

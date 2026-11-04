@@ -30,6 +30,17 @@ _tools_test = analysistest.make(
     },
 )
 
+def _invalid_test_impl(ctx):
+    env = analysistest.begin(ctx)
+    asserts.expect_failure(env, ctx.attr.message)
+    return analysistest.end(env)
+
+_invalid_test = analysistest.make(
+    _invalid_test_impl,
+    expect_failure = True,
+    attrs = {"message": attr.string()},
+)
+
 def jvm_tools_test_suite(name):
     """Defines analysis-only fixtures and a suite.
 
@@ -57,4 +68,18 @@ def jvm_tools_test_suite(name):
     ]
     for case, mnemonic, flags, inputs, outputs in cases:
         _tools_test(name = case + "_tool_test", target_under_test = ":_" + case, mnemonic = mnemonic, flags = flags, input_names = inputs, output_suffixes = outputs)
-    native.test_suite(name = name, tests = [":" + case[0] + "_tool_test" for case in cases])
+    elide_jar(name = "_bad_strip", srcs = [":_tool_Doc.java"], strip_prefix = "wrong", **common)
+    elide_jdeps(name = "_empty_jdeps", **common)
+    elide_javap(name = "_empty_javap", **common)
+    elide_kapt(name = "_missing_processor", srcs = [":_tool_Doc.java"], **common)
+    elide_ksp(name = "_named_ksp", srcs = [":_tool_Doc.java"], processor_jars = [":_tool_processor.jar"], processors = ["example.P"], **common)
+    invalid_cases = [
+        ("bad_strip", "is not under strip_prefix"),
+        ("empty_jdeps", "requires at least one jar or class file"),
+        ("empty_javap", "requires at least one class name"),
+        ("missing_processor", "Provide processor_deps or processor_jars"),
+        ("named_ksp", "processors is only valid for KAPT"),
+    ]
+    for case, message in invalid_cases:
+        _invalid_test(name = case + "_test", target_under_test = ":_" + case, message = message)
+    native.test_suite(name = name, tests = [":" + case[0] + "_tool_test" for case in cases] + [":" + case[0] + "_test" for case in invalid_cases])

@@ -3,11 +3,12 @@ load("@bazel_skylib//rules:write_file.bzl", "write_file")
 load("//elide:toolchain.bzl", "elide_toolchain")
 load(":common_test.bzl", "common_test_suite")
 load(":compile_metadata_test.bzl", "compile_metadata_test_suite")
-load(":jvm_tools_test.bzl", "jvm_tools_test_suite")
 load(":format_test.bzl", "format_test_suite")
 load(":java_rule_test.bzl", "java_rule_test_suite")
+load(":jvm_tools_test.bzl", "jvm_tools_test_suite")
 load(":kotlin_rule_test.bzl", "kotlin_rule_test_suite")
 load(":native_image_test.bzl", "native_image_test_suite")
+load(":python_toolchain_test.bzl", "python_toolchain_test_suite")
 load(":toolchain_test.bzl", "elide_toolchain_test_suite")
 load(":versions_test.bzl", "versions_test_suite")
 
@@ -58,3 +59,5 @@ toolchain(
 jvm_tools_test_suite(name = "jvm_tools_tests")
 
 compile_metadata_test_suite(name = "compile_metadata_tests")
+
+python_toolchain_test_suite(name = "python_toolchain_tests")

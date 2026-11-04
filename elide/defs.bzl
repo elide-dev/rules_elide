@@ -17,6 +17,14 @@ load(
     _elide_java_test = "elide_java_test",
 )
 load(
+    "//elide/rules:jvm_tools.bzl",
+    _elide_jar = "elide_jar",
+    _elide_javadoc = "elide_javadoc",
+    _elide_javap = "elide_javap",
+    _elide_jdeps = "elide_jdeps",
+    _elide_jextract = "elide_jextract",
+)
+load(
     "//elide/rules:kotlin.bzl",
     _elide_kotlin_binary = "elide_kotlin_binary",
     _elide_kotlin_library = "elide_kotlin_library",
@@ -25,14 +33,6 @@ load(
 load(
     "//elide/rules:native_image.bzl",
     _elide_native_image = "elide_native_image",
-)
-load(
-    "//elide/rules:jvm_tools.bzl",
-    _elide_jar = "elide_jar",
-    _elide_javadoc = "elide_javadoc",
-    _elide_javap = "elide_javap",
-    _elide_jdeps = "elide_jdeps",
-    _elide_jextract = "elide_jextract",
 )
 load(
     "//elide/rules:processing.bzl",

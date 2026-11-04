@@ -67,3 +67,11 @@ py_test(
     srcs = ["other_version_test.py"],
     python_version = "3.11",
 )
+
+# Invoked explicitly by the runner to check Bazel receives Python failures.
+py_test(
+    name = "intentional_failure",
+    size = "small",
+    srcs = ["intentional_failure.py"],
+    tags = ["manual"],
+)

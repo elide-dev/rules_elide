@@ -35,3 +35,8 @@ To exercise the legacy bootstrap (which requires host Python to start):
 ```sh
 bazel test //:runtime_test --@rules_python//python/config_settings:bootstrap_impl=system_python
 ```
+
+From the repository root, `./tools/verify_integrations.sh python` runs both
+bootstrap modes and the no-host-Python check. It also invokes the manual
+`:intentional_failure` target and checks that Bazel fails with the expected
+Python assertion, rather than a launcher/setup error.

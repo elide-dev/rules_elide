@@ -18,6 +18,12 @@ class RouterTest {
         assertEquals(Route.FAST, Router.route(CompileRequest(
             compilerPluginClasspath = listOf("external/.../kotlin-jvm-abi-gen.jar"))).route)
     }
+    @Test fun unsupportedJavacOptionsRetainFallback() {
+        assertEquals(Route.FAST, Router.route(CompileRequest(kaptSources = "src.jar",
+            processors = listOf("P"), javacOpts = listOf("-Akey=value")), true).route)
+        assertEquals(Route.FALLBACK, Router.route(CompileRequest(kaptSources = "src.jar",
+            processors = listOf("P"), javacOpts = listOf("--release", "21")), true).route)
+    }
     @Test fun nativeKaptAndKspUseElide() {
         assertEquals(Route.FAST, Router.route(CompileRequest(kaptSources = "src.jar", processors = listOf("P")), true).route)
         assertEquals(Route.FAST, Router.route(CompileRequest(kspSources = "src.jar"), true).route)
