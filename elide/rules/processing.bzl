@@ -50,14 +50,14 @@ def _processing_impl(ctx):
     ]
 
 _ATTRS = {
-    "srcs": attr.label_list(allow_files = [".kt", ".java"], mandatory = True),
+    "data": attr.label_list(allow_files = True, doc = "Additional files read by processors."),
     "deps": attr.label_list(providers = [JavaInfo], doc = "Source compile classpath."),
+    "kotlinc_opts": attr.string_list(),
     "processor_deps": attr.label_list(providers = [JavaInfo], cfg = "exec", doc = "Processor runtime dependencies."),
     "processor_jars": attr.label_list(allow_files = [".jar"], cfg = "exec", doc = "Additional processor jars."),
-    "processors": attr.string_list(doc = "KAPT processor class names; empty means service discovery."),
     "processor_options": attr.string_dict(doc = "Processor options passed as key=value."),
-    "kotlinc_opts": attr.string_list(),
-    "data": attr.label_list(allow_files = True, doc = "Additional files read by processors."),
+    "processors": attr.string_list(doc = "KAPT processor class names; empty means service discovery."),
+    "srcs": attr.label_list(allow_files = [".kt", ".java"], mandatory = True),
 }
 
 elide_kapt = rule(

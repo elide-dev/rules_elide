@@ -23,9 +23,9 @@ def _tools_test_impl(ctx):
 _tools_test = analysistest.make(
     _tools_test_impl,
     attrs = {
-        "mnemonic": attr.string(),
         "flags": attr.string_list(),
         "input_names": attr.string_list(),
+        "mnemonic": attr.string(),
         "output_suffixes": attr.string_list(),
     },
 )

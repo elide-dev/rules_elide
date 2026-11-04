@@ -166,13 +166,13 @@ _elide_kt_builder_launcher = rule(
             cfg = "exec",
             allow_files = True,
         ),
+        "native_tools": attr.bool(default = True, doc = "Use Elide 1.6.2+ native ABI, jdeps, and processing APIs."),
         "quiet_plugin_rewrite": attr.bool(
             default = False,
             doc = "Inject the shim's `--quiet_plugin_rewrite` flag to silence the " +
                   "warning emitted when a rules_kotlin `-Xplugin` jar duplicating " +
                   "an Elide builtin is rewritten to `--plugins=`.",
         ),
-        "native_tools": attr.bool(default = True, doc = "Use Elide 1.6.2+ native ABI, jdeps, and processing APIs."),
         "resident_worker": attr.bool(
             default = False,
             doc = "Inject the shim's `--resident_worker` flag so kotlinc compiles " +
@@ -266,13 +266,13 @@ _elide_kt_toolchain = rule(
             mandatory = True,
             providers = [platform_common.ToolchainInfo],
         ),
-        "ksp2": attr.label(executable = True, cfg = "exec"),
         "kotlinbuilder": attr.label(
             doc = "The Elide builder launcher to use as kotlinbuilder.",
             mandatory = True,
             executable = True,
             cfg = "exec",
         ),
+        "ksp2": attr.label(executable = True, cfg = "exec"),
     },
     provides = [platform_common.ToolchainInfo],
 )

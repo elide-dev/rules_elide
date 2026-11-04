@@ -11,7 +11,7 @@ ROOT = Path(__file__).resolve().parents[1]
 # Exact exceptions, not a wildcard for all bazel-contrib actions or versions.
 BCR_TAG_EXCEPTIONS = {
     "bazel-contrib/.github/.github/workflows/release_ruleset.yaml@v7.7.0",
-    "bazel-contrib/publish-to-bcr/.github/workflows/publish.yaml@v1.5.1",
+    "bazel-contrib/publish-to-bcr/.github/workflows/publish.yaml@v1.6.0",
 }
 
 

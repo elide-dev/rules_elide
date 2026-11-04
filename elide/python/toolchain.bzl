@@ -21,6 +21,8 @@ def _launcher_impl(ctx):
     ctx.actions.expand_template(
         template = ctx.file._template,
         output = launcher,
+        # Template delimiters, not canonical repository labels.
+        # buildifier: disable=canonical-repository
         substitutions = {"@@ELIDE@@": _key(ctx, ctx.file.elide), "@@RUNFILES@@": _key(ctx, helper)},
         is_executable = True,
     )
@@ -35,8 +37,8 @@ _launcher = rule(
     attrs = {
         "elide": attr.label(allow_single_file = True, mandatory = True),
         "runtime_files": attr.label(allow_files = True, mandatory = True),
-        "_template": attr.label(default = Label(":launcher.sh.tpl"), allow_single_file = True),
         "_runfiles": attr.label(default = Label("@bazel_tools//tools/bash/runfiles")),
+        "_template": attr.label(default = Label(":launcher.sh.tpl"), allow_single_file = True),
     },
 )
 

@@ -108,6 +108,12 @@ ELIDE_VERSIONS = {
         ("macos", "arm64"): "sha256-IPUIc9kYzc1mxpva0PX88yGA7UsWS+dneXTfhJxUxRA=",
         ("windows", "amd64"): "sha256-mKvMV80P8OFl0Qw1fTjH33qRw239sIPqJ0m18VAhlt8=",
     },
+    "1.4.0+20260707": {
+        ("linux", "amd64"): "sha256-kG1Dko6oW7QpIk5I1MmCYVQFTg/qcmlyFT1xqpAbv58=",
+        ("linux", "arm64"): "sha256-U/gK+QL65sIAkCeiG/JaEylYHNJli0+mNJ8EXLhA8xo=",
+        ("macos", "arm64"): "sha256-wJhyP+Lijt0VLyTfCYKMDOkhuUVxbDUkn3tXhn33+Yc=",
+        ("windows", "amd64"): "sha256-JQiNk43a5XhS1seUHpZP7bD4XkMExwMOCQb34+sMCm0=",
+    },
     "1.6.0": {
         ("linux", "amd64"): "sha256-vus2eTze9Kis/OrmBPolmfF2O9EGgEwO+fu35fe/2X4=",
         ("linux", "arm64"): "sha256-iAwLDYkqhlIeLVb/sXxLvN+dbr2eyd+fLfvNOpZCVTE=",

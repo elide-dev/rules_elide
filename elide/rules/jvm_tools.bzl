@@ -62,14 +62,14 @@ def _javadoc_impl(ctx):
 elide_javadoc = rule(
     implementation = _javadoc_impl,
     attrs = {
-        "srcs": attr.label_list(allow_files = [".java"], mandatory = True, doc = "Java source files to document."),
-        "deps": attr.label_list(providers = [JavaInfo], doc = "Compile classpath for documented sources."),
         "data": attr.label_list(allow_files = True, doc = "Declared doclet resources and offline link metadata."),
+        "deps": attr.label_list(providers = [JavaInfo], doc = "Compile classpath for documented sources."),
         "doclet": attr.string(doc = "Optional custom doclet class."),
         "doclet_deps": attr.label_list(providers = [JavaInfo], cfg = "exec", doc = "Custom doclet runtime dependencies."),
-        "theme": attr.string(default = "default", values = ["default", "elide"]),
-        "opts": attr.string_list(doc = "Additional javadoc options; declare referenced files in data."),
         "jar": attr.bool(default = True, doc = "Also produce a reproducible -javadoc.jar."),
+        "opts": attr.string_list(doc = "Additional javadoc options; declare referenced files in data."),
+        "srcs": attr.label_list(allow_files = [".java"], mandatory = True, doc = "Java source files to document."),
+        "theme": attr.string(default = "default", values = ["default", "elide"]),
     },
     toolchains = [TOOLCHAIN_TYPE],
 )
@@ -110,10 +110,10 @@ def _file_path(file):
 elide_jar = rule(
     implementation = _jar_impl,
     attrs = {
+        "main_class": attr.string(),
+        "manifest": attr.label(allow_single_file = True),
         "srcs": attr.label_list(allow_files = True, mandatory = True, doc = "Files or directory artifacts to archive; input jars are stored, not merged."),
         "strip_prefix": attr.string(doc = "Prefix removed from workspace-relative file paths. Directory contents are stored at the archive root."),
-        "manifest": attr.label(allow_single_file = True),
-        "main_class": attr.string(),
     },
     toolchains = [TOOLCHAIN_TYPE],
 )
@@ -143,11 +143,11 @@ def _report_impl(ctx):
     return [DefaultInfo(files = depset([output]))]
 
 _REPORT_ATTRS = {
-    "deps": attr.label_list(providers = [JavaInfo], doc = "Runtime classpath used to resolve classes."),
-    "srcs": attr.label_list(allow_files = [".jar", ".class"], doc = "Jars or class files to analyze with jdeps."),
     "classes": attr.string_list(doc = "Fully qualified classes to inspect with javap."),
-    "opts": attr.string_list(),
     "data": attr.label_list(allow_files = True),
+    "deps": attr.label_list(providers = [JavaInfo], doc = "Runtime classpath used to resolve classes."),
+    "opts": attr.string_list(),
+    "srcs": attr.label_list(allow_files = [".jar", ".class"], doc = "Jars or class files to analyze with jdeps."),
 }
 
 elide_jdeps = rule(
@@ -184,14 +184,14 @@ def _jextract_impl(ctx):
 elide_jextract = rule(
     implementation = _jextract_impl,
     attrs = {
-        "srcs": attr.label_list(allow_files = [".h"], mandatory = True, doc = "Entry-point C headers."),
-        "hdrs": attr.label_list(allow_files = True, doc = "Transitive included headers; their directories are added to the include path."),
-        "includes": attr.string_list(doc = "Additional execroot-relative include directories; declare all files in hdrs/data."),
-        "defines": attr.string_list(doc = "Preprocessor definitions, NAME or NAME=VALUE."),
-        "package": attr.string(doc = "Generated Java package."),
-        "header_class": attr.string(doc = "Generated header class name."),
-        "opts": attr.string_list(doc = "Additional jextract options, such as symbol filters and library names."),
         "data": attr.label_list(allow_files = True),
+        "defines": attr.string_list(doc = "Preprocessor definitions, NAME or NAME=VALUE."),
+        "hdrs": attr.label_list(allow_files = True, doc = "Transitive included headers; their directories are added to the include path."),
+        "header_class": attr.string(doc = "Generated header class name."),
+        "includes": attr.string_list(doc = "Additional execroot-relative include directories; declare all files in hdrs/data."),
+        "opts": attr.string_list(doc = "Additional jextract options, such as symbol filters and library names."),
+        "package": attr.string(doc = "Generated Java package."),
+        "srcs": attr.label_list(allow_files = [".h"], mandatory = True, doc = "Entry-point C headers."),
     },
     toolchains = [TOOLCHAIN_TYPE],
 )

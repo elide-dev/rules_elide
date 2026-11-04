@@ -908,29 +908,29 @@ COMMON_LIBRARY_ATTRS = {
               "dedicated `elide kotlinc --abi-only` header action (body-stable " +
               "ABI) instead of run_ijar. See //config/kotlinc:abi_compile_avoidance.",
     ),
-    "_java_abi_compile_avoidance": attr.label(
-        default = Label("//config/javac:abi_compile_avoidance"),
-        providers = [BuildSettingInfo],
-    ),
-    "_emit_jdeps": attr.label(
-        default = Label("//elide:emit_jdeps"),
-        providers = [BuildSettingInfo],
-    ),
-    "_prune_unused_inputs": attr.label(
-        default = Label("//elide:prune_unused_inputs"),
-        providers = [BuildSettingInfo],
-    ),
     "_classpath_cache": attr.label(
         default = Label("//config/javac:classpath_cache"),
         providers = [BuildSettingInfo],
         doc = "Build setting opting `elide javac` worker compiles into the " +
               "digest-keyed classpath cache (`--classpath-cache`).",
     ),
+    "_emit_jdeps": attr.label(
+        default = Label("//elide:emit_jdeps"),
+        providers = [BuildSettingInfo],
+    ),
     "_incremental": attr.label(
         default = Label("//config/kotlinc:incremental"),
         providers = [BuildSettingInfo],
         doc = "Build setting opting kotlinc compiles into incremental " +
               "compilation (compile-to-dir + cache-dir + pack-to-jar).",
+    ),
+    "_java_abi_compile_avoidance": attr.label(
+        default = Label("//config/javac:abi_compile_avoidance"),
+        providers = [BuildSettingInfo],
+    ),
+    "_prune_unused_inputs": attr.label(
+        default = Label("//elide:prune_unused_inputs"),
+        providers = [BuildSettingInfo],
     ),
     "_use_workers": attr.label(
         default = Label("//elide:use_workers"),

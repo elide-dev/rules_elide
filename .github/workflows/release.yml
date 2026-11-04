@@ -24,7 +24,7 @@ jobs:
       tag_name: ${{ steps.rp.outputs.tag_name }}
     steps:
       - name: Harden the runner (Audit all outbound calls)
-        uses: step-security/harden-runner@ccd8616d44fd3846e67624a50d5aad6d37bf2d25  # v2.22.1
+        uses: step-security/harden-runner@46b06cea07f9e64621fdf066ba77ac6915163d43  # v2.22.3
         with:
           egress-policy: audit
       - uses: googleapis/release-please-action@45996ed1f6d02564a971a2fa1b5860e934307cf7  # v5.0.0
@@ -56,7 +56,7 @@ jobs:
       TAG: ${{ needs.release-please.outputs.tag_name }}
     steps:
       - name: Harden the runner (Audit all outbound calls)
-        uses: step-security/harden-runner@ccd8616d44fd3846e67624a50d5aad6d37bf2d25  # v2.22.1
+        uses: step-security/harden-runner@46b06cea07f9e64621fdf066ba77ac6915163d43  # v2.22.3
         with:
           egress-policy: audit
       - name: Detect elidebot signing key
@@ -76,7 +76,7 @@ jobs:
           persist-credentials: false
       - name: Import elidebot GPG key
         if: steps.gpg.outputs.signed == 'true'
-        uses: step-security/ghaction-import-gpg@c0b4a334b9b72bfaaebec86ef022a78a5b17f828  # v7.0.0
+        uses: step-security/ghaction-import-gpg@c0b4a334b9b72bfaaebec86ef022a78a5b17f828  # v7.1.0
         with:
           # The elidebot key has no passphrase, so only the private-key secret is
           # needed (no `passphrase:` input). Sets git user.name/email from the key
@@ -145,7 +145,7 @@ jobs:
     # attestations record the builder ref from this `uses:`, and BCR's
     # slsa-verifier rejects a bare-SHA ref ("unexpected ref type"). A tag ref
     # (refs/tags/v1.4.1) verifies.
-    uses: bazel-contrib/publish-to-bcr/.github/workflows/publish.yaml@v1.5.1 # zizmor: ignore[unpinned-uses] BCR requires tag-ref provenance; see docs/security-model.md.
+    uses: bazel-contrib/publish-to-bcr/.github/workflows/publish.yaml@v1.6.0 # zizmor: ignore[unpinned-uses] BCR requires tag-ref provenance; see docs/security-model.md.
     with:
       tag_name: ${{ needs.release-please.outputs.tag_name }}
       registry_fork: elide-dev/bazel-central-registry
@@ -186,7 +186,7 @@ jobs:
       GH_TOKEN: ${{ github.token }}
     steps:
       - name: Harden the runner (Audit all outbound calls)
-        uses: step-security/harden-runner@ccd8616d44fd3846e67624a50d5aad6d37bf2d25  # v2.22.1
+        uses: step-security/harden-runner@46b06cea07f9e64621fdf066ba77ac6915163d43  # v2.22.3
         with:
           egress-policy: audit
       - name: Publish the draft release
@@ -212,7 +212,7 @@ jobs:
       TAG: ${{ needs.release-please.outputs.tag_name }}
     steps:
       - name: Harden the runner (Audit all outbound calls)
-        uses: step-security/harden-runner@ccd8616d44fd3846e67624a50d5aad6d37bf2d25  # v2.22.1
+        uses: step-security/harden-runner@46b06cea07f9e64621fdf066ba77ac6915163d43  # v2.22.3
         with:
           egress-policy: audit
       - name: Open the BCR pull request as sgammon
