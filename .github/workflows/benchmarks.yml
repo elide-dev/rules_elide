@@ -90,6 +90,15 @@ jobs:
           echo "KOTLINC=$kc" >> "$GITHUB_ENV"
           "$kc" -version || true
 
+      - name: Reclaim generated Bazel state from earlier benchmark runs
+        # The dedicated runner persists between jobs. Expunge only the Bazel
+        # state selected by these two benchmark workspaces, never the home tree.
+        run: |
+          for project in e2e/vanilla e2e/integration; do
+            (cd "$project" && bazel clean --expunge)
+          done
+          df -h .
+
       - name: Download pinned Elide release (linux-amd64)
         # Benchmarks invoke `elide` directly (no Bazel), so fetch the same
         # release the repo pins in versions.bzl. Pinning the version keeps the

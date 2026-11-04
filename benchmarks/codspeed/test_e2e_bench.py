@@ -93,12 +93,13 @@ def project(request, bazel):
     wd = PROJECTS[request.param]
     if not (wd / "MODULE.bazel").is_file():
         pytest.skip(f"workspace not found: {wd}")
-    _run(bazel, wd, *_BUILD)  # warm up (untimed): fetch toolchains/deps, prime analysis
-    yield bazel, wd
-    _run(bazel, wd, "clean")  # leave no build outputs behind
-    # Stop the bazel server so no idle daemon (default 3h) or Elide worker lingers
-    # on the dedicated runner after the run.
-    subprocess.run([bazel, "shutdown"], cwd=str(wd), capture_output=True)
+    try:
+        _run(bazel, wd, *_BUILD)  # untimed fetch/analysis; cleanup also covers setup failure
+        yield bazel, wd
+    finally:
+        # Persistent runners otherwise retain a full distribution per workspace
+        # and eventually fail extraction with ENOSPC. This also stops the server.
+        _run(bazel, wd, "clean", "--expunge")
 
 
 def test_cold(benchmark, project):
