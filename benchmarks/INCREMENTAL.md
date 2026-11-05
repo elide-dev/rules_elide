@@ -180,3 +180,18 @@ The workflow's `workload=commons-lang` option checks out Apache Commons Lang at
 `67cbf817b6af58fc168d26774186e889bb9efe50`, selects Java, and runs all six Java modes
 and seven supported edit classes. `language` and `sources` affect only the
 `generated` workload. The production checkout is isolated from the rules checkout.
+
+## Java target alignment
+
+Java comparisons explicitly target release 21: stock uses Bazel's
+`--java_language_version=21`, while native Elide targets receive
+`javac_opts=["--release", "21"]`. Commons Lang runtime verification also inspects
+every emitted class and requires classfile major version 65. This catches target
+drift even when the verification JVM supports newer bytecode. Reports record
+`java_release=21`.
+
+Earlier Java reports without `java_release` used Elide's compiler default (Java
+25 with Elide 1.6.2) against stock Java 21. Their rebuild counts remain useful,
+but timings are not a comparison of matched compilation targets and must be
+rerun before attributing differences to the rules or choosing defaults. Kotlin's
+stock and native compiler defaults both target JVM 1.8 in the recorded runs.

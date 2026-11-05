@@ -1,5 +1,10 @@
 # Combined Java ABI emission: 2026-11-05
 
+**Comparison limitation:** native Elide used its Java 25 default while stock
+Java targeted 21. These timings do not compare matched targets. The current
+harness pins both to Java 21; see [target alignment](INCREMENTAL.md#java-target-alignment).
+
+
 [Hosted run](https://github.com/elide-dev/rules_elide/actions/runs/41942510601)
 and [all timing/action samples](data/java-fused-2026-11-05.json).
 Commit `1c4d231`; Elide 1.6.2, Bazel 9.3.1, rules_java 9.9.0.

@@ -3,6 +3,7 @@ import hashlib
 import os
 import shutil
 import subprocess
+import zipfile
 
 SCENARIOS = ("no_op", "comment", "body", "private_member", "internal_module_api",
              "public_module_api", "multi_file_body")
@@ -102,6 +103,12 @@ def verify(work, fanout, mode, java, log):
     for path in paths:
         if not path.is_file():
             raise FileNotFoundError(f"Runtime jar missing: {path}")
+        with zipfile.ZipFile(path) as archive:
+            for name in archive.namelist():
+                if name.endswith(".class"):
+                    major = int.from_bytes(archive.read(name)[6:8], "big")
+                    if major != 65:
+                        raise AssertionError(f"Expected Java 21 bytecode (65), got {major}: {path}!{name}")
     classpath = os.pathsep.join(map(str, paths))
     with log.open("w") as stream:
         subprocess.run([java, "-cp", classpath, "app.App"], check=True, stdout=stream, stderr=subprocess.STDOUT)

@@ -33,3 +33,7 @@ is still needed. Generated graphs isolate invalidation behavior but do not estab
 application-wide performance. Very large targets containing trivial generated
 classes are stress diagnostics only. Their throughput or memory results must not
 drive compiler heap/cache defaults without confirmation on representative code.
+
+Java timing reports predating `java_release=21` used different compiler targets
+(Java 25 for Elide 1.6.2, Java 21 for stock). Treat those timings as provisional;
+matched-target reruns are required. Rebuild propagation evidence is retained.

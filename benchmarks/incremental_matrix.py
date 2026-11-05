@@ -96,7 +96,8 @@ def fixture(work, language, mode, size, fanout):
         directory.mkdir(exist_ok=True)
         build = directory / "BUILD.bazel"
         prefix = f'load("{load}", "{rule}")\npackage(default_visibility=["//visibility:public"])\n'
-        stanza = f'{rule}(name={json.dumps(name)}, srcs={json.dumps([c + "." + extension for c in classes])}, deps={json.dumps(deps)})\n'
+        options = ", javac_opts=[\"--release\", \"21\"]" if language == "java" and mode != "vanilla" else ""
+        stanza = f'{rule}(name={json.dumps(name)}, srcs={json.dumps([c + "." + extension for c in classes])}, deps={json.dumps(deps)}{options})\n'
         build.write_text((build.read_text() if build.exists() else prefix) + stanza)
         for name, expression in classes.items():
             path = directory / f"{name}.{extension}"
@@ -230,6 +231,7 @@ def main():
               "elide_version": re.search(r'^DEFAULT_VERSION = "([^"]+)"', (REPO / "elide/private/versions.bzl").read_text(), re.M).group(1),
               "jvm_rule_versions": dict(re.findall(r'bazel_dep\(name = "(rules_java|rules_kotlin)", version = "([^"]+)"', (REPO / "benchmarks/MODULE.bazel").read_text())),
               "isolated_mode_servers": True,
+              "java_release": 21,
               "parameters": vars(args) | {"output": str(output)}, "results": []}
     if source_metadata:
         report["source_workload"] = source_metadata

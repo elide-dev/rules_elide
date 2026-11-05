@@ -64,3 +64,9 @@ class BaselineTest(unittest.TestCase):
             self.assertIn("@rules_kotlin//kotlin:jvm.bzl", build)
             self.assertNotIn("@rules_elide", build)
             self.assertEqual(len(sources), 8)
+
+    def test_native_java_explicitly_matches_stock_release(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            fixture(root, "java", "elide_fused", 3, 2)
+            self.assertIn('javac_opts=["--release", "21"]', (root / "core/BUILD.bazel").read_text())
