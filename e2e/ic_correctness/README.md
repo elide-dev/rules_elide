@@ -74,3 +74,23 @@ The guard also runs a selective layout with global IC disabled, Core explicitly
 enabled, and small consumers explicitly disabled with combined ABI emission
 and pruning. The same output, failure-recovery, and cache-restoration assertions
 apply to this mixed graph.
+
+## `abi_recreation.py` — complete ABI from incremental compilation
+
+```sh
+python3 e2e/ic_correctness/abi_recreation.py --elide /path/to/elide
+```
+
+**Known failure with Elide 1.6.2:** after editing only `A.kt`, combined
+`--incremental` / `--emit-abi` output omits unchanged `probe/B.class`, although
+that class remains in the retained runtime output directory. The probe preserves
+both classes and IC state, recreates only the ABI jar, and compares it with a
+complete `--abi-only` header. It fails on the missing class and is a manual
+upstream regression probe, not a passing CI gate.
+
+[Runtime issue #2752](https://github.com/elide-dev/runtime/issues/2752) tracks
+this limitation. Native rules retain separate ABI emission for IC targets until
+complete combined output is supported and verified. The separate header worker
+contributes approximately 328 MiB of sampled worker memory in the
+[selective-IC benchmark](../../benchmarks/KOTLIN_WORKER_RESULTS.md); removing it
+may reduce overhead, but that saving has not been measured.
