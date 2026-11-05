@@ -64,6 +64,9 @@ Kotlin modes.
   Spare. Global ABI flags stay at defaults. Compare against uniform separate
   and combined emission to evaluate overlap between Core code generation and
   downstream compilation. It is excluded from the default matrix.
+- `elide_parallel`: explicit selection. Combined emission and pruning with
+  multiplexing disabled and up to four native compiler workers. This tests graph
+  parallelism against the additional startup and memory cost; it is not a default.
 - `elide_selective`: Kotlin only, explicit selection. Core uses per-target IC
   with separate headers; other targets disable IC, use combined headers, and
   permit dependency pruning.
@@ -264,7 +267,7 @@ stock Kotlin without ABI mode is allowed to rebuild consumers.
 Select `workload=kotlin-builder` in the hosted workflow. It selects Kotlin,
 ignores the generated `sources` count, and runs eight modes across eight scenarios
 (64 cases and 192 measured samples at the default three rounds). The optional
-`elide_hybrid` and `elide_selective` modes require explicit selection with CLI
+`elide_hybrid`, `elide_selective`, and `elide_parallel` modes require explicit selection with CLI
 `--modes` or the hosted workflow's optional space-separated `modes` input.
 
 The production fixture exposed missing unchanged classes in the former native

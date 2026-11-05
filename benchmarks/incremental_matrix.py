@@ -23,7 +23,7 @@ SCENARIOS = (
     "public_module_api", "multi_file_body", "multi_module_body",
     "multi_module_api", "unused_dependency_api", "inline_or_constant",
 )
-MODES = ("vanilla", "vanilla_abi", "elide", "elide_abi", "elide_pruned", "elide_incremental", "elide_fused", "elide_fused_pruned", "elide_hybrid", "elide_selective")
+MODES = ("vanilla", "vanilla_abi", "elide", "elide_abi", "elide_pruned", "elide_incremental", "elide_fused", "elide_fused_pruned", "elide_hybrid", "elide_selective", "elide_parallel")
 COMPILERS = {"Javac", "KotlinCompile", "ElideJavac", "ElideKotlinc"}
 
 
@@ -203,7 +203,7 @@ def main():
     parser.add_argument("--rounds", type=positive, default=3)
     parser.add_argument("--warmups", type=positive, default=1)
     parser.add_argument("--languages", nargs="+", choices=["java", "kotlin"], default=["java", "kotlin"])
-    parser.add_argument("--modes", nargs="+", choices=MODES, default=[mode for mode in MODES if mode not in ("elide_hybrid", "elide_selective")])
+    parser.add_argument("--modes", nargs="+", choices=MODES, default=[mode for mode in MODES if mode not in ("elide_hybrid", "elide_selective", "elide_parallel")])
     parser.add_argument("--scenarios", nargs="+", choices=SCENARIOS, default=None)
     parser.add_argument("--output", type=Path, default=REPO / "benchmarks/results/incremental")
     parser.add_argument("--distdir", action="append", default=[])
@@ -300,12 +300,17 @@ def main():
                         flags.append("--javacopt=-XepDisableAllChecks")
                     if mode == "vanilla_abi":
                         flags.append("--define=experimental_use_abi_jars=1")
-                    if mode in ("elide_abi", "elide_pruned", "elide_incremental", "elide_fused", "elide_fused_pruned"):
+                    if mode in ("elide_abi", "elide_pruned", "elide_incremental", "elide_fused", "elide_fused_pruned", "elide_parallel"):
                         flags.append(f"--@rules_elide//config/{'javac' if language == 'java' else 'kotlinc'}:abi_compile_avoidance=true")
-                    if mode in ("elide_pruned", "elide_fused_pruned", "elide_selective"):
+                    if mode in ("elide_pruned", "elide_fused_pruned", "elide_selective", "elide_parallel"):
                         flags += ["--@rules_elide//elide:emit_jdeps=true", "--@rules_elide//elide:prune_unused_inputs=true"]
-                    if mode in ("elide_fused", "elide_fused_pruned"):
+                    if mode in ("elide_fused", "elide_fused_pruned", "elide_parallel"):
                         flags.append(f"--@rules_elide//config/{'javac' if language == 'java' else 'kotlinc'}:abi_from_compile=true")
+                    if mode == "elide_parallel":
+                        # Elide multiplex requests serialize inside one compiler process.
+                        # Separate workers can compile independent graph branches concurrently.
+                        flags += ["--noworker_multiplex", "--worker_max_instances=ElideKotlinc=4",
+                                  "--worker_max_instances=ElideJavac=4"]
                     if mode == "elide_incremental":
                         flags += ["--@rules_elide//config/kotlinc:incremental=true"]
                     targets = ["//core", "//spare", "//facade", "//app", *[f"//clients:client{i}" for i in range(args.fanout)]]
