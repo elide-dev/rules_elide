@@ -270,3 +270,7 @@ worker adapter and publishes complete jars; the standalone Elide
 still documents the upstream behavior. The matrix keeps runtime checks enabled
 for every mode, including IC. Clean IC builds also include compiling the adapter;
 its JVM and resident compiler contribute to worker memory and startup costs.
+
+The [hosted production Kotlin comparison](KOTLIN_BUILDER_RESULTS.md) preserves all
+64 cases and 192 measured samples, including incremental adapter clean/API and
+memory regressions.

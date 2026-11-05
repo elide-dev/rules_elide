@@ -326,6 +326,10 @@ Performance depends on the workload: in the matched-Java-21
 had the lowest median in every incremental scenario in the initial run. A subsequent
 [clean-and-incremental run](benchmarks/COMMONS_LANG_CLEAN_RESULTS.md) favored Elide
 for clean rebuilds while stock retained its implementation-edit advantage.
+The [production KotlinBuilder comparison](benchmarks/KOTLIN_BUILDER_RESULTS.md)
+favored combined compilation for clean builds and native incremental compilation
+for implementation edits. Public API edits still favored stock defaults, and
+enabling incremental compilation everywhere increased clean-build and memory costs.
 Microbenchmarks do not establish an application-wide speedup; compare your own
 clean and incremental builds.
 
