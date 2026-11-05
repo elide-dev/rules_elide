@@ -2,7 +2,6 @@
 """Measure edit propagation through a generated core -> facade -> clients -> app graph."""
 import argparse
 import gzip
-import hashlib
 from collections import Counter
 import json
 import os
@@ -165,7 +164,7 @@ def render(report):
              "Warm-ups are discarded. Counts include full source compiler actions only; ABI/header actions are reported separately.", "",
              "| Language | Mode | Edit | Mean (s) | Median (s) | Stddev (s) | Full compile targets per sample |",
              "| --- | --- | --- | ---: | ---: | ---: | --- |"]
-    lines[4:4] = [f"Elide: `{report['elide_version']}`; binary SHA-256: `{report.get('elide_binary_sha256', 'downloaded toolchain')}`.",
+    lines[4:4] = [f"Published Elide toolchain: `{report['elide_version']}` (repository integrity pins).",
                   f"Fresh Bazel server per timed sample: `{report['parameters'].get('cold_server', False)}`; downloads and filesystem caches warm.", ""]
     if "source_workload" in report:
         workload = report["source_workload"]
@@ -210,7 +209,6 @@ def main():
     parser.add_argument("--scenarios", nargs="+", choices=SCENARIOS, default=None)
     parser.add_argument("--output", type=Path, default=REPO / "benchmarks/results/incremental")
     parser.add_argument("--distdir", action="append", default=[])
-    parser.add_argument("--elide-local-path", help="Existing distribution root (snapshot it before benchmarking)")
     parser.add_argument("--cold-server", action="store_true", help="Shut down Bazel before each timed build; preserves disk outputs and downloads")
     args = parser.parse_args()
     production = None
@@ -264,12 +262,6 @@ def main():
         "edits": "disk outputs retained; compiler state lost" if args.cold_server else "disk outputs and compiler workers retained",
         "full_rebuild": "comment appended to every Java/Kotlin source; no native IC; workers retained unless cold-server",
     }
-    if args.elide_local_path:
-        distribution = Path(args.elide_local_path).resolve()
-        binary = distribution / "bin/elide"
-        report["elide_version"] = subprocess.check_output([str(binary), "--version"], text=True).strip()
-        report["elide_binary_sha256"] = hashlib.sha256(binary.read_bytes()).hexdigest()
-        args.elide_local_path = str(distribution)
     if source_metadata:
         report["source_workload"] = source_metadata
         if args.commons_lang:
@@ -281,8 +273,6 @@ def main():
         work = Path(directory)
         command = [bazel, "--output_base=" + str(work / "cache")]
         module = (REPO / "benchmarks/MODULE.bazel").read_text().replace('path = ".."', 'path = ' + json.dumps(str(REPO)))
-        if args.elide_local_path:
-            module = re.sub(r"elide\.install\([^)]*\)", lambda _: "elide.use(local_path = " + json.dumps(args.elide_local_path) + ")", module)
         if args.kotlin_builder:
             module += '\nregister_toolchains("//:stock_kotlin")\n'
             root_module = (REPO / "MODULE.bazel").read_text()

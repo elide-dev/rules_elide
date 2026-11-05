@@ -47,12 +47,12 @@ with structured sample data retained in the repository. A subsequent
 [combined ABI comparison](FUSED_ABI_RESULTS.md) covers all 121 cases with the new
 Kotlin modes.
 
-## Local releases and cold/warm runs
+## Published toolchains and cold/warm runs
 
-Use `--elide-local-path /absolute/path/to/distribution` to benchmark a locally
-built release. Snapshot the distribution first, outside `/tmp` (Bazel's sandbox
-can hide symlink targets there). The report records the actual binary version
-and SHA-256 instead of the repository's pinned download version.
+The benchmark uses the published toolchain selected by the repository's version
+and integrity pins. Reports record that version alongside the rules revision
+and workload source hashes. Upgrade the pins after release verification before
+publishing comparisons against a newer runtime.
 
 The harness distinguishes three conditions:
 
@@ -77,7 +77,6 @@ It is excluded from the default scenario list.
 
 ```sh
 python3 benchmarks/incremental_matrix.py \
-  --elide-local-path /path/to/release-snapshot \
   --kotlin-builder --languages kotlin \
   --modes vanilla_abi elide_fused_pruned \
   --scenarios clean full_rebuild body internal_module_api public_module_api \

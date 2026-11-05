@@ -9,7 +9,7 @@ local_path_override(
 bazel_dep(name = "rules_java", version = "9.9.0")
 bazel_dep(name = "rules_kotlin", version = "2.4.21")
 
-# Elide toolchain (nightly via CDN).
+# Published Elide toolchain selected by repository version and integrity pins.
 elide = use_extension("@rules_elide//elide:extensions.bzl", "elide")
 elide.install(channel = "nightly")
 use_repo(elide, "elide_toolchains")

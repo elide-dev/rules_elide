@@ -24,6 +24,27 @@ Run `tools/verify_integrations.sh all` from the repository root for the supporte
 real-runtime fixtures, or choose `jvm`, `kotlin`, or `python`. See
 [CONTRIBUTING.md](../CONTRIBUTING.md) for the faster root test commands.
 
+## Runtime upgrade verification
+
+For a published runtime upgrade, verify the base artifacts and matching overlays
+for every supported platform before updating the version and integrity pins.
+Keep immutable release artifacts unchanged. Use the candidate pins consistently
+in the root workspace, integration fixtures, and benchmarks.
+
+Run the root test suite and `tools/verify_integrations.sh all`, including the
+incremental worker lifecycle, ABI/pruning, KotlinBuilder, processors, JVM tools,
+and Python checks. Run the standalone probes documented in
+[`e2e/ic_correctness`](../e2e/ic_correctness/README.md) against the candidate's
+published executable; their current known failures are not passing CI coverage.
+Retain the separate ABI action for incremental Kotlin until complete combined
+output is verified through the rules' worker, one-shot, and cache lifecycles.
+
+Then repeat the [incremental benchmark matrix](../benchmarks/INCREMENTAL.md)
+with stock baselines, warm edits, fresh-server builds, and full warm rebuilds.
+Verify runtime outputs and action scopes, retain raw samples and regressions,
+and report host contention. A compiler correctness fix alone does not establish
+a performance improvement or justify changing the rules' defaults.
+
 ## Repository security checks
 
 `security.yml` runs on contributions, main pushes, and a weekly schedule. It
