@@ -8,10 +8,10 @@ needed; it is not a claim that every workload is already faster.
 | Dimension | Current evidence | Remaining work |
 | --- | --- | --- |
 | Clean compilation | The 50-source coarse benchmark favored Elide for Java and Kotlin | Larger targets, deeper graphs, and repeated runs on matched hardware |
-| Body/private/multi-file edits | Kotlin ABI avoidance substantially reduced rebuild scope; combined emission often reduced latency further | Larger real projects and graph depths; Java combined-emission comparison |
+| Body/private/multi-file edits | Kotlin ABI avoidance substantially reduced rebuild scope; combined emission often reduced latency further | Stock Kotlin with its optional ABI mode, larger real projects and graph depths; [Java combined-emission comparison](JAVA_FUSED_RESULTS.md) |
 | Internal/public API edits | Pruning reduced propagation; several Kotlin API-edit cases still lost to vanilla | Reduce compiler/worker overhead and test per-target early versus combined headers |
 | No-op builds | Small differences sit near the measurement floor | Measure Bazel analysis overhead separately from compiler work |
-| Memory and worker startup | Combined emission removes a separate compiler action and worker pool | Measure peak RSS, worker counts, and cold/warm startup; no quantitative win established |
+| Memory and worker startup | Combined emission removes a separate compiler action and worker pool | Optional traces now record sampled worker memory and critical paths; measure true peak RSS and cold/warm startup next |
 | Incremental compiler state | Opt-in Kotlin IC was slower than ABI-only on the small graph | Larger targets, deleted/renamed files, cache lifetime, and packing cost |
 | Remote execution and caching | Existing RBE and cache correctness checks pass | Measure transfer/cache-hit latency; execute combined-emission correctness tests remotely |
 | Correctness | Header digests, rebuild boundaries, runtime output, constants, inline code, and resource edits have checks | Broader language constructs, processors/plugins, mixed sources, and cache restoration |

@@ -54,6 +54,17 @@ the shell mode is also tested with Python removed from PATH.
 See [the coverage map](docs/testing.md) for assertions, CI scope, and known gaps,
 and [sample use cases](docs/examples.md) for runnable consumer examples.
 
+For performance work, run the benchmark helper tests and retain the raw samples:
+
+```sh
+python3 -m unittest discover -s benchmarks -p '*_test.py'
+python3 benchmarks/incremental_matrix.py --languages java --profiles
+```
+
+See the [performance target ledger](benchmarks/PERFORMANCE_TARGETS.md). Compare
+stock defaults and supported optimized stock modes; report regressions and missing
+measurements. Traces contain bucketed memory counters, not peak process RSS.
+
 ## Updating public APIs and release pins
 
 - Keep `elide/defs.bzl`, the relevant `bzl_library` dependencies, generated

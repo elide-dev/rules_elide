@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Measure edit propagation through a generated core -> facade -> clients -> app graph."""
 import argparse
+import gzip
 from collections import Counter
 import json
 import os
@@ -19,7 +20,7 @@ SCENARIOS = (
     "public_module_api", "multi_file_body", "multi_module_body",
     "multi_module_api", "unused_dependency_api", "inline_or_constant",
 )
-MODES = ("vanilla", "elide", "elide_abi", "elide_pruned", "elide_incremental", "elide_fused", "elide_fused_pruned")
+MODES = ("vanilla", "vanilla_abi", "elide", "elide_abi", "elide_pruned", "elide_incremental", "elide_fused", "elide_fused_pruned")
 COMPILERS = {"Javac", "KotlinCompile", "ElideJavac", "ElideKotlinc"}
 
 
@@ -39,6 +40,36 @@ def json_entries(path):
         text = text.lstrip()[end:]
 
 
+def profile_summary(path):
+    """Summarize Bazel trace counters; missing samples are unknown, not zero."""
+    with gzip.open(path, "rt") as stream:
+        events = json.load(stream)["traceEvents"]
+    critical = [e for e in events if e.get("cat") == "critical path component" and e.get("ph") == "X"]
+    series = {}
+    for event in events:
+        if event.get("ph") != "C":
+            continue
+        for key, value in event.get("args", {}).items():
+            if isinstance(value, (int, float)) and not isinstance(value, bool):
+                series.setdefault((event["name"], key), []).append((event["ts"], value))
+    counters = {}
+    for (name, key), samples in series.items():
+        # Bazel averages resources into one-second buckets, including a final
+        # partial bucket. A later positive bucket proves collection crossed the
+        # preceding bucket boundary. Never call a partial bucket a memory win.
+        positive = [timestamp for timestamp, value in samples if value > 0]
+        complete = [value for timestamp, value in samples if positive and timestamp < max(positive)]
+        if complete:
+            counters.setdefault(name, {})[key] = max(complete)
+    return {
+        "critical_path_action_seconds": sum(e["dur"] for e in critical) / 1_000_000,
+        "critical_path_span_seconds": (max(e["ts"] + e["dur"] for e in critical) - min(e["ts"] for e in critical)) / 1_000_000 if critical else 0,
+        "worker_memory_mib_max_sample": counters.get("Total worker memory usage", {}).get("workers memory"),
+        "bazel_heap_nonheap_mib_max_sample": counters.get("Memory usage (Bazel)", {}).get("memory"),
+        "worker_memory_mib_by_mnemonic_max_sample": counters.get("Per-mnemonic worker memory usage", {}),
+    }
+
+
 def source(language, package, name, expression="1", extra="", special=1):
     if language == "java":
         return (f"package {package}; public final class {name} {{\n"
@@ -53,7 +84,7 @@ def fixture(work, language, mode, size, fanout):
     extension = "java" if language == "java" else "kt"
     rule = "java_library" if language == "java" else "kt_jvm_library"
     load = "@rules_java//java:defs.bzl" if language == "java" else "@rules_kotlin//kotlin:jvm.bzl"
-    if mode != "vanilla":
+    if mode not in ("vanilla", "vanilla_abi"):
         rule = f"elide_{'java' if language == 'java' else 'kotlin'}_library"
         load = "@rules_elide//elide:defs.bzl"
     sources = {}
@@ -129,11 +160,28 @@ def render(report):
         times = [sample["seconds"] for sample in row["samples"]]
         patterns = sorted({", ".join(sample["compile_targets"]) or "none" for sample in row["samples"]})
         lines.append(f"| {row['language']} | {row['mode']} | {row['scenario']} | {statistics.mean(times):.3f} | {statistics.median(times):.3f} | {statistics.stdev(times) if len(times) > 1 else 0:.3f} | {'; '.join(patterns)} |")
+    if any("profile" in sample for row in report["results"] for sample in row["samples"]):
+        lines += ["", "## Trace metrics", "",
+                  "Memory values are maximum complete bucket averages across measured samples, not process peak RSS.",
+                  "Bazel memory is heap plus non-heap; worker memory excludes non-worker actions. Missing counters are n/a.", "",
+                  "| Language | Mode | Edit | Mean critical-path span (s) | Worker memory (MiB) | Bazel heap + non-heap (MiB) |",
+                  "| --- | --- | --- | ---: | ---: | ---: |"]
+        for row in report["results"]:
+            profiles = [s["profile"] for s in row["samples"] if "profile" in s]
+            if not profiles:
+                continue
+            cells = []
+            for key in ("worker_memory_mib_max_sample", "bazel_heap_nonheap_mib_max_sample"):
+                values = [p[key] for p in profiles if p[key] is not None]
+                cells.append(f"{max(values):.1f}" if values else "n/a")
+            critical = statistics.mean(p["critical_path_span_seconds"] for p in profiles)
+            lines.append(f"| {row['language']} | {row['mode']} | {row['scenario']} | {critical:.3f} | {' | '.join(cells)} |")
     return "\n".join(lines) + "\n"
 
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--profiles", action="store_true", help="Retain Bazel traces and summarize critical-path and sampled memory counters")
     parser.add_argument("--sources", type=positive, default=20)
     parser.add_argument("--fanout", type=positive, default=3)
     parser.add_argument("--rounds", type=positive, default=3)
@@ -152,10 +200,12 @@ def main():
     if not bazel:
         parser.error("Bazelisk/Bazel is required")
     report = {"commit": subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=REPO, text=True).strip(),
+              "tracked_changes": bool(subprocess.check_output(["git", "status", "--porcelain", "--untracked-files=no"], cwd=REPO, text=True).strip()),
               "host": platform.platform(), "cpus": os.cpu_count(), "jobs": 4,
               "bazel_version": (REPO / ".bazelversion").read_text().strip(),
               "elide_version": re.search(r'^DEFAULT_VERSION = "([^"]+)"', (REPO / "elide/private/versions.bzl").read_text(), re.M).group(1),
               "jvm_rule_versions": dict(re.findall(r'bazel_dep\(name = "(rules_java|rules_kotlin)", version = "([^"]+)"', (REPO / "benchmarks/MODULE.bazel").read_text())),
+              "isolated_mode_servers": True,
               "parameters": vars(args) | {"output": str(output)}, "results": []}
     with tempfile.TemporaryDirectory(prefix="elide-incremental-") as directory:
         work = Path(directory)
@@ -178,13 +228,18 @@ def main():
         try:
             for language in args.languages:
                 for mode in args.modes:
-                    if language == "java" and mode == "elide_incremental":
+                    if language == "java" and mode in ("vanilla_abi", "elide_incremental"):
                         continue
+                    # Each mode gets a fresh server/worker pool. Baseline builds
+                    # and warm-ups remain untimed, so measured builds stay warm.
+                    run(["shutdown"], output / "shutdown.log")
                     run(["clean"], output / "clean.log")
                     for package in ("core", "spare", "facade", "clients", "app"):
                         shutil.rmtree(work / package, ignore_errors=True)
                     sources = fixture(work, language, mode, args.sources, args.fanout)
                     flags = list(common)
+                    if mode == "vanilla_abi":
+                        flags.append("--define=experimental_use_abi_jars=1")
                     if mode in ("elide_abi", "elide_pruned", "elide_incremental", "elide_fused", "elide_fused_pruned"):
                         flags.append(f"--@rules_elide//config/{'javac' if language == 'java' else 'kotlinc'}:abi_compile_avoidance=true")
                     if mode in ("elide_pruned", "elide_fused_pruned"):
@@ -203,8 +258,10 @@ def main():
                             mutate(sources, scenario, language, index + 1)
                             stem = f"{language}-{mode}-{scenario}-{index}"
                             execution = output / (stem + ".json")
+                            profile = output / (stem + ".profile.json.gz")
+                            profile_flags = ["--profile=" + str(profile), "--generate_json_trace_profile", "--experimental_profile_include_target_label", "--experimental_collect_worker_data_in_profiler"] if args.profiles else []
                             start = time.perf_counter()
-                            run(["build", *targets, *flags, "--execution_log_json_file=" + str(execution)], output / (stem + ".log"))
+                            run(["build", *targets, *flags, "--execution_log_json_file=" + str(execution), *profile_flags], output / (stem + ".log"))
                             elapsed = time.perf_counter() - start
                             actions = list(json_entries(execution))
                             compiled = sorted({entry["targetLabel"] for entry in actions if entry.get("mnemonic") in COMPILERS})
@@ -217,6 +274,8 @@ def main():
                                                        "abi_targets": sorted({e["targetLabel"] for e in actions if e.get("mnemonic") in {"Turbine", "TurbineDirect", "ElideJavacAbi", "ElideKotlincAbi"}}),
                                                        "actions": dict(Counter(entry.get("mnemonic", "unknown") for entry in actions)),
                                                        "execution_log": execution.name})
+                                if args.profiles:
+                                    row["samples"][-1].update(profile=profile_summary(profile), profile_file=profile.name)
                         report["results"].append(row)
                         (output / "results.json").write_text(json.dumps(report, indent=2) + "\n")
                         (output / "results.md").write_text(render(report))

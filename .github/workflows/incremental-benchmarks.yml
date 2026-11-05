@@ -3,6 +3,10 @@ name: Incremental benchmarks
 on:
   workflow_dispatch:
     inputs:
+      profiles:
+        description: Retain traces and sampled memory/critical-path metrics
+        type: boolean
+        default: false
       language:
         description: Language comparison to run
         type: choice
@@ -41,13 +45,17 @@ jobs:
           bazelisk-cache: true
           disk-cache: false
           repository-cache: true
+      - name: Validate benchmark helpers
+        run: python3 -m unittest discover -s benchmarks -p "*_test.py"
       - name: Measure incremental edits and action propagation
         env:
+          PROFILES: ${{ inputs.profiles }}
           LANGUAGE: ${{ inputs.language }}
           SOURCES: ${{ inputs.sources }}
           ROUNDS: ${{ inputs.rounds }}
         run: |
           args=()
+          if [[ "$PROFILES" == true ]]; then args+=(--profiles); fi
           if [[ "$LANGUAGE" != both ]]; then args+=(--languages "$LANGUAGE"); fi
           python3 benchmarks/incremental_matrix.py --sources "$SOURCES" --rounds "$ROUNDS" "${args[@]}"
       - name: Preserve timings and execution logs

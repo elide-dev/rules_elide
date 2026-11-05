@@ -49,6 +49,9 @@ Kotlin modes.
 ## Modes
 
 - `vanilla`: stock `java_library` / `kt_jvm_library` with their default ABI behavior.
+- `vanilla_abi`: stock Kotlin with its opt-in `--define=experimental_use_abi_jars=1`.
+  This compares optimized Elide against a stock ABI-enabled baseline as well as
+  stock defaults. Java already uses headers by default, so this mode is Kotlin-only.
 - `elide`: native Elide rules, default worker mode and flags.
 - `elide_abi`: Elide with language-specific `abi_compile_avoidance=true`.
 - `elide_pruned`: ABI mode plus dependency reporting and unused-input pruning.
@@ -95,5 +98,42 @@ cache-invalidation tests remain necessary.
 
 The workflow's `language` input selects `both`, `java`, or `kotlin`. This allows
 focused comparisons without rerunning the other language. Java now includes
-combined-emission modes; a full default run contains 143 cases and 429 measured
+combined-emission modes; a full default run contains 154 cases and 462 measured
 samples. Earlier recorded reports retain their original mode counts.
+
+## Critical-path and memory traces
+
+Pass `--profiles` to retain a compressed Bazel trace for every measured/warm-up
+build and summarize it in JSON and Markdown. The workflow exposes a matching
+`profiles` boolean. Each mode now starts with a fresh Bazel server and worker
+pool; dependency fetching, baseline builds, and warm-ups remain outside timing.
+This prevents workers from another mode contaminating memory counters. Historical
+reports without `isolated_mode_servers` used shared server lifetimes across modes.
+
+The trace summary records critical-path action time, its elapsed span (including
+gaps), maximum recorded worker memory, worker memory by mnemonic, and Bazel's
+heap-plus-non-heap usage. Memory is in MiB, following Bazel's counter definitions.
+These are sampled, complete bucket averages, **not process peak RSS**. Bazel
+uses one-second buckets; a partial tail can substantially understate memory on
+short builds. A series contributes a bucket only when a later positive bucket
+proves sampling crossed its boundary. Otherwise memory remains unknown. Short builds can
+miss transient peaks; worker counters exclude non-worker compiler processes, and
+Bazel's memory counter excludes native process overhead. Missing counters are
+`null`/`n/a`, never treated as a zero-memory win. The sum of separate per-mnemonic
+maxima need not equal the observed total maximum.
+
+Compare profiled runs against each other. The original unprofiled wall-clock
+reports remain useful, but trace collection and server isolation are methodology
+changes. Raw traces can be inspected in a Chrome trace viewer to locate worker,
+classpath, and scheduling overhead before choosing another optimization.
+
+Run the trace interpretation tests with:
+
+```sh
+python3 -m unittest discover -s benchmarks -p '*_test.py'
+```
+
+The report records whether tracked workspace changes were present. Local experiments
+with uncommitted changes must not be attributed solely to the recorded HEAD commit.
+Earlier comparisons used stock Kotlin defaults; the new `vanilla_abi` mode is needed
+before claiming superiority over stock Kotlin's optional ABI configuration.

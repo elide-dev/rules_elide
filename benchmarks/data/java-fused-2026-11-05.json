@@ -1,0 +1,5331 @@
+{
+  "commit": "1c4d231716568ea490288e2ee179553c887bbb86",
+  "host": "Linux-7.0.0-1017-azure-x86_64-with-glibc2.39",
+  "cpus": 4,
+  "jobs": 4,
+  "bazel_version": "9.3.1",
+  "elide_version": "1.6.2",
+  "jvm_rule_versions": {
+    "rules_java": "9.9.0",
+    "rules_kotlin": "2.4.21"
+  },
+  "parameters": {
+    "sources": 20,
+    "fanout": 3,
+    "rounds": 5,
+    "warmups": 1,
+    "languages": [
+      "java"
+    ],
+    "modes": [
+      "vanilla",
+      "elide",
+      "elide_abi",
+      "elide_pruned",
+      "elide_incremental",
+      "elide_fused",
+      "elide_fused_pruned"
+    ],
+    "scenarios": [
+      "no_op",
+      "comment",
+      "body",
+      "private_member",
+      "internal_module_api",
+      "public_module_api",
+      "multi_file_body",
+      "multi_module_body",
+      "multi_module_api",
+      "unused_dependency_api",
+      "inline_or_constant"
+    ],
+    "output": "/home/runner/work/rules_elide/rules_elide/benchmarks/results/incremental",
+    "distdir": []
+  },
+  "results": [
+    {
+      "language": "java",
+      "mode": "vanilla",
+      "scenario": "no_op",
+      "samples": [
+        {
+          "seconds": 0.30873086500000113,
+          "compile_targets": [],
+          "abi_targets": [],
+          "actions": {},
+          "execution_log": "java-vanilla-no_op-1.json"
+        },
+        {
+          "seconds": 0.27953578900000764,
+          "compile_targets": [],
+          "abi_targets": [],
+          "actions": {},
+          "execution_log": "java-vanilla-no_op-2.json"
+        },
+        {
+          "seconds": 0.26861853799999835,
+          "compile_targets": [],
+          "abi_targets": [],
+          "actions": {},
+          "execution_log": "java-vanilla-no_op-3.json"
+        },
+        {
+          "seconds": 0.2685144240000028,
+          "compile_targets": [],
+          "abi_targets": [],
+          "actions": {},
+          "execution_log": "java-vanilla-no_op-4.json"
+        },
+        {
+          "seconds": 0.33071704699999316,
+          "compile_targets": [],
+          "abi_targets": [],
+          "actions": {},
+          "execution_log": "java-vanilla-no_op-5.json"
+        }
+      ]
+    },
+    {
+      "language": "java",
+      "mode": "vanilla",
+      "scenario": "comment",
+      "samples": [
+        {
+          "seconds": 0.37359268900000586,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "Turbine": 1,
+            "Javac": 1
+          },
+          "execution_log": "java-vanilla-comment-1.json"
+        },
+        {
+          "seconds": 0.3999626229999933,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "Turbine": 1,
+            "Javac": 1
+          },
+          "execution_log": "java-vanilla-comment-2.json"
+        },
+        {
+          "seconds": 0.3482408809999953,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "Turbine": 1,
+            "Javac": 1
+          },
+          "execution_log": "java-vanilla-comment-3.json"
+        },
+        {
+          "seconds": 0.3728028430000023,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "Turbine": 1,
+            "Javac": 1
+          },
+          "execution_log": "java-vanilla-comment-4.json"
+        },
+        {
+          "seconds": 0.29401155600000095,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "Turbine": 1,
+            "Javac": 1
+          },
+          "execution_log": "java-vanilla-comment-5.json"
+        }
+      ]
+    },
+    {
+      "language": "java",
+      "mode": "vanilla",
+      "scenario": "body",
+      "samples": [
+        {
+          "seconds": 0.3109540069999923,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "Turbine": 1,
+            "Javac": 1
+          },
+          "execution_log": "java-vanilla-body-1.json"
+        },
+        {
+          "seconds": 0.333901307000005,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "Turbine": 1,
+            "Javac": 1
+          },
+          "execution_log": "java-vanilla-body-2.json"
+        },
+        {
+          "seconds": 0.298347844999995,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "Turbine": 1,
+            "Javac": 1
+          },
+          "execution_log": "java-vanilla-body-3.json"
+        },
+        {
+          "seconds": 0.28545519400000785,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "Turbine": 1,
+            "Javac": 1
+          },
+          "execution_log": "java-vanilla-body-4.json"
+        },
+        {
+          "seconds": 1.0797861460000036,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "Turbine": 1,
+            "Javac": 1
+          },
+          "execution_log": "java-vanilla-body-5.json"
+        }
+      ]
+    },
+    {
+      "language": "java",
+      "mode": "vanilla",
+      "scenario": "private_member",
+      "samples": [
+        {
+          "seconds": 0.31232271599999706,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "Turbine": 1,
+            "Javac": 1
+          },
+          "execution_log": "java-vanilla-private_member-1.json"
+        },
+        {
+          "seconds": 0.3119445319999983,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "Turbine": 1,
+            "Javac": 1
+          },
+          "execution_log": "java-vanilla-private_member-2.json"
+        },
+        {
+          "seconds": 0.2782944409999999,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "Turbine": 1,
+            "Javac": 1
+          },
+          "execution_log": "java-vanilla-private_member-3.json"
+        },
+        {
+          "seconds": 0.29825747699999283,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "Turbine": 1,
+            "Javac": 1
+          },
+          "execution_log": "java-vanilla-private_member-4.json"
+        },
+        {
+          "seconds": 0.2857251240000096,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "Turbine": 1,
+            "Javac": 1
+          },
+          "execution_log": "java-vanilla-private_member-5.json"
+        }
+      ]
+    },
+    {
+      "language": "java",
+      "mode": "vanilla",
+      "scenario": "internal_module_api",
+      "samples": [
+        {
+          "seconds": 0.677457074000003,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "Javac": 6,
+            "Turbine": 1
+          },
+          "execution_log": "java-vanilla-internal_module_api-1.json"
+        },
+        {
+          "seconds": 0.6039335990000012,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "Javac": 6,
+            "Turbine": 1
+          },
+          "execution_log": "java-vanilla-internal_module_api-2.json"
+        },
+        {
+          "seconds": 0.7024992340000011,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "Javac": 6,
+            "Turbine": 1
+          },
+          "execution_log": "java-vanilla-internal_module_api-3.json"
+        },
+        {
+          "seconds": 0.5818464620000015,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "Javac": 6,
+            "Turbine": 1
+          },
+          "execution_log": "java-vanilla-internal_module_api-4.json"
+        },
+        {
+          "seconds": 0.5704836679999943,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "Javac": 6,
+            "Turbine": 1
+          },
+          "execution_log": "java-vanilla-internal_module_api-5.json"
+        }
+      ]
+    },
+    {
+      "language": "java",
+      "mode": "vanilla",
+      "scenario": "public_module_api",
+      "samples": [
+        {
+          "seconds": 0.6091433439999889,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//facade:facade"
+          ],
+          "abi_targets": [
+            "//facade:facade"
+          ],
+          "actions": {
+            "Javac": 5,
+            "Turbine": 1
+          },
+          "execution_log": "java-vanilla-public_module_api-1.json"
+        },
+        {
+          "seconds": 0.5671199809999905,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//facade:facade"
+          ],
+          "abi_targets": [
+            "//facade:facade"
+          ],
+          "actions": {
+            "Javac": 5,
+            "Turbine": 1
+          },
+          "execution_log": "java-vanilla-public_module_api-2.json"
+        },
+        {
+          "seconds": 0.5665770610000038,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//facade:facade"
+          ],
+          "abi_targets": [
+            "//facade:facade"
+          ],
+          "actions": {
+            "Javac": 5,
+            "Turbine": 1
+          },
+          "execution_log": "java-vanilla-public_module_api-3.json"
+        },
+        {
+          "seconds": 0.5376860049999834,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//facade:facade"
+          ],
+          "abi_targets": [
+            "//facade:facade"
+          ],
+          "actions": {
+            "Javac": 5,
+            "Turbine": 1
+          },
+          "execution_log": "java-vanilla-public_module_api-4.json"
+        },
+        {
+          "seconds": 0.6089616780000142,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//facade:facade"
+          ],
+          "abi_targets": [
+            "//facade:facade"
+          ],
+          "actions": {
+            "Javac": 5,
+            "Turbine": 1
+          },
+          "execution_log": "java-vanilla-public_module_api-5.json"
+        }
+      ]
+    },
+    {
+      "language": "java",
+      "mode": "vanilla",
+      "scenario": "multi_file_body",
+      "samples": [
+        {
+          "seconds": 0.25695328900002323,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "Turbine": 1,
+            "Javac": 1
+          },
+          "execution_log": "java-vanilla-multi_file_body-1.json"
+        },
+        {
+          "seconds": 0.23899913100001413,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "Turbine": 1,
+            "Javac": 1
+          },
+          "execution_log": "java-vanilla-multi_file_body-2.json"
+        },
+        {
+          "seconds": 0.23686232599999357,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "Turbine": 1,
+            "Javac": 1
+          },
+          "execution_log": "java-vanilla-multi_file_body-3.json"
+        },
+        {
+          "seconds": 0.26524084900000844,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "Turbine": 1,
+            "Javac": 1
+          },
+          "execution_log": "java-vanilla-multi_file_body-4.json"
+        },
+        {
+          "seconds": 0.25323297199997796,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "Turbine": 1,
+            "Javac": 1
+          },
+          "execution_log": "java-vanilla-multi_file_body-5.json"
+        }
+      ]
+    },
+    {
+      "language": "java",
+      "mode": "vanilla",
+      "scenario": "multi_module_body",
+      "samples": [
+        {
+          "seconds": 0.3512856179999915,
+          "compile_targets": [
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [
+            "//core:core",
+            "//facade:facade"
+          ],
+          "actions": {
+            "Turbine": 2,
+            "Javac": 2
+          },
+          "execution_log": "java-vanilla-multi_module_body-1.json"
+        },
+        {
+          "seconds": 0.42455946000001177,
+          "compile_targets": [
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [
+            "//core:core",
+            "//facade:facade"
+          ],
+          "actions": {
+            "Turbine": 2,
+            "Javac": 2
+          },
+          "execution_log": "java-vanilla-multi_module_body-2.json"
+        },
+        {
+          "seconds": 0.38741820299998153,
+          "compile_targets": [
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [
+            "//core:core",
+            "//facade:facade"
+          ],
+          "actions": {
+            "Turbine": 2,
+            "Javac": 2
+          },
+          "execution_log": "java-vanilla-multi_module_body-3.json"
+        },
+        {
+          "seconds": 0.4355425629999843,
+          "compile_targets": [
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [
+            "//core:core",
+            "//facade:facade"
+          ],
+          "actions": {
+            "Turbine": 2,
+            "Javac": 2
+          },
+          "execution_log": "java-vanilla-multi_module_body-4.json"
+        },
+        {
+          "seconds": 0.39062242800000035,
+          "compile_targets": [
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [
+            "//core:core",
+            "//facade:facade"
+          ],
+          "actions": {
+            "Turbine": 2,
+            "Javac": 2
+          },
+          "execution_log": "java-vanilla-multi_module_body-5.json"
+        }
+      ]
+    },
+    {
+      "language": "java",
+      "mode": "vanilla",
+      "scenario": "multi_module_api",
+      "samples": [
+        {
+          "seconds": 0.6384042919999899,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [
+            "//core:core",
+            "//facade:facade"
+          ],
+          "actions": {
+            "Javac": 6,
+            "Turbine": 2
+          },
+          "execution_log": "java-vanilla-multi_module_api-1.json"
+        },
+        {
+          "seconds": 0.6311257340000225,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [
+            "//core:core",
+            "//facade:facade"
+          ],
+          "actions": {
+            "Javac": 6,
+            "Turbine": 2
+          },
+          "execution_log": "java-vanilla-multi_module_api-2.json"
+        },
+        {
+          "seconds": 0.5787525899999935,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [
+            "//core:core",
+            "//facade:facade"
+          ],
+          "actions": {
+            "Javac": 6,
+            "Turbine": 2
+          },
+          "execution_log": "java-vanilla-multi_module_api-3.json"
+        },
+        {
+          "seconds": 0.5759897529999876,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [
+            "//core:core",
+            "//facade:facade"
+          ],
+          "actions": {
+            "Javac": 6,
+            "Turbine": 2
+          },
+          "execution_log": "java-vanilla-multi_module_api-4.json"
+        },
+        {
+          "seconds": 0.5818486419999829,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [
+            "//core:core",
+            "//facade:facade"
+          ],
+          "actions": {
+            "Javac": 6,
+            "Turbine": 2
+          },
+          "execution_log": "java-vanilla-multi_module_api-5.json"
+        }
+      ]
+    },
+    {
+      "language": "java",
+      "mode": "vanilla",
+      "scenario": "unused_dependency_api",
+      "samples": [
+        {
+          "seconds": 0.5282485199999769,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//facade:facade",
+            "//spare:spare"
+          ],
+          "abi_targets": [
+            "//spare:spare"
+          ],
+          "actions": {
+            "Javac": 6,
+            "Turbine": 1
+          },
+          "execution_log": "java-vanilla-unused_dependency_api-1.json"
+        },
+        {
+          "seconds": 0.559933572999995,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//facade:facade",
+            "//spare:spare"
+          ],
+          "abi_targets": [
+            "//spare:spare"
+          ],
+          "actions": {
+            "Javac": 6,
+            "Turbine": 1
+          },
+          "execution_log": "java-vanilla-unused_dependency_api-2.json"
+        },
+        {
+          "seconds": 0.5432956810000178,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//facade:facade",
+            "//spare:spare"
+          ],
+          "abi_targets": [
+            "//spare:spare"
+          ],
+          "actions": {
+            "Javac": 6,
+            "Turbine": 1
+          },
+          "execution_log": "java-vanilla-unused_dependency_api-3.json"
+        },
+        {
+          "seconds": 0.6114659950000032,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//facade:facade",
+            "//spare:spare"
+          ],
+          "abi_targets": [
+            "//spare:spare"
+          ],
+          "actions": {
+            "Javac": 6,
+            "Turbine": 1
+          },
+          "execution_log": "java-vanilla-unused_dependency_api-4.json"
+        },
+        {
+          "seconds": 0.5482173880000119,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//facade:facade",
+            "//spare:spare"
+          ],
+          "abi_targets": [
+            "//spare:spare"
+          ],
+          "actions": {
+            "Javac": 6,
+            "Turbine": 1
+          },
+          "execution_log": "java-vanilla-unused_dependency_api-5.json"
+        }
+      ]
+    },
+    {
+      "language": "java",
+      "mode": "vanilla",
+      "scenario": "inline_or_constant",
+      "samples": [
+        {
+          "seconds": 0.6679262710000273,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [
+            "//core:core",
+            "//facade:facade"
+          ],
+          "actions": {
+            "Javac": 6,
+            "Turbine": 2
+          },
+          "execution_log": "java-vanilla-inline_or_constant-1.json"
+        },
+        {
+          "seconds": 0.6340062110000133,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [
+            "//core:core",
+            "//facade:facade"
+          ],
+          "actions": {
+            "Javac": 6,
+            "Turbine": 2
+          },
+          "execution_log": "java-vanilla-inline_or_constant-2.json"
+        },
+        {
+          "seconds": 0.5927593410000043,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [
+            "//core:core",
+            "//facade:facade"
+          ],
+          "actions": {
+            "Javac": 6,
+            "Turbine": 2
+          },
+          "execution_log": "java-vanilla-inline_or_constant-3.json"
+        },
+        {
+          "seconds": 0.5938802839999937,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [
+            "//core:core",
+            "//facade:facade"
+          ],
+          "actions": {
+            "Javac": 6,
+            "Turbine": 2
+          },
+          "execution_log": "java-vanilla-inline_or_constant-4.json"
+        },
+        {
+          "seconds": 0.6302254990000051,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [
+            "//core:core",
+            "//facade:facade"
+          ],
+          "actions": {
+            "Javac": 6,
+            "Turbine": 2
+          },
+          "execution_log": "java-vanilla-inline_or_constant-5.json"
+        }
+      ]
+    },
+    {
+      "language": "java",
+      "mode": "elide",
+      "scenario": "no_op",
+      "samples": [
+        {
+          "seconds": 0.21934541999999624,
+          "compile_targets": [],
+          "abi_targets": [],
+          "actions": {},
+          "execution_log": "java-elide-no_op-1.json"
+        },
+        {
+          "seconds": 0.21076356300000043,
+          "compile_targets": [],
+          "abi_targets": [],
+          "actions": {},
+          "execution_log": "java-elide-no_op-2.json"
+        },
+        {
+          "seconds": 0.18696402499998044,
+          "compile_targets": [],
+          "abi_targets": [],
+          "actions": {},
+          "execution_log": "java-elide-no_op-3.json"
+        },
+        {
+          "seconds": 0.1954685780000034,
+          "compile_targets": [],
+          "abi_targets": [],
+          "actions": {},
+          "execution_log": "java-elide-no_op-4.json"
+        },
+        {
+          "seconds": 0.18455856399998538,
+          "compile_targets": [],
+          "abi_targets": [],
+          "actions": {},
+          "execution_log": "java-elide-no_op-5.json"
+        }
+      ]
+    },
+    {
+      "language": "java",
+      "mode": "elide",
+      "scenario": "comment",
+      "samples": [
+        {
+          "seconds": 0.32626960199999644,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 1,
+            "JavaIjar": 1
+          },
+          "execution_log": "java-elide-comment-1.json"
+        },
+        {
+          "seconds": 0.299110517999992,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 1
+          },
+          "execution_log": "java-elide-comment-2.json"
+        },
+        {
+          "seconds": 0.2846636790000048,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 1
+          },
+          "execution_log": "java-elide-comment-3.json"
+        },
+        {
+          "seconds": 0.2852335000000039,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 1
+          },
+          "execution_log": "java-elide-comment-4.json"
+        },
+        {
+          "seconds": 0.28885251100001597,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 1,
+            "JavaIjar": 1
+          },
+          "execution_log": "java-elide-comment-5.json"
+        }
+      ]
+    },
+    {
+      "language": "java",
+      "mode": "elide",
+      "scenario": "body",
+      "samples": [
+        {
+          "seconds": 0.3105234579999774,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 1,
+            "JavaIjar": 1
+          },
+          "execution_log": "java-elide-body-1.json"
+        },
+        {
+          "seconds": 0.3088214720000053,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 1,
+            "JavaIjar": 1
+          },
+          "execution_log": "java-elide-body-2.json"
+        },
+        {
+          "seconds": 0.29045781799999304,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 1,
+            "JavaIjar": 1
+          },
+          "execution_log": "java-elide-body-3.json"
+        },
+        {
+          "seconds": 0.296481349000004,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 1,
+            "JavaIjar": 1
+          },
+          "execution_log": "java-elide-body-4.json"
+        },
+        {
+          "seconds": 0.29686069499999235,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 1,
+            "JavaIjar": 1
+          },
+          "execution_log": "java-elide-body-5.json"
+        }
+      ]
+    },
+    {
+      "language": "java",
+      "mode": "elide",
+      "scenario": "private_member",
+      "samples": [
+        {
+          "seconds": 0.294838416999994,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 1,
+            "JavaIjar": 1
+          },
+          "execution_log": "java-elide-private_member-1.json"
+        },
+        {
+          "seconds": 0.29475517299999865,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 1,
+            "JavaIjar": 1
+          },
+          "execution_log": "java-elide-private_member-2.json"
+        },
+        {
+          "seconds": 0.28801999000000933,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 1,
+            "JavaIjar": 1
+          },
+          "execution_log": "java-elide-private_member-3.json"
+        },
+        {
+          "seconds": 0.2738535830000046,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 1,
+            "JavaIjar": 1
+          },
+          "execution_log": "java-elide-private_member-4.json"
+        },
+        {
+          "seconds": 0.2764209099999846,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 1,
+            "JavaIjar": 1
+          },
+          "execution_log": "java-elide-private_member-5.json"
+        }
+      ]
+    },
+    {
+      "language": "java",
+      "mode": "elide",
+      "scenario": "internal_module_api",
+      "samples": [
+        {
+          "seconds": 0.5889407649999896,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 6,
+            "JavaIjar": 1
+          },
+          "execution_log": "java-elide-internal_module_api-1.json"
+        },
+        {
+          "seconds": 0.5832624000000237,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 6,
+            "JavaIjar": 1
+          },
+          "execution_log": "java-elide-internal_module_api-2.json"
+        },
+        {
+          "seconds": 0.6053519359999768,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 6,
+            "JavaIjar": 1
+          },
+          "execution_log": "java-elide-internal_module_api-3.json"
+        },
+        {
+          "seconds": 0.6262200979999761,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 6,
+            "JavaIjar": 5
+          },
+          "execution_log": "java-elide-internal_module_api-4.json"
+        },
+        {
+          "seconds": 0.5917119519999972,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 6,
+            "JavaIjar": 1
+          },
+          "execution_log": "java-elide-internal_module_api-5.json"
+        }
+      ]
+    },
+    {
+      "language": "java",
+      "mode": "elide",
+      "scenario": "public_module_api",
+      "samples": [
+        {
+          "seconds": 0.511391744000008,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//facade:facade"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 5,
+            "JavaIjar": 1
+          },
+          "execution_log": "java-elide-public_module_api-1.json"
+        },
+        {
+          "seconds": 0.5080435059999786,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//facade:facade"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 5,
+            "JavaIjar": 4
+          },
+          "execution_log": "java-elide-public_module_api-2.json"
+        },
+        {
+          "seconds": 0.49914690500000347,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//facade:facade"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 5,
+            "JavaIjar": 1
+          },
+          "execution_log": "java-elide-public_module_api-3.json"
+        },
+        {
+          "seconds": 0.5086145679999845,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//facade:facade"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 5,
+            "JavaIjar": 2
+          },
+          "execution_log": "java-elide-public_module_api-4.json"
+        },
+        {
+          "seconds": 0.4951880229999972,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//facade:facade"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 5,
+            "JavaIjar": 1
+          },
+          "execution_log": "java-elide-public_module_api-5.json"
+        }
+      ]
+    },
+    {
+      "language": "java",
+      "mode": "elide",
+      "scenario": "multi_file_body",
+      "samples": [
+        {
+          "seconds": 0.28512334499998815,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 1,
+            "JavaIjar": 1
+          },
+          "execution_log": "java-elide-multi_file_body-1.json"
+        },
+        {
+          "seconds": 0.28280277000001774,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 1,
+            "JavaIjar": 1
+          },
+          "execution_log": "java-elide-multi_file_body-2.json"
+        },
+        {
+          "seconds": 0.282264615999992,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 1,
+            "JavaIjar": 1
+          },
+          "execution_log": "java-elide-multi_file_body-3.json"
+        },
+        {
+          "seconds": 0.3089769719999822,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 1,
+            "JavaIjar": 1
+          },
+          "execution_log": "java-elide-multi_file_body-4.json"
+        },
+        {
+          "seconds": 0.2840189599999974,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 1,
+            "JavaIjar": 1
+          },
+          "execution_log": "java-elide-multi_file_body-5.json"
+        }
+      ]
+    },
+    {
+      "language": "java",
+      "mode": "elide",
+      "scenario": "multi_module_body",
+      "samples": [
+        {
+          "seconds": 0.33672760300001414,
+          "compile_targets": [
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 2,
+            "JavaIjar": 2
+          },
+          "execution_log": "java-elide-multi_module_body-1.json"
+        },
+        {
+          "seconds": 0.36182149600000457,
+          "compile_targets": [
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 2,
+            "JavaIjar": 2
+          },
+          "execution_log": "java-elide-multi_module_body-2.json"
+        },
+        {
+          "seconds": 0.36071841300000074,
+          "compile_targets": [
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 2,
+            "JavaIjar": 2
+          },
+          "execution_log": "java-elide-multi_module_body-3.json"
+        },
+        {
+          "seconds": 0.365631374000003,
+          "compile_targets": [
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 2,
+            "JavaIjar": 2
+          },
+          "execution_log": "java-elide-multi_module_body-4.json"
+        },
+        {
+          "seconds": 0.34705099499998937,
+          "compile_targets": [
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 2,
+            "JavaIjar": 2
+          },
+          "execution_log": "java-elide-multi_module_body-5.json"
+        }
+      ]
+    },
+    {
+      "language": "java",
+      "mode": "elide",
+      "scenario": "multi_module_api",
+      "samples": [
+        {
+          "seconds": 0.5954780200000016,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 6,
+            "JavaIjar": 5
+          },
+          "execution_log": "java-elide-multi_module_api-1.json"
+        },
+        {
+          "seconds": 0.5931910269999889,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 6,
+            "JavaIjar": 2
+          },
+          "execution_log": "java-elide-multi_module_api-2.json"
+        },
+        {
+          "seconds": 0.6312173070000142,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 6,
+            "JavaIjar": 5
+          },
+          "execution_log": "java-elide-multi_module_api-3.json"
+        },
+        {
+          "seconds": 0.5664177409999809,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 6,
+            "JavaIjar": 2
+          },
+          "execution_log": "java-elide-multi_module_api-4.json"
+        },
+        {
+          "seconds": 0.573018009000009,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 6,
+            "JavaIjar": 2
+          },
+          "execution_log": "java-elide-multi_module_api-5.json"
+        }
+      ]
+    },
+    {
+      "language": "java",
+      "mode": "elide",
+      "scenario": "unused_dependency_api",
+      "samples": [
+        {
+          "seconds": 0.5693044779999923,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//facade:facade",
+            "//spare:spare"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 6,
+            "JavaIjar": 1
+          },
+          "execution_log": "java-elide-unused_dependency_api-1.json"
+        },
+        {
+          "seconds": 0.5782548930000075,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//facade:facade",
+            "//spare:spare"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 6,
+            "JavaIjar": 1
+          },
+          "execution_log": "java-elide-unused_dependency_api-2.json"
+        },
+        {
+          "seconds": 0.5514728160000004,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//facade:facade",
+            "//spare:spare"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 6,
+            "JavaIjar": 1
+          },
+          "execution_log": "java-elide-unused_dependency_api-3.json"
+        },
+        {
+          "seconds": 0.5706279419999873,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//facade:facade",
+            "//spare:spare"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 6,
+            "JavaIjar": 1
+          },
+          "execution_log": "java-elide-unused_dependency_api-4.json"
+        },
+        {
+          "seconds": 0.5666615370000159,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//facade:facade",
+            "//spare:spare"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 6,
+            "JavaIjar": 1
+          },
+          "execution_log": "java-elide-unused_dependency_api-5.json"
+        }
+      ]
+    },
+    {
+      "language": "java",
+      "mode": "elide",
+      "scenario": "inline_or_constant",
+      "samples": [
+        {
+          "seconds": 0.5781292780000058,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 6,
+            "JavaIjar": 2
+          },
+          "execution_log": "java-elide-inline_or_constant-1.json"
+        },
+        {
+          "seconds": 0.5802667439999993,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 6,
+            "JavaIjar": 4
+          },
+          "execution_log": "java-elide-inline_or_constant-2.json"
+        },
+        {
+          "seconds": 0.5750366519999943,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 6,
+            "JavaIjar": 2
+          },
+          "execution_log": "java-elide-inline_or_constant-3.json"
+        },
+        {
+          "seconds": 0.5976546759999906,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 6,
+            "JavaIjar": 5
+          },
+          "execution_log": "java-elide-inline_or_constant-4.json"
+        },
+        {
+          "seconds": 0.6090444660000003,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 6,
+            "JavaIjar": 2
+          },
+          "execution_log": "java-elide-inline_or_constant-5.json"
+        }
+      ]
+    },
+    {
+      "language": "java",
+      "mode": "elide_abi",
+      "scenario": "no_op",
+      "samples": [
+        {
+          "seconds": 0.19277385199998776,
+          "compile_targets": [],
+          "abi_targets": [],
+          "actions": {},
+          "execution_log": "java-elide_abi-no_op-1.json"
+        },
+        {
+          "seconds": 0.23817926600000305,
+          "compile_targets": [],
+          "abi_targets": [],
+          "actions": {},
+          "execution_log": "java-elide_abi-no_op-2.json"
+        },
+        {
+          "seconds": 0.19564216000000556,
+          "compile_targets": [],
+          "abi_targets": [],
+          "actions": {},
+          "execution_log": "java-elide_abi-no_op-3.json"
+        },
+        {
+          "seconds": 0.19327054699999735,
+          "compile_targets": [],
+          "abi_targets": [],
+          "actions": {},
+          "execution_log": "java-elide_abi-no_op-4.json"
+        },
+        {
+          "seconds": 0.23202934500000083,
+          "compile_targets": [],
+          "abi_targets": [],
+          "actions": {},
+          "execution_log": "java-elide_abi-no_op-5.json"
+        }
+      ]
+    },
+    {
+      "language": "java",
+      "mode": "elide_abi",
+      "scenario": "comment",
+      "samples": [
+        {
+          "seconds": 0.3589804130000118,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "ElideJavac": 1,
+            "ElideJavacAbi": 1
+          },
+          "execution_log": "java-elide_abi-comment-1.json"
+        },
+        {
+          "seconds": 0.31209813700002087,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "ElideJavac": 1,
+            "ElideJavacAbi": 1
+          },
+          "execution_log": "java-elide_abi-comment-2.json"
+        },
+        {
+          "seconds": 0.3153422720000094,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "ElideJavac": 1,
+            "ElideJavacAbi": 1
+          },
+          "execution_log": "java-elide_abi-comment-3.json"
+        },
+        {
+          "seconds": 0.31128335099998594,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "ElideJavac": 1,
+            "ElideJavacAbi": 1
+          },
+          "execution_log": "java-elide_abi-comment-4.json"
+        },
+        {
+          "seconds": 0.3306138629999964,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "ElideJavac": 1,
+            "ElideJavacAbi": 1
+          },
+          "execution_log": "java-elide_abi-comment-5.json"
+        }
+      ]
+    },
+    {
+      "language": "java",
+      "mode": "elide_abi",
+      "scenario": "body",
+      "samples": [
+        {
+          "seconds": 0.3487008109999863,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "ElideJavac": 1,
+            "ElideJavacAbi": 1
+          },
+          "execution_log": "java-elide_abi-body-1.json"
+        },
+        {
+          "seconds": 0.3071598679999852,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "ElideJavac": 1,
+            "ElideJavacAbi": 1
+          },
+          "execution_log": "java-elide_abi-body-2.json"
+        },
+        {
+          "seconds": 0.32705501000000936,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "ElideJavac": 1,
+            "ElideJavacAbi": 1
+          },
+          "execution_log": "java-elide_abi-body-3.json"
+        },
+        {
+          "seconds": 0.3018441719999885,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "ElideJavac": 1,
+            "ElideJavacAbi": 1
+          },
+          "execution_log": "java-elide_abi-body-4.json"
+        },
+        {
+          "seconds": 0.3155979089999903,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "ElideJavac": 1,
+            "ElideJavacAbi": 1
+          },
+          "execution_log": "java-elide_abi-body-5.json"
+        }
+      ]
+    },
+    {
+      "language": "java",
+      "mode": "elide_abi",
+      "scenario": "private_member",
+      "samples": [
+        {
+          "seconds": 0.30031948900000316,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "ElideJavac": 1,
+            "ElideJavacAbi": 1
+          },
+          "execution_log": "java-elide_abi-private_member-1.json"
+        },
+        {
+          "seconds": 0.3060207150000167,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "ElideJavac": 1,
+            "ElideJavacAbi": 1
+          },
+          "execution_log": "java-elide_abi-private_member-2.json"
+        },
+        {
+          "seconds": 0.328687752999997,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "ElideJavac": 1,
+            "ElideJavacAbi": 1
+          },
+          "execution_log": "java-elide_abi-private_member-3.json"
+        },
+        {
+          "seconds": 0.30026942399999257,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "ElideJavac": 1,
+            "ElideJavacAbi": 1
+          },
+          "execution_log": "java-elide_abi-private_member-4.json"
+        },
+        {
+          "seconds": 0.30300954099999444,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "ElideJavac": 1,
+            "ElideJavacAbi": 1
+          },
+          "execution_log": "java-elide_abi-private_member-5.json"
+        }
+      ]
+    },
+    {
+      "language": "java",
+      "mode": "elide_abi",
+      "scenario": "internal_module_api",
+      "samples": [
+        {
+          "seconds": 0.8459808650000014,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "actions": {
+            "ElideJavac": 6,
+            "ElideJavacAbi": 5
+          },
+          "execution_log": "java-elide_abi-internal_module_api-1.json"
+        },
+        {
+          "seconds": 0.7489192900000035,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "actions": {
+            "ElideJavac": 6,
+            "ElideJavacAbi": 5
+          },
+          "execution_log": "java-elide_abi-internal_module_api-2.json"
+        },
+        {
+          "seconds": 0.7361158319999959,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "actions": {
+            "ElideJavac": 6,
+            "ElideJavacAbi": 5
+          },
+          "execution_log": "java-elide_abi-internal_module_api-3.json"
+        },
+        {
+          "seconds": 0.9825884630000132,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "actions": {
+            "ElideJavac": 6,
+            "ElideJavacAbi": 5
+          },
+          "execution_log": "java-elide_abi-internal_module_api-4.json"
+        },
+        {
+          "seconds": 0.7961741650000249,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "actions": {
+            "ElideJavac": 6,
+            "ElideJavacAbi": 5
+          },
+          "execution_log": "java-elide_abi-internal_module_api-5.json"
+        }
+      ]
+    },
+    {
+      "language": "java",
+      "mode": "elide_abi",
+      "scenario": "public_module_api",
+      "samples": [
+        {
+          "seconds": 0.6153949580000244,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//facade:facade"
+          ],
+          "abi_targets": [
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//facade:facade"
+          ],
+          "actions": {
+            "ElideJavac": 5,
+            "ElideJavacAbi": 4
+          },
+          "execution_log": "java-elide_abi-public_module_api-1.json"
+        },
+        {
+          "seconds": 0.6364933380000366,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//facade:facade"
+          ],
+          "abi_targets": [
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//facade:facade"
+          ],
+          "actions": {
+            "ElideJavac": 5,
+            "ElideJavacAbi": 4
+          },
+          "execution_log": "java-elide_abi-public_module_api-2.json"
+        },
+        {
+          "seconds": 0.6412982079999665,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//facade:facade"
+          ],
+          "abi_targets": [
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//facade:facade"
+          ],
+          "actions": {
+            "ElideJavac": 5,
+            "ElideJavacAbi": 4
+          },
+          "execution_log": "java-elide_abi-public_module_api-3.json"
+        },
+        {
+          "seconds": 0.6556425789999594,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//facade:facade"
+          ],
+          "abi_targets": [
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//facade:facade"
+          ],
+          "actions": {
+            "ElideJavac": 5,
+            "ElideJavacAbi": 4
+          },
+          "execution_log": "java-elide_abi-public_module_api-4.json"
+        },
+        {
+          "seconds": 0.6578201909999848,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//facade:facade"
+          ],
+          "abi_targets": [
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//facade:facade"
+          ],
+          "actions": {
+            "ElideJavac": 5,
+            "ElideJavacAbi": 4
+          },
+          "execution_log": "java-elide_abi-public_module_api-5.json"
+        }
+      ]
+    },
+    {
+      "language": "java",
+      "mode": "elide_abi",
+      "scenario": "multi_file_body",
+      "samples": [
+        {
+          "seconds": 0.3233839320000129,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "ElideJavac": 1,
+            "ElideJavacAbi": 1
+          },
+          "execution_log": "java-elide_abi-multi_file_body-1.json"
+        },
+        {
+          "seconds": 0.3032775859999788,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "ElideJavac": 1,
+            "ElideJavacAbi": 1
+          },
+          "execution_log": "java-elide_abi-multi_file_body-2.json"
+        },
+        {
+          "seconds": 0.2960328529999856,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "ElideJavac": 1,
+            "ElideJavacAbi": 1
+          },
+          "execution_log": "java-elide_abi-multi_file_body-3.json"
+        },
+        {
+          "seconds": 0.29781304400000863,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "ElideJavac": 1,
+            "ElideJavacAbi": 1
+          },
+          "execution_log": "java-elide_abi-multi_file_body-4.json"
+        },
+        {
+          "seconds": 0.2971946609999918,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "ElideJavac": 1,
+            "ElideJavacAbi": 1
+          },
+          "execution_log": "java-elide_abi-multi_file_body-5.json"
+        }
+      ]
+    },
+    {
+      "language": "java",
+      "mode": "elide_abi",
+      "scenario": "multi_module_body",
+      "samples": [
+        {
+          "seconds": 0.37631789199997456,
+          "compile_targets": [
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [
+            "//core:core",
+            "//facade:facade"
+          ],
+          "actions": {
+            "ElideJavac": 2,
+            "ElideJavacAbi": 2
+          },
+          "execution_log": "java-elide_abi-multi_module_body-1.json"
+        },
+        {
+          "seconds": 0.37062507899997854,
+          "compile_targets": [
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [
+            "//core:core",
+            "//facade:facade"
+          ],
+          "actions": {
+            "ElideJavac": 2,
+            "ElideJavacAbi": 2
+          },
+          "execution_log": "java-elide_abi-multi_module_body-2.json"
+        },
+        {
+          "seconds": 0.39704333599996744,
+          "compile_targets": [
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [
+            "//core:core",
+            "//facade:facade"
+          ],
+          "actions": {
+            "ElideJavac": 2,
+            "ElideJavacAbi": 2
+          },
+          "execution_log": "java-elide_abi-multi_module_body-3.json"
+        },
+        {
+          "seconds": 0.40053923800002167,
+          "compile_targets": [
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [
+            "//core:core",
+            "//facade:facade"
+          ],
+          "actions": {
+            "ElideJavac": 2,
+            "ElideJavacAbi": 2
+          },
+          "execution_log": "java-elide_abi-multi_module_body-4.json"
+        },
+        {
+          "seconds": 0.43154992699999184,
+          "compile_targets": [
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [
+            "//core:core",
+            "//facade:facade"
+          ],
+          "actions": {
+            "ElideJavac": 2,
+            "ElideJavacAbi": 2
+          },
+          "execution_log": "java-elide_abi-multi_module_body-5.json"
+        }
+      ]
+    },
+    {
+      "language": "java",
+      "mode": "elide_abi",
+      "scenario": "multi_module_api",
+      "samples": [
+        {
+          "seconds": 0.7868840159999877,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "actions": {
+            "ElideJavac": 6,
+            "ElideJavacAbi": 5
+          },
+          "execution_log": "java-elide_abi-multi_module_api-1.json"
+        },
+        {
+          "seconds": 0.739487749000034,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "actions": {
+            "ElideJavac": 6,
+            "ElideJavacAbi": 5
+          },
+          "execution_log": "java-elide_abi-multi_module_api-2.json"
+        },
+        {
+          "seconds": 0.7449890230000165,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "actions": {
+            "ElideJavac": 6,
+            "ElideJavacAbi": 5
+          },
+          "execution_log": "java-elide_abi-multi_module_api-3.json"
+        },
+        {
+          "seconds": 0.7515074089999985,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "actions": {
+            "ElideJavac": 6,
+            "ElideJavacAbi": 5
+          },
+          "execution_log": "java-elide_abi-multi_module_api-4.json"
+        },
+        {
+          "seconds": 0.7171783150000124,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "actions": {
+            "ElideJavac": 6,
+            "ElideJavacAbi": 5
+          },
+          "execution_log": "java-elide_abi-multi_module_api-5.json"
+        }
+      ]
+    },
+    {
+      "language": "java",
+      "mode": "elide_abi",
+      "scenario": "unused_dependency_api",
+      "samples": [
+        {
+          "seconds": 0.7728508019999936,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//facade:facade",
+            "//spare:spare"
+          ],
+          "abi_targets": [
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//facade:facade",
+            "//spare:spare"
+          ],
+          "actions": {
+            "ElideJavac": 6,
+            "ElideJavacAbi": 5
+          },
+          "execution_log": "java-elide_abi-unused_dependency_api-1.json"
+        },
+        {
+          "seconds": 0.7560187990000031,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//facade:facade",
+            "//spare:spare"
+          ],
+          "abi_targets": [
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//facade:facade",
+            "//spare:spare"
+          ],
+          "actions": {
+            "ElideJavac": 6,
+            "ElideJavacAbi": 5
+          },
+          "execution_log": "java-elide_abi-unused_dependency_api-2.json"
+        },
+        {
+          "seconds": 0.7432459780000045,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//facade:facade",
+            "//spare:spare"
+          ],
+          "abi_targets": [
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//facade:facade",
+            "//spare:spare"
+          ],
+          "actions": {
+            "ElideJavac": 6,
+            "ElideJavacAbi": 5
+          },
+          "execution_log": "java-elide_abi-unused_dependency_api-3.json"
+        },
+        {
+          "seconds": 0.7761770600000091,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//facade:facade",
+            "//spare:spare"
+          ],
+          "abi_targets": [
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//facade:facade",
+            "//spare:spare"
+          ],
+          "actions": {
+            "ElideJavac": 6,
+            "ElideJavacAbi": 5
+          },
+          "execution_log": "java-elide_abi-unused_dependency_api-4.json"
+        },
+        {
+          "seconds": 0.7475316579999571,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//facade:facade",
+            "//spare:spare"
+          ],
+          "abi_targets": [
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//facade:facade",
+            "//spare:spare"
+          ],
+          "actions": {
+            "ElideJavac": 6,
+            "ElideJavacAbi": 5
+          },
+          "execution_log": "java-elide_abi-unused_dependency_api-5.json"
+        }
+      ]
+    },
+    {
+      "language": "java",
+      "mode": "elide_abi",
+      "scenario": "inline_or_constant",
+      "samples": [
+        {
+          "seconds": 0.7423609289999717,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "actions": {
+            "ElideJavac": 6,
+            "ElideJavacAbi": 5
+          },
+          "execution_log": "java-elide_abi-inline_or_constant-1.json"
+        },
+        {
+          "seconds": 0.7523951219999958,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "actions": {
+            "ElideJavac": 6,
+            "ElideJavacAbi": 5
+          },
+          "execution_log": "java-elide_abi-inline_or_constant-2.json"
+        },
+        {
+          "seconds": 0.7333740899999839,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "actions": {
+            "ElideJavac": 6,
+            "ElideJavacAbi": 5
+          },
+          "execution_log": "java-elide_abi-inline_or_constant-3.json"
+        },
+        {
+          "seconds": 0.7292993309999929,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "actions": {
+            "ElideJavac": 6,
+            "ElideJavacAbi": 5
+          },
+          "execution_log": "java-elide_abi-inline_or_constant-4.json"
+        },
+        {
+          "seconds": 0.7824444219999691,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "actions": {
+            "ElideJavac": 6,
+            "ElideJavacAbi": 5
+          },
+          "execution_log": "java-elide_abi-inline_or_constant-5.json"
+        }
+      ]
+    },
+    {
+      "language": "java",
+      "mode": "elide_pruned",
+      "scenario": "no_op",
+      "samples": [
+        {
+          "seconds": 0.2609724819999997,
+          "compile_targets": [],
+          "abi_targets": [],
+          "actions": {},
+          "execution_log": "java-elide_pruned-no_op-1.json"
+        },
+        {
+          "seconds": 0.2866708260000337,
+          "compile_targets": [],
+          "abi_targets": [],
+          "actions": {},
+          "execution_log": "java-elide_pruned-no_op-2.json"
+        },
+        {
+          "seconds": 0.2843701299999566,
+          "compile_targets": [],
+          "abi_targets": [],
+          "actions": {},
+          "execution_log": "java-elide_pruned-no_op-3.json"
+        },
+        {
+          "seconds": 0.2888579449999611,
+          "compile_targets": [],
+          "abi_targets": [],
+          "actions": {},
+          "execution_log": "java-elide_pruned-no_op-4.json"
+        },
+        {
+          "seconds": 0.29891525499999716,
+          "compile_targets": [],
+          "abi_targets": [],
+          "actions": {},
+          "execution_log": "java-elide_pruned-no_op-5.json"
+        }
+      ]
+    },
+    {
+      "language": "java",
+      "mode": "elide_pruned",
+      "scenario": "comment",
+      "samples": [
+        {
+          "seconds": 0.4137865129999909,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "ElideJavac": 1,
+            "ElideJavacAbi": 1
+          },
+          "execution_log": "java-elide_pruned-comment-1.json"
+        },
+        {
+          "seconds": 0.41881424900003594,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "ElideJavac": 1,
+            "ElideJavacAbi": 1
+          },
+          "execution_log": "java-elide_pruned-comment-2.json"
+        },
+        {
+          "seconds": 0.31141616200000044,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "ElideJavac": 1,
+            "ElideJavacAbi": 1
+          },
+          "execution_log": "java-elide_pruned-comment-3.json"
+        },
+        {
+          "seconds": 0.3918640459999665,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "ElideJavac": 1,
+            "ElideJavacAbi": 1
+          },
+          "execution_log": "java-elide_pruned-comment-4.json"
+        },
+        {
+          "seconds": 0.3218224280000186,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "ElideJavac": 1,
+            "ElideJavacAbi": 1
+          },
+          "execution_log": "java-elide_pruned-comment-5.json"
+        }
+      ]
+    },
+    {
+      "language": "java",
+      "mode": "elide_pruned",
+      "scenario": "body",
+      "samples": [
+        {
+          "seconds": 0.32467103900000893,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "ElideJavac": 1,
+            "ElideJavacAbi": 1
+          },
+          "execution_log": "java-elide_pruned-body-1.json"
+        },
+        {
+          "seconds": 0.34591932699999006,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "ElideJavac": 1,
+            "ElideJavacAbi": 1
+          },
+          "execution_log": "java-elide_pruned-body-2.json"
+        },
+        {
+          "seconds": 0.3196462149999775,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "ElideJavac": 1,
+            "ElideJavacAbi": 1
+          },
+          "execution_log": "java-elide_pruned-body-3.json"
+        },
+        {
+          "seconds": 0.32910251800001333,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "ElideJavac": 1,
+            "ElideJavacAbi": 1
+          },
+          "execution_log": "java-elide_pruned-body-4.json"
+        },
+        {
+          "seconds": 0.32853446899997607,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "ElideJavac": 1,
+            "ElideJavacAbi": 1
+          },
+          "execution_log": "java-elide_pruned-body-5.json"
+        }
+      ]
+    },
+    {
+      "language": "java",
+      "mode": "elide_pruned",
+      "scenario": "private_member",
+      "samples": [
+        {
+          "seconds": 0.32624497900002325,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "ElideJavac": 1,
+            "ElideJavacAbi": 1
+          },
+          "execution_log": "java-elide_pruned-private_member-1.json"
+        },
+        {
+          "seconds": 0.3597972140000252,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "ElideJavac": 1,
+            "ElideJavacAbi": 1
+          },
+          "execution_log": "java-elide_pruned-private_member-2.json"
+        },
+        {
+          "seconds": 0.3259400619999724,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "ElideJavac": 1,
+            "ElideJavacAbi": 1
+          },
+          "execution_log": "java-elide_pruned-private_member-3.json"
+        },
+        {
+          "seconds": 0.3281509650000203,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "ElideJavac": 1,
+            "ElideJavacAbi": 1
+          },
+          "execution_log": "java-elide_pruned-private_member-4.json"
+        },
+        {
+          "seconds": 0.327190029999997,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "ElideJavac": 1,
+            "ElideJavacAbi": 1
+          },
+          "execution_log": "java-elide_pruned-private_member-5.json"
+        }
+      ]
+    },
+    {
+      "language": "java",
+      "mode": "elide_pruned",
+      "scenario": "internal_module_api",
+      "samples": [
+        {
+          "seconds": 0.5970713809999779,
+          "compile_targets": [
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "actions": {
+            "ElideJavac": 2,
+            "ElideJavacAbi": 5
+          },
+          "execution_log": "java-elide_pruned-internal_module_api-1.json"
+        },
+        {
+          "seconds": 0.6129464069999813,
+          "compile_targets": [
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "actions": {
+            "ElideJavac": 2,
+            "ElideJavacAbi": 5
+          },
+          "execution_log": "java-elide_pruned-internal_module_api-2.json"
+        },
+        {
+          "seconds": 0.8161845309999762,
+          "compile_targets": [
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "actions": {
+            "ElideJavac": 2,
+            "ElideJavacAbi": 5
+          },
+          "execution_log": "java-elide_pruned-internal_module_api-3.json"
+        },
+        {
+          "seconds": 0.6560040809999919,
+          "compile_targets": [
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "actions": {
+            "ElideJavac": 2,
+            "ElideJavacAbi": 5
+          },
+          "execution_log": "java-elide_pruned-internal_module_api-4.json"
+        },
+        {
+          "seconds": 0.6009439019999832,
+          "compile_targets": [
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "actions": {
+            "ElideJavac": 2,
+            "ElideJavacAbi": 5
+          },
+          "execution_log": "java-elide_pruned-internal_module_api-5.json"
+        }
+      ]
+    },
+    {
+      "language": "java",
+      "mode": "elide_pruned",
+      "scenario": "public_module_api",
+      "samples": [
+        {
+          "seconds": 0.6214166369999816,
+          "compile_targets": [
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//facade:facade"
+          ],
+          "abi_targets": [
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//facade:facade"
+          ],
+          "actions": {
+            "ElideJavac": 4,
+            "ElideJavacAbi": 4
+          },
+          "execution_log": "java-elide_pruned-public_module_api-1.json"
+        },
+        {
+          "seconds": 0.5995955239999944,
+          "compile_targets": [
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//facade:facade"
+          ],
+          "abi_targets": [
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//facade:facade"
+          ],
+          "actions": {
+            "ElideJavac": 4,
+            "ElideJavacAbi": 4
+          },
+          "execution_log": "java-elide_pruned-public_module_api-2.json"
+        },
+        {
+          "seconds": 0.6083064599999943,
+          "compile_targets": [
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//facade:facade"
+          ],
+          "abi_targets": [
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//facade:facade"
+          ],
+          "actions": {
+            "ElideJavac": 4,
+            "ElideJavacAbi": 4
+          },
+          "execution_log": "java-elide_pruned-public_module_api-3.json"
+        },
+        {
+          "seconds": 0.6231082429999901,
+          "compile_targets": [
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//facade:facade"
+          ],
+          "abi_targets": [
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//facade:facade"
+          ],
+          "actions": {
+            "ElideJavac": 4,
+            "ElideJavacAbi": 4
+          },
+          "execution_log": "java-elide_pruned-public_module_api-4.json"
+        },
+        {
+          "seconds": 0.5828454250000163,
+          "compile_targets": [
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//facade:facade"
+          ],
+          "abi_targets": [
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//facade:facade"
+          ],
+          "actions": {
+            "ElideJavac": 4,
+            "ElideJavacAbi": 4
+          },
+          "execution_log": "java-elide_pruned-public_module_api-5.json"
+        }
+      ]
+    },
+    {
+      "language": "java",
+      "mode": "elide_pruned",
+      "scenario": "multi_file_body",
+      "samples": [
+        {
+          "seconds": 0.3307434390000026,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "ElideJavac": 1,
+            "ElideJavacAbi": 1
+          },
+          "execution_log": "java-elide_pruned-multi_file_body-1.json"
+        },
+        {
+          "seconds": 0.32838085999998157,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "ElideJavac": 1,
+            "ElideJavacAbi": 1
+          },
+          "execution_log": "java-elide_pruned-multi_file_body-2.json"
+        },
+        {
+          "seconds": 0.3458066470000176,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "ElideJavac": 1,
+            "ElideJavacAbi": 1
+          },
+          "execution_log": "java-elide_pruned-multi_file_body-3.json"
+        },
+        {
+          "seconds": 0.3357888609999691,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "ElideJavac": 1,
+            "ElideJavacAbi": 1
+          },
+          "execution_log": "java-elide_pruned-multi_file_body-4.json"
+        },
+        {
+          "seconds": 0.34756465800001024,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "ElideJavac": 1,
+            "ElideJavacAbi": 1
+          },
+          "execution_log": "java-elide_pruned-multi_file_body-5.json"
+        }
+      ]
+    },
+    {
+      "language": "java",
+      "mode": "elide_pruned",
+      "scenario": "multi_module_body",
+      "samples": [
+        {
+          "seconds": 0.41314713799999936,
+          "compile_targets": [
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [
+            "//core:core",
+            "//facade:facade"
+          ],
+          "actions": {
+            "ElideJavac": 2,
+            "ElideJavacAbi": 2
+          },
+          "execution_log": "java-elide_pruned-multi_module_body-1.json"
+        },
+        {
+          "seconds": 0.4397794690000296,
+          "compile_targets": [
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [
+            "//core:core",
+            "//facade:facade"
+          ],
+          "actions": {
+            "ElideJavac": 2,
+            "ElideJavacAbi": 2
+          },
+          "execution_log": "java-elide_pruned-multi_module_body-2.json"
+        },
+        {
+          "seconds": 0.52949956599997,
+          "compile_targets": [
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [
+            "//core:core",
+            "//facade:facade"
+          ],
+          "actions": {
+            "ElideJavac": 2,
+            "ElideJavacAbi": 2
+          },
+          "execution_log": "java-elide_pruned-multi_module_body-3.json"
+        },
+        {
+          "seconds": 0.4049891020000018,
+          "compile_targets": [
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [
+            "//core:core",
+            "//facade:facade"
+          ],
+          "actions": {
+            "ElideJavac": 2,
+            "ElideJavacAbi": 2
+          },
+          "execution_log": "java-elide_pruned-multi_module_body-4.json"
+        },
+        {
+          "seconds": 0.4452883200000315,
+          "compile_targets": [
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [
+            "//core:core",
+            "//facade:facade"
+          ],
+          "actions": {
+            "ElideJavac": 2,
+            "ElideJavacAbi": 2
+          },
+          "execution_log": "java-elide_pruned-multi_module_body-5.json"
+        }
+      ]
+    },
+    {
+      "language": "java",
+      "mode": "elide_pruned",
+      "scenario": "multi_module_api",
+      "samples": [
+        {
+          "seconds": 0.714617531999977,
+          "compile_targets": [
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "actions": {
+            "ElideJavac": 5,
+            "ElideJavacAbi": 5
+          },
+          "execution_log": "java-elide_pruned-multi_module_api-1.json"
+        },
+        {
+          "seconds": 0.7640290140000161,
+          "compile_targets": [
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "actions": {
+            "ElideJavac": 5,
+            "ElideJavacAbi": 5
+          },
+          "execution_log": "java-elide_pruned-multi_module_api-2.json"
+        },
+        {
+          "seconds": 0.7405673869999987,
+          "compile_targets": [
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "actions": {
+            "ElideJavac": 5,
+            "ElideJavacAbi": 5
+          },
+          "execution_log": "java-elide_pruned-multi_module_api-3.json"
+        },
+        {
+          "seconds": 0.7159505029999877,
+          "compile_targets": [
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "actions": {
+            "ElideJavac": 5,
+            "ElideJavacAbi": 5
+          },
+          "execution_log": "java-elide_pruned-multi_module_api-4.json"
+        },
+        {
+          "seconds": 0.7315519229999836,
+          "compile_targets": [
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "actions": {
+            "ElideJavac": 5,
+            "ElideJavacAbi": 5
+          },
+          "execution_log": "java-elide_pruned-multi_module_api-5.json"
+        }
+      ]
+    },
+    {
+      "language": "java",
+      "mode": "elide_pruned",
+      "scenario": "unused_dependency_api",
+      "samples": [
+        {
+          "seconds": 0.5837706329999719,
+          "compile_targets": [
+            "//spare:spare"
+          ],
+          "abi_targets": [
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//facade:facade",
+            "//spare:spare"
+          ],
+          "actions": {
+            "ElideJavac": 1,
+            "ElideJavacAbi": 5
+          },
+          "execution_log": "java-elide_pruned-unused_dependency_api-1.json"
+        },
+        {
+          "seconds": 0.5774419850000072,
+          "compile_targets": [
+            "//spare:spare"
+          ],
+          "abi_targets": [
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//facade:facade",
+            "//spare:spare"
+          ],
+          "actions": {
+            "ElideJavac": 1,
+            "ElideJavacAbi": 5
+          },
+          "execution_log": "java-elide_pruned-unused_dependency_api-2.json"
+        },
+        {
+          "seconds": 0.5826468600000112,
+          "compile_targets": [
+            "//spare:spare"
+          ],
+          "abi_targets": [
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//facade:facade",
+            "//spare:spare"
+          ],
+          "actions": {
+            "ElideJavac": 1,
+            "ElideJavacAbi": 5
+          },
+          "execution_log": "java-elide_pruned-unused_dependency_api-3.json"
+        },
+        {
+          "seconds": 0.5826869750000014,
+          "compile_targets": [
+            "//spare:spare"
+          ],
+          "abi_targets": [
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//facade:facade",
+            "//spare:spare"
+          ],
+          "actions": {
+            "ElideJavac": 1,
+            "ElideJavacAbi": 5
+          },
+          "execution_log": "java-elide_pruned-unused_dependency_api-4.json"
+        },
+        {
+          "seconds": 0.5566662640000004,
+          "compile_targets": [
+            "//spare:spare"
+          ],
+          "abi_targets": [
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//facade:facade",
+            "//spare:spare"
+          ],
+          "actions": {
+            "ElideJavac": 1,
+            "ElideJavacAbi": 5
+          },
+          "execution_log": "java-elide_pruned-unused_dependency_api-5.json"
+        }
+      ]
+    },
+    {
+      "language": "java",
+      "mode": "elide_pruned",
+      "scenario": "inline_or_constant",
+      "samples": [
+        {
+          "seconds": 0.5965577459999736,
+          "compile_targets": [
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "actions": {
+            "ElideJavac": 2,
+            "ElideJavacAbi": 5
+          },
+          "execution_log": "java-elide_pruned-inline_or_constant-1.json"
+        },
+        {
+          "seconds": 0.6480335530000048,
+          "compile_targets": [
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "actions": {
+            "ElideJavac": 2,
+            "ElideJavacAbi": 5
+          },
+          "execution_log": "java-elide_pruned-inline_or_constant-2.json"
+        },
+        {
+          "seconds": 0.661284084999977,
+          "compile_targets": [
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "actions": {
+            "ElideJavac": 2,
+            "ElideJavacAbi": 5
+          },
+          "execution_log": "java-elide_pruned-inline_or_constant-3.json"
+        },
+        {
+          "seconds": 0.6172181740000156,
+          "compile_targets": [
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "actions": {
+            "ElideJavac": 2,
+            "ElideJavacAbi": 5
+          },
+          "execution_log": "java-elide_pruned-inline_or_constant-4.json"
+        },
+        {
+          "seconds": 0.671164913000041,
+          "compile_targets": [
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "actions": {
+            "ElideJavac": 2,
+            "ElideJavacAbi": 5
+          },
+          "execution_log": "java-elide_pruned-inline_or_constant-5.json"
+        }
+      ]
+    },
+    {
+      "language": "java",
+      "mode": "elide_fused",
+      "scenario": "no_op",
+      "samples": [
+        {
+          "seconds": 0.18092936200002896,
+          "compile_targets": [],
+          "abi_targets": [],
+          "actions": {},
+          "execution_log": "java-elide_fused-no_op-1.json"
+        },
+        {
+          "seconds": 0.17766332299999021,
+          "compile_targets": [],
+          "abi_targets": [],
+          "actions": {},
+          "execution_log": "java-elide_fused-no_op-2.json"
+        },
+        {
+          "seconds": 0.16860464399997,
+          "compile_targets": [],
+          "abi_targets": [],
+          "actions": {},
+          "execution_log": "java-elide_fused-no_op-3.json"
+        },
+        {
+          "seconds": 0.18070144799997934,
+          "compile_targets": [],
+          "abi_targets": [],
+          "actions": {},
+          "execution_log": "java-elide_fused-no_op-4.json"
+        },
+        {
+          "seconds": 0.17801186100001587,
+          "compile_targets": [],
+          "abi_targets": [],
+          "actions": {},
+          "execution_log": "java-elide_fused-no_op-5.json"
+        }
+      ]
+    },
+    {
+      "language": "java",
+      "mode": "elide_fused",
+      "scenario": "comment",
+      "samples": [
+        {
+          "seconds": 0.28565772900003594,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 1
+          },
+          "execution_log": "java-elide_fused-comment-1.json"
+        },
+        {
+          "seconds": 0.2958152119999795,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 1
+          },
+          "execution_log": "java-elide_fused-comment-2.json"
+        },
+        {
+          "seconds": 0.2739078090000362,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 1
+          },
+          "execution_log": "java-elide_fused-comment-3.json"
+        },
+        {
+          "seconds": 0.296813353999994,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 1
+          },
+          "execution_log": "java-elide_fused-comment-4.json"
+        },
+        {
+          "seconds": 0.28320008700001154,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 1
+          },
+          "execution_log": "java-elide_fused-comment-5.json"
+        }
+      ]
+    },
+    {
+      "language": "java",
+      "mode": "elide_fused",
+      "scenario": "body",
+      "samples": [
+        {
+          "seconds": 0.2724043410000263,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 1
+          },
+          "execution_log": "java-elide_fused-body-1.json"
+        },
+        {
+          "seconds": 0.26321534199996677,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 1
+          },
+          "execution_log": "java-elide_fused-body-2.json"
+        },
+        {
+          "seconds": 0.2642233639999745,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 1
+          },
+          "execution_log": "java-elide_fused-body-3.json"
+        },
+        {
+          "seconds": 0.27115239599999086,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 1
+          },
+          "execution_log": "java-elide_fused-body-4.json"
+        },
+        {
+          "seconds": 0.26646656700000904,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 1
+          },
+          "execution_log": "java-elide_fused-body-5.json"
+        }
+      ]
+    },
+    {
+      "language": "java",
+      "mode": "elide_fused",
+      "scenario": "private_member",
+      "samples": [
+        {
+          "seconds": 0.31262086800001043,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 1
+          },
+          "execution_log": "java-elide_fused-private_member-1.json"
+        },
+        {
+          "seconds": 0.29156921599997077,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 1
+          },
+          "execution_log": "java-elide_fused-private_member-2.json"
+        },
+        {
+          "seconds": 0.26378429400000414,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 1
+          },
+          "execution_log": "java-elide_fused-private_member-3.json"
+        },
+        {
+          "seconds": 0.26012035700000524,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 1
+          },
+          "execution_log": "java-elide_fused-private_member-4.json"
+        },
+        {
+          "seconds": 0.25187223500000755,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 1
+          },
+          "execution_log": "java-elide_fused-private_member-5.json"
+        }
+      ]
+    },
+    {
+      "language": "java",
+      "mode": "elide_fused",
+      "scenario": "internal_module_api",
+      "samples": [
+        {
+          "seconds": 0.6077673730000015,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 6
+          },
+          "execution_log": "java-elide_fused-internal_module_api-1.json"
+        },
+        {
+          "seconds": 0.5799932820000322,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 6
+          },
+          "execution_log": "java-elide_fused-internal_module_api-2.json"
+        },
+        {
+          "seconds": 0.593907191000028,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 6
+          },
+          "execution_log": "java-elide_fused-internal_module_api-3.json"
+        },
+        {
+          "seconds": 0.668941330999985,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 6
+          },
+          "execution_log": "java-elide_fused-internal_module_api-4.json"
+        },
+        {
+          "seconds": 0.5924062459999959,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 6
+          },
+          "execution_log": "java-elide_fused-internal_module_api-5.json"
+        }
+      ]
+    },
+    {
+      "language": "java",
+      "mode": "elide_fused",
+      "scenario": "public_module_api",
+      "samples": [
+        {
+          "seconds": 0.5268177910000418,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//facade:facade"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 5
+          },
+          "execution_log": "java-elide_fused-public_module_api-1.json"
+        },
+        {
+          "seconds": 0.5598679540000262,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//facade:facade"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 5
+          },
+          "execution_log": "java-elide_fused-public_module_api-2.json"
+        },
+        {
+          "seconds": 0.5007754839999734,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//facade:facade"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 5
+          },
+          "execution_log": "java-elide_fused-public_module_api-3.json"
+        },
+        {
+          "seconds": 0.5322531620000177,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//facade:facade"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 5
+          },
+          "execution_log": "java-elide_fused-public_module_api-4.json"
+        },
+        {
+          "seconds": 0.4925644599999828,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//facade:facade"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 5
+          },
+          "execution_log": "java-elide_fused-public_module_api-5.json"
+        }
+      ]
+    },
+    {
+      "language": "java",
+      "mode": "elide_fused",
+      "scenario": "multi_file_body",
+      "samples": [
+        {
+          "seconds": 0.263846228000034,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 1
+          },
+          "execution_log": "java-elide_fused-multi_file_body-1.json"
+        },
+        {
+          "seconds": 0.2579695969999989,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 1
+          },
+          "execution_log": "java-elide_fused-multi_file_body-2.json"
+        },
+        {
+          "seconds": 0.276784919000022,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 1
+          },
+          "execution_log": "java-elide_fused-multi_file_body-3.json"
+        },
+        {
+          "seconds": 0.3345126760000312,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 1
+          },
+          "execution_log": "java-elide_fused-multi_file_body-4.json"
+        },
+        {
+          "seconds": 0.32097830099996827,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 1
+          },
+          "execution_log": "java-elide_fused-multi_file_body-5.json"
+        }
+      ]
+    },
+    {
+      "language": "java",
+      "mode": "elide_fused",
+      "scenario": "multi_module_body",
+      "samples": [
+        {
+          "seconds": 0.37927377700003717,
+          "compile_targets": [
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 2
+          },
+          "execution_log": "java-elide_fused-multi_module_body-1.json"
+        },
+        {
+          "seconds": 0.34911368799998854,
+          "compile_targets": [
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 2
+          },
+          "execution_log": "java-elide_fused-multi_module_body-2.json"
+        },
+        {
+          "seconds": 0.3290501939999899,
+          "compile_targets": [
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 2
+          },
+          "execution_log": "java-elide_fused-multi_module_body-3.json"
+        },
+        {
+          "seconds": 0.36089826300002414,
+          "compile_targets": [
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 2
+          },
+          "execution_log": "java-elide_fused-multi_module_body-4.json"
+        },
+        {
+          "seconds": 0.3586080910000078,
+          "compile_targets": [
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 2
+          },
+          "execution_log": "java-elide_fused-multi_module_body-5.json"
+        }
+      ]
+    },
+    {
+      "language": "java",
+      "mode": "elide_fused",
+      "scenario": "multi_module_api",
+      "samples": [
+        {
+          "seconds": 0.6079312749999985,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 6
+          },
+          "execution_log": "java-elide_fused-multi_module_api-1.json"
+        },
+        {
+          "seconds": 0.6197902679999743,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 6
+          },
+          "execution_log": "java-elide_fused-multi_module_api-2.json"
+        },
+        {
+          "seconds": 0.6437995980000437,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 6
+          },
+          "execution_log": "java-elide_fused-multi_module_api-3.json"
+        },
+        {
+          "seconds": 0.6079972780000276,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 6
+          },
+          "execution_log": "java-elide_fused-multi_module_api-4.json"
+        },
+        {
+          "seconds": 0.6313864480000007,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 6
+          },
+          "execution_log": "java-elide_fused-multi_module_api-5.json"
+        }
+      ]
+    },
+    {
+      "language": "java",
+      "mode": "elide_fused",
+      "scenario": "unused_dependency_api",
+      "samples": [
+        {
+          "seconds": 0.6173738009999852,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//facade:facade",
+            "//spare:spare"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 6
+          },
+          "execution_log": "java-elide_fused-unused_dependency_api-1.json"
+        },
+        {
+          "seconds": 0.6265058419999718,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//facade:facade",
+            "//spare:spare"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 6
+          },
+          "execution_log": "java-elide_fused-unused_dependency_api-2.json"
+        },
+        {
+          "seconds": 0.597408143999985,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//facade:facade",
+            "//spare:spare"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 6
+          },
+          "execution_log": "java-elide_fused-unused_dependency_api-3.json"
+        },
+        {
+          "seconds": 0.5779986370000074,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//facade:facade",
+            "//spare:spare"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 6
+          },
+          "execution_log": "java-elide_fused-unused_dependency_api-4.json"
+        },
+        {
+          "seconds": 0.571139990000006,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//facade:facade",
+            "//spare:spare"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 6
+          },
+          "execution_log": "java-elide_fused-unused_dependency_api-5.json"
+        }
+      ]
+    },
+    {
+      "language": "java",
+      "mode": "elide_fused",
+      "scenario": "inline_or_constant",
+      "samples": [
+        {
+          "seconds": 0.5641834090000089,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 6
+          },
+          "execution_log": "java-elide_fused-inline_or_constant-1.json"
+        },
+        {
+          "seconds": 0.5880540250000195,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 6
+          },
+          "execution_log": "java-elide_fused-inline_or_constant-2.json"
+        },
+        {
+          "seconds": 0.5958243069999867,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 6
+          },
+          "execution_log": "java-elide_fused-inline_or_constant-3.json"
+        },
+        {
+          "seconds": 0.6170407769999997,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 6
+          },
+          "execution_log": "java-elide_fused-inline_or_constant-4.json"
+        },
+        {
+          "seconds": 0.6053299229999993,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 6
+          },
+          "execution_log": "java-elide_fused-inline_or_constant-5.json"
+        }
+      ]
+    },
+    {
+      "language": "java",
+      "mode": "elide_fused_pruned",
+      "scenario": "no_op",
+      "samples": [
+        {
+          "seconds": 0.17071877500001165,
+          "compile_targets": [],
+          "abi_targets": [],
+          "actions": {},
+          "execution_log": "java-elide_fused_pruned-no_op-1.json"
+        },
+        {
+          "seconds": 0.1647117119999848,
+          "compile_targets": [],
+          "abi_targets": [],
+          "actions": {},
+          "execution_log": "java-elide_fused_pruned-no_op-2.json"
+        },
+        {
+          "seconds": 0.21261432900001864,
+          "compile_targets": [],
+          "abi_targets": [],
+          "actions": {},
+          "execution_log": "java-elide_fused_pruned-no_op-3.json"
+        },
+        {
+          "seconds": 0.1744555569999875,
+          "compile_targets": [],
+          "abi_targets": [],
+          "actions": {},
+          "execution_log": "java-elide_fused_pruned-no_op-4.json"
+        },
+        {
+          "seconds": 0.19762337700001353,
+          "compile_targets": [],
+          "abi_targets": [],
+          "actions": {},
+          "execution_log": "java-elide_fused_pruned-no_op-5.json"
+        }
+      ]
+    },
+    {
+      "language": "java",
+      "mode": "elide_fused_pruned",
+      "scenario": "comment",
+      "samples": [
+        {
+          "seconds": 0.2938752850000128,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 1
+          },
+          "execution_log": "java-elide_fused_pruned-comment-1.json"
+        },
+        {
+          "seconds": 0.297943336000003,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 1
+          },
+          "execution_log": "java-elide_fused_pruned-comment-2.json"
+        },
+        {
+          "seconds": 0.29304618400004756,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 1
+          },
+          "execution_log": "java-elide_fused_pruned-comment-3.json"
+        },
+        {
+          "seconds": 0.30779120300002205,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 1
+          },
+          "execution_log": "java-elide_fused_pruned-comment-4.json"
+        },
+        {
+          "seconds": 0.3146273560000168,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 1
+          },
+          "execution_log": "java-elide_fused_pruned-comment-5.json"
+        }
+      ]
+    },
+    {
+      "language": "java",
+      "mode": "elide_fused_pruned",
+      "scenario": "body",
+      "samples": [
+        {
+          "seconds": 0.289536585999997,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 1
+          },
+          "execution_log": "java-elide_fused_pruned-body-1.json"
+        },
+        {
+          "seconds": 0.2972897660000058,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 1
+          },
+          "execution_log": "java-elide_fused_pruned-body-2.json"
+        },
+        {
+          "seconds": 0.29179783800003634,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 1
+          },
+          "execution_log": "java-elide_fused_pruned-body-3.json"
+        },
+        {
+          "seconds": 0.3099865419999901,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 1
+          },
+          "execution_log": "java-elide_fused_pruned-body-4.json"
+        },
+        {
+          "seconds": 0.29770350399996914,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 1
+          },
+          "execution_log": "java-elide_fused_pruned-body-5.json"
+        }
+      ]
+    },
+    {
+      "language": "java",
+      "mode": "elide_fused_pruned",
+      "scenario": "private_member",
+      "samples": [
+        {
+          "seconds": 0.28662273700001606,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 1
+          },
+          "execution_log": "java-elide_fused_pruned-private_member-1.json"
+        },
+        {
+          "seconds": 0.277802773000019,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 1
+          },
+          "execution_log": "java-elide_fused_pruned-private_member-2.json"
+        },
+        {
+          "seconds": 0.28226958499999455,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 1
+          },
+          "execution_log": "java-elide_fused_pruned-private_member-3.json"
+        },
+        {
+          "seconds": 0.2834115119999865,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 1
+          },
+          "execution_log": "java-elide_fused_pruned-private_member-4.json"
+        },
+        {
+          "seconds": 0.27985419200001616,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 1
+          },
+          "execution_log": "java-elide_fused_pruned-private_member-5.json"
+        }
+      ]
+    },
+    {
+      "language": "java",
+      "mode": "elide_fused_pruned",
+      "scenario": "internal_module_api",
+      "samples": [
+        {
+          "seconds": 0.3400587289999635,
+          "compile_targets": [
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 2
+          },
+          "execution_log": "java-elide_fused_pruned-internal_module_api-1.json"
+        },
+        {
+          "seconds": 0.3482023889999937,
+          "compile_targets": [
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 2
+          },
+          "execution_log": "java-elide_fused_pruned-internal_module_api-2.json"
+        },
+        {
+          "seconds": 0.35834168600001703,
+          "compile_targets": [
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 2
+          },
+          "execution_log": "java-elide_fused_pruned-internal_module_api-3.json"
+        },
+        {
+          "seconds": 0.36545157400001926,
+          "compile_targets": [
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 2
+          },
+          "execution_log": "java-elide_fused_pruned-internal_module_api-4.json"
+        },
+        {
+          "seconds": 0.34850468799999135,
+          "compile_targets": [
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 2
+          },
+          "execution_log": "java-elide_fused_pruned-internal_module_api-5.json"
+        }
+      ]
+    },
+    {
+      "language": "java",
+      "mode": "elide_fused_pruned",
+      "scenario": "public_module_api",
+      "samples": [
+        {
+          "seconds": 0.49205111300000226,
+          "compile_targets": [
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//facade:facade"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 4
+          },
+          "execution_log": "java-elide_fused_pruned-public_module_api-1.json"
+        },
+        {
+          "seconds": 0.4512706099999946,
+          "compile_targets": [
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//facade:facade"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 4
+          },
+          "execution_log": "java-elide_fused_pruned-public_module_api-2.json"
+        },
+        {
+          "seconds": 0.4577339249999568,
+          "compile_targets": [
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//facade:facade"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 4
+          },
+          "execution_log": "java-elide_fused_pruned-public_module_api-3.json"
+        },
+        {
+          "seconds": 0.44062115899998844,
+          "compile_targets": [
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//facade:facade"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 4
+          },
+          "execution_log": "java-elide_fused_pruned-public_module_api-4.json"
+        },
+        {
+          "seconds": 0.4653092730000026,
+          "compile_targets": [
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//facade:facade"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 4
+          },
+          "execution_log": "java-elide_fused_pruned-public_module_api-5.json"
+        }
+      ]
+    },
+    {
+      "language": "java",
+      "mode": "elide_fused_pruned",
+      "scenario": "multi_file_body",
+      "samples": [
+        {
+          "seconds": 0.27903110900001593,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 1
+          },
+          "execution_log": "java-elide_fused_pruned-multi_file_body-1.json"
+        },
+        {
+          "seconds": 0.28182307400004447,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 1
+          },
+          "execution_log": "java-elide_fused_pruned-multi_file_body-2.json"
+        },
+        {
+          "seconds": 0.28796290599996155,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 1
+          },
+          "execution_log": "java-elide_fused_pruned-multi_file_body-3.json"
+        },
+        {
+          "seconds": 0.3037566459999539,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 1
+          },
+          "execution_log": "java-elide_fused_pruned-multi_file_body-4.json"
+        },
+        {
+          "seconds": 0.2918949080000175,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 1
+          },
+          "execution_log": "java-elide_fused_pruned-multi_file_body-5.json"
+        }
+      ]
+    },
+    {
+      "language": "java",
+      "mode": "elide_fused_pruned",
+      "scenario": "multi_module_body",
+      "samples": [
+        {
+          "seconds": 0.3470433320000552,
+          "compile_targets": [
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 2
+          },
+          "execution_log": "java-elide_fused_pruned-multi_module_body-1.json"
+        },
+        {
+          "seconds": 0.35422320999998647,
+          "compile_targets": [
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 2
+          },
+          "execution_log": "java-elide_fused_pruned-multi_module_body-2.json"
+        },
+        {
+          "seconds": 0.3668153099999927,
+          "compile_targets": [
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 2
+          },
+          "execution_log": "java-elide_fused_pruned-multi_module_body-3.json"
+        },
+        {
+          "seconds": 0.3605614559999708,
+          "compile_targets": [
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 2
+          },
+          "execution_log": "java-elide_fused_pruned-multi_module_body-4.json"
+        },
+        {
+          "seconds": 0.3700495989999695,
+          "compile_targets": [
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 2
+          },
+          "execution_log": "java-elide_fused_pruned-multi_module_body-5.json"
+        }
+      ]
+    },
+    {
+      "language": "java",
+      "mode": "elide_fused_pruned",
+      "scenario": "multi_module_api",
+      "samples": [
+        {
+          "seconds": 0.5375370149999981,
+          "compile_targets": [
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 5
+          },
+          "execution_log": "java-elide_fused_pruned-multi_module_api-1.json"
+        },
+        {
+          "seconds": 0.5462218800000187,
+          "compile_targets": [
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 5
+          },
+          "execution_log": "java-elide_fused_pruned-multi_module_api-2.json"
+        },
+        {
+          "seconds": 0.5713738449999823,
+          "compile_targets": [
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 5
+          },
+          "execution_log": "java-elide_fused_pruned-multi_module_api-3.json"
+        },
+        {
+          "seconds": 0.5342878459999838,
+          "compile_targets": [
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 5
+          },
+          "execution_log": "java-elide_fused_pruned-multi_module_api-4.json"
+        },
+        {
+          "seconds": 0.5324473510000303,
+          "compile_targets": [
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 5
+          },
+          "execution_log": "java-elide_fused_pruned-multi_module_api-5.json"
+        }
+      ]
+    },
+    {
+      "language": "java",
+      "mode": "elide_fused_pruned",
+      "scenario": "unused_dependency_api",
+      "samples": [
+        {
+          "seconds": 0.2643680790000076,
+          "compile_targets": [
+            "//spare:spare"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 1
+          },
+          "execution_log": "java-elide_fused_pruned-unused_dependency_api-1.json"
+        },
+        {
+          "seconds": 0.27686247999997704,
+          "compile_targets": [
+            "//spare:spare"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 1
+          },
+          "execution_log": "java-elide_fused_pruned-unused_dependency_api-2.json"
+        },
+        {
+          "seconds": 0.26799582599994665,
+          "compile_targets": [
+            "//spare:spare"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 1
+          },
+          "execution_log": "java-elide_fused_pruned-unused_dependency_api-3.json"
+        },
+        {
+          "seconds": 0.268620081999984,
+          "compile_targets": [
+            "//spare:spare"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 1
+          },
+          "execution_log": "java-elide_fused_pruned-unused_dependency_api-4.json"
+        },
+        {
+          "seconds": 0.2816145360000064,
+          "compile_targets": [
+            "//spare:spare"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 1
+          },
+          "execution_log": "java-elide_fused_pruned-unused_dependency_api-5.json"
+        }
+      ]
+    },
+    {
+      "language": "java",
+      "mode": "elide_fused_pruned",
+      "scenario": "inline_or_constant",
+      "samples": [
+        {
+          "seconds": 0.3457498270000201,
+          "compile_targets": [
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 2
+          },
+          "execution_log": "java-elide_fused_pruned-inline_or_constant-1.json"
+        },
+        {
+          "seconds": 0.3369187789999728,
+          "compile_targets": [
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 2
+          },
+          "execution_log": "java-elide_fused_pruned-inline_or_constant-2.json"
+        },
+        {
+          "seconds": 0.3838911809999672,
+          "compile_targets": [
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 2
+          },
+          "execution_log": "java-elide_fused_pruned-inline_or_constant-3.json"
+        },
+        {
+          "seconds": 0.34652672300001086,
+          "compile_targets": [
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 2
+          },
+          "execution_log": "java-elide_fused_pruned-inline_or_constant-4.json"
+        },
+        {
+          "seconds": 0.35975898599997436,
+          "compile_targets": [
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 2
+          },
+          "execution_log": "java-elide_fused_pruned-inline_or_constant-5.json"
+        }
+      ]
+    }
+  ]
+}

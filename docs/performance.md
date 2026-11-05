@@ -26,6 +26,8 @@ resource-only edits do not recompile the library or its consumers.
 This is opt-in and requires Java ABI avoidance. Consumers wait for full
 compilation, so saving an action can trade away useful graph parallelism.
 Use the Java `elide_fused` and `elide_fused_pruned` benchmark modes to compare.
+The [hosted Java results](../benchmarks/JAVA_FUSED_RESULTS.md) retain wins, regressions,
+and timing outliers.
 
 ## Combined Kotlin ABI emission
 
