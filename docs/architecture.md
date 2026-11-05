@@ -43,11 +43,16 @@ See [testing](testing.md) for contract and execution coverage and
 ## Tool input boundaries
 
 Downloaded and local Elide toolchains expose separate input sets. JVM compilation,
-archive operations, and Java inspection/documentation omit `lib/llvm`, `lib/static`, native-image
-support, Python resources, and Maven tools. C binding generation adds LLVM back
+archive operations, and Java inspection/documentation omit `lib/llvm`, `lib/resources/jextract`, `lib/static`, native-image
+support, Python resources, and Maven tools. C binding generation adds LLVM and jextract resources back
 through `jextract_tool_files`; native-image keeps its full native tool input set.
 This reduces compiler action input discovery and the blobs required by a cold
 remote cache without stripping files from the downloaded distribution.
+
+For the Linux x86-64 Elide 1.6.2 distribution, separating jextract resources alone
+removes 798 files (18,042,197 bytes) from each ordinary JVM compiler's tool inputs.
+The C binding action retains those files. This is an input-size measurement,
+not a compilation-time speedup claim.
 
 Custom `elide_toolchain` declarations may supply additional C binding inputs via
 `jextract_tool_files`. It always includes `compile_tool_files`; omitting the new
