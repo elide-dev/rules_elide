@@ -53,7 +53,11 @@ elide_%s_binary(name = "app", srcs = ["Main.%s"], deps = [":core"], main_class =
                 (work / "Inlined.kt").write_text("fun main() { System.out.println(Core.MAGIC + Core.inlineValue()) }\n")
             else:
                 (work / "Inlined.java").write_text("public class Inlined { public static void main(String[] args) { System.out.println(Core.MAGIC); } }\n")
-            for workers, pruning in [("true", "false"), ("false", "false"), ("true", "true"), ("false", "true")]:
+            configurations = [(workers, pruning, "false") for workers, pruning in
+                              [("true", "false"), ("false", "false"), ("true", "true"), ("false", "true")]]
+            if not kotlin:
+                configurations += [("true", "false", "true"), ("true", "true", "true")]
+            for workers, pruning, classpath_cache in configurations:
                 previous = None
                 resource = "A"
                 cases = [("initial", 1, 2, 3, "", True),
@@ -72,11 +76,12 @@ elide_%s_binary(name = "app", srcs = ["Main.%s"], deps = [":core"], main_class =
                         if name == "resource":
                             resource = "B"
                         (work / "resource.txt").write_text(resource)
-                    log = work / f"{language}-{workers}-{pruning}-{name}.json"
+                    log = work / f"{language}-{workers}-{pruning}-{classpath_cache}-{name}.json"
                     subprocess.run(bazel + ["build", "//:core", "//:app", "//:inlined", *sys.argv[1:],
                         f"--@rules_elide//config/{config}:abi_compile_avoidance=true",
                         f"--@rules_elide//config/{config}:abi_from_compile=true",
                         "--@rules_elide//elide:use_workers=" + workers,
+                        "--@rules_elide//config/javac:classpath_cache=" + classpath_cache,
                         "--@rules_elide//elide:prune_unused_inputs=" + pruning,
                         "--java_runtime_version=remotejdk_21", "--tool_java_runtime_version=remotejdk_21",
                         "--disk_cache=", "--remote_cache=", "--remote_executor=",
@@ -85,7 +90,7 @@ elide_%s_binary(name = "app", srcs = ["Main.%s"], deps = [":core"], main_class =
                     assert not any(a.get("mnemonic") == compiler + "Abi" for a in actions), actions
                     rebuilt = {a.get("targetLabel") for a in actions if a.get("mnemonic") == compiler}
                     digest = hashlib.sha256((work / "bazel-bin/core_abi.jar").read_bytes()).digest()
-                    context = (language, workers, pruning, name)
+                    context = (language, workers, pruning, classpath_cache, name)
                     if previous is not None:
                         assert (digest != previous) == changed, (context, "header")
                         assert ("//:app" in rebuilt) == changed, (context, rebuilt)
@@ -101,4 +106,4 @@ elide_%s_binary(name = "app", srcs = ["Main.%s"], deps = [":core"], main_class =
                     assert result == expected, (context, "inlined", result, expected)
     finally:
         subprocess.run(bazel + ["shutdown"], cwd=work, check=False)
-print("Java/Kotlin fused ABI headers, edit propagation, and runtime outputs pass in both worker modes with pruning on/off; Java resource edits preserve compile caches.")
+print("Java/Kotlin fused ABI headers, edit propagation, and runtime outputs pass in both worker modes with pruning on/off; Java classpath caching invalidates changed dependency jars and resource edits preserve compile caches.")

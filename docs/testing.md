@@ -13,6 +13,7 @@ is not the same as checking the generated artifacts.
 | KotlinBuilder | Flag parsing, native/legacy routing, ABI/jdeps plans, strict-deps classifications, worker protocol | `tests/kotlin_builder/` |
 | Python adapter | Runtime identity/version, launcher and stdlib/helper input closure | `tests/python_toolchain_test.bzl` |
 | JVM execution | Javadoc HTML, fixed archive timestamps, binding symbols, bytecode/dependency text, unused-vs-used reports in worker and one-shot modes | `e2e/integration/verify_jvm_tools.py` |
+| Combined ABI emission | Header digests, runtime outputs, body/API/constant/inline/resource edits, worker and one-shot modes, pruning, and Java classpath-cache invalidation | `e2e/integration/verify_fused_abi.py` |
 | Pruning correctness | Changing unused dependency ABI skips consumer compilation; changing used dependency ABI rebuilds it | `e2e/integration/verify_pruning.py` |
 | Processor execution | Generated Java/Kotlin compiled into output jars, processor options/resources, source jars, ABI and jdeps outputs | `e2e/kotlin_builder/verify_outputs.py` |
 | Python execution | Transitive imports, data, runtime identity, module mode, arguments, child exit codes, expected Bazel test failure, environment isolation, Python-version selection | `e2e/python_overlay/` |
