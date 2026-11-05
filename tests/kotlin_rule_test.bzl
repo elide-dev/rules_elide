@@ -70,6 +70,7 @@ def _incremental_output_test_impl(ctx):
     actions = analysistest.target_actions(env)
     compile = [a for a in actions if a.mnemonic == "ElideKotlinc"][0]
     asserts.true(env, any([arg.startswith("--elide=") for arg in compile.argv]))
+    asserts.false(env, "--unused-inputs" in compile.argv, "IC must retain all inputs")
     asserts.false(env, any([f.is_directory for f in compile.outputs.to_list()]), "IC must not depend on a declared classes tree surviving")
     asserts.true(env, any([f.basename.endswith(".jar") for f in compile.outputs.to_list()]))
     asserts.equals(env, 0, len([a for a in actions if a.mnemonic == "ElideKotlincPack"]))
@@ -79,6 +80,32 @@ def _incremental_output_test_impl(ctx):
 _incremental_output_test = analysistest.make(
     _incremental_output_test_impl,
     config_settings = {"@@//config/kotlinc:incremental": True},  # buildifier: disable=canonical-repository
+)
+
+_incremental_on_test = analysistest.make(
+    _incremental_output_test_impl,
+    config_settings = {
+        "@@//config/kotlinc:incremental": False,  # buildifier: disable=canonical-repository
+        "@@//elide:prune_unused_inputs": True,  # buildifier: disable=canonical-repository
+    },
+)
+
+def _incremental_off_test_impl(ctx):
+    env = analysistest.begin(ctx)
+    actions = analysistest.target_actions(env)
+    compile = [a for a in actions if a.mnemonic == "ElideKotlinc"][0]
+    asserts.false(env, any([arg.startswith("--elide=") for arg in compile.argv]))
+    asserts.true(env, "--emit-abi" in compile.argv, "disabled IC must allow combined emission")
+    asserts.true(env, "--unused-inputs" in compile.argv, "disabled IC must allow dependency pruning")
+    asserts.equals(env, 0, len([a for a in actions if a.mnemonic == "ElideKotlincAbi"]))
+    return analysistest.end(env)
+
+_incremental_off_test = analysistest.make(
+    _incremental_off_test_impl,
+    config_settings = {
+        "@@//config/kotlinc:incremental": True,  # buildifier: disable=canonical-repository
+        "@@//elide:prune_unused_inputs": True,  # buildifier: disable=canonical-repository
+    },
 )
 
 def _abi_avoidance_test_impl(ctx):
@@ -486,6 +513,17 @@ def kotlin_rule_test_suite(name):
         name = "kt_library_action_test",
         target_under_test = ":_kt_lib_fixture",
     )
+    for mode in ["on", "off"]:
+        elide_kotlin_library(
+            name = "_kt_incremental_" + mode,
+            srcs = [":_kt_hello_src"],
+            incremental_mode = mode,
+            abi_mode = "combined",
+            testonly = True,
+            tags = ["manual"],
+        )
+    _incremental_on_test(name = "kt_incremental_on_test", target_under_test = ":_kt_incremental_on")
+    _incremental_off_test(name = "kt_incremental_off_test", target_under_test = ":_kt_incremental_off")
     _incremental_output_test(name = "kt_incremental_output_test", target_under_test = ":_kt_lib_fixture")
     _builtin_plugins_test(
         name = "kt_builtin_plugins_test",
@@ -544,6 +582,8 @@ def kotlin_rule_test_suite(name):
             ":kt_library_providers_test",
             ":kt_library_action_test",
             ":kt_incremental_output_test",
+            ":kt_incremental_on_test",
+            ":kt_incremental_off_test",
             ":kt_builtin_plugins_test",
             ":kt_associates_test",
             ":kt_resources_test",

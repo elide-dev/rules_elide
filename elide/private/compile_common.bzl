@@ -123,6 +123,10 @@ _WORKER_EXEC_REQUIREMENTS = {
 # action env, not the scrubbed ambient env).
 _ELIDE_BAZEL_ENV = {"ELIDE_BAZEL": "1"}
 
+def _incremental_enabled(ctx):
+    mode = getattr(ctx.attr, "incremental_mode", "inherit")
+    return ctx.attr._incremental[BuildSettingInfo].value if mode == "inherit" else mode == "on"
+
 def _metadata(ctx, output):
     jdeps = ctx.actions.declare_file(output.basename + ".jdeps", sibling = output) if ctx.attr._emit_jdeps[BuildSettingInfo].value else None
 
@@ -130,7 +134,7 @@ def _metadata(ctx, output):
     # reuse undeclared state. Keep all inputs for these configurations.
     opts = getattr(ctx.attr, "javac_opts", []) + getattr(ctx.attr, "kotlinc_opts", [])
     opaque = bool(ctx.attr.plugins) or _has_exported_processors(ctx.attr.deps) or bool(getattr(ctx.attr, "builtin_plugins", []))
-    opaque = opaque or ctx.attr._incremental[BuildSettingInfo].value or any([
+    opaque = opaque or _incremental_enabled(ctx) or any([
         opt.startswith(prefix)
         for opt in opts
         for prefix in ["-processor", "--processor", "-proc:", "-A", "-Xplugin", "-P"]
@@ -370,11 +374,9 @@ def run_kotlinc(ctx, output_jar):
 
     single_kt_only = has_kt and not has_java and not has_res
 
-    # Incremental compilation (opt-in via //config/kotlinc:incremental). kotlinc IC tracks
-    # per-class files, so it requires a classes *directory* output (`-d <dir>`),
-    # not a jar. When enabled we compile to a tree-artifact dir with a stable,
-    # per-target, undeclared cache dir, then pack the dir into `kt_jar` below.
-    incremental = ctx.attr._incremental[BuildSettingInfo].value and has_kt
+    # The adapter retains classes and IC state together in private storage,
+    # then publishes a complete jar. Targets can override the global opt-in.
+    incremental = _incremental_enabled(ctx) and has_kt
 
     # Karbine ABI compile-avoidance (opt-in via //config/kotlinc:abi_compile_avoidance,
     # rules issue #11). A dedicated codegen-free `elide kotlinc --abi-only` pass

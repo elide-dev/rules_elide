@@ -86,7 +86,9 @@ Native Kotlin IC has a real-toolchain regression in
 checks complete output after body edits, deleted nested classes, added/deleted
 sources, failed compilation and recovery, dependency constant changes, compiler
 option changes, and worker restart. Runtime assertions and jar-content checks run
-with persistent workers, sandboxed workers, and one-shot execution. The standalone
+with persistent workers, sandboxed workers, and one-shot execution. A selective
+layout also enables IC only for Core while consumers use combined headers and
+pruning, with global IC disabled. The standalone
 `e2e/ic_correctness/output_recreation.py` intentionally remains a failing guard
 against the underlying Elide 1.6.2 behavior; native rules use the adapter to avoid
 that output/cache lifecycle.

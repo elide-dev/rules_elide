@@ -71,6 +71,16 @@ class BaselineTest(unittest.TestCase):
             fixture(root, "java", "elide_fused", 3, 2)
             self.assertIn('javac_opts=["--release", "21"]', (root / "core/BUILD.bazel").read_text())
 
+    def test_selective_incremental_only_applies_to_core(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            fixture(root, "kotlin", "elide_selective", 3, 2)
+            self.assertIn('incremental_mode="on"', (root / "core/BUILD.bazel").read_text())
+            for package in ("facade", "clients", "app", "spare"):
+                build = (root / package / "BUILD.bazel").read_text()
+                self.assertIn('incremental_mode="off"', build)
+                self.assertIn('abi_mode="combined"', build)
+
     def test_hybrid_uses_early_core_headers_and_combined_consumers(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)

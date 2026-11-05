@@ -32,12 +32,18 @@ elide_kotlin_binary(name="app", srcs=["Main.kt"], deps=[":core"], main_class="Ma
             return {name: jar.read(name) for name in jar.namelist()}
 
     try:
-        for workers, sandboxed in ((True, False), (False, False), (True, True)):
-            (work / "BUILD.bazel").write_text(build_file)
+        for workers, sandboxed, selective in ((True, False, False), (False, False, False), (True, True, False), (True, False, True)):
+            selected_build = build_file
+            if selective:
+                selected_build = selected_build.replace('name="core"', 'incremental_mode="on", abi_mode="combined", name="core"')
+                for target in ("dep", "app"):
+                    selected_build = selected_build.replace(f'name="{target}"', f'incremental_mode="off", abi_mode="combined", name="{target}"')
+            (work / "BUILD.bazel").write_text(selected_build)
             (work / "Dep.kt").write_text("object Dep { const val OFFSET = 0 }\n")
             flags = [*sys.argv[1:], "--java_runtime_version=remotejdk_21",
                      "--tool_java_runtime_version=remotejdk_21", "--disk_cache=", "--remote_cache=",
-                     "--remote_executor=", "--worker_max_instances=ElideKotlinc=1", "--@rules_elide//config/kotlinc:incremental=true",
+                     "--remote_executor=", "--worker_max_instances=ElideKotlinc=1", "--@rules_elide//config/kotlinc:incremental=" + str(not selective).lower(),
+                     "--@rules_elide//elide:prune_unused_inputs=" + str(selective).lower(),
                      "--@rules_elide//config/kotlinc:abi_compile_avoidance=true",
                      "--@rules_elide//elide:use_workers=" + str(workers).lower(),
                      "--worker_sandboxing=" + str(sandboxed).lower()]
@@ -45,7 +51,7 @@ elide_kotlin_binary(name="app", srcs=["Main.kt"], deps=[":core"], main_class="Ma
             subprocess.run(command + ["clean"], cwd=work, check=True)
 
             def build(expected=None, fails=False, cached=False):
-                extra = ["--disk_cache=" + str(work / f"action-cache-{workers}-{sandboxed}")] if cached else []
+                extra = ["--disk_cache=" + str(work / f"action-cache-{workers}-{sandboxed}-{selective}")] if cached else []
                 result = subprocess.run(command + ["build", ":app", *flags, *extra,
                                                   "--execution_log_json_file=" + str(work / "execution.json")], cwd=work)
                 assert (result.returncode != 0) == fails, (workers, sandboxed, result.returncode)
@@ -86,7 +92,7 @@ elide_kotlin_binary(name="app", srcs=["Main.kt"], deps=[":core"], main_class="Ma
             build(28)
             assert "B.class" not in contents(), "Deleted source class survived"
             assert "C.class" in contents(), "Added source class missing"
-            (work / "BUILD.bazel").write_text(build_file.replace('module_name="probe"', 'module_name="probe_changed"'))
+            (work / "BUILD.bazel").write_text(selected_build.replace('module_name="probe"', 'module_name="probe_changed"'))
             build(28)
             assert "META-INF/probe.kotlin_module" not in contents(), "Old compiler-option output survived"
             assert "META-INF/probe_changed.kotlin_module" in contents()
@@ -115,6 +121,6 @@ elide_kotlin_binary(name="app", srcs=["Main.kt"], deps=[":core"], main_class="Ma
             build(68)
             assert contents() == warm, "Warm IC output differs from cold worker output"
             (work / "src/C.kt").unlink()
-            print(f"Native IC complete output: workers={workers}, sandboxed={sandboxed}", flush=True)
+            print(f"Native IC complete output: workers={workers}, sandboxed={sandboxed}, selective={selective}", flush=True)
     finally:
         subprocess.run(command + ["shutdown"], cwd=work)

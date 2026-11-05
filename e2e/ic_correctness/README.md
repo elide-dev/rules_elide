@@ -69,3 +69,8 @@ execution. It also verifies an action-cache restoration followed by a new edit
 without resetting the worker; restored outputs must not confuse private IC state.
 Execution logs establish that the restore actually hit the cache and that the
 following edit actually compiled. That guard runs in the JVM verification suite.
+
+The guard also runs a selective layout with global IC disabled, Core explicitly
+enabled, and small consumers explicitly disabled with combined ABI emission
+and pruning. The same output, failure-recovery, and cache-restoration assertions
+apply to this mixed graph.

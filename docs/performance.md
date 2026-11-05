@@ -92,6 +92,40 @@ claim that this combination wins on every graph. Compare both strategies on real
 code; the experimental `elide_hybrid` benchmark mode uses this arrangement and
 must be selected explicitly with `--modes`.
 
+## Select incremental compilation per target
+
+Native Kotlin libraries, binaries, and tests accept
+`incremental_mode = "inherit" | "on" | "off"`. The default inherits
+`--@rules_elide//config/kotlinc:incremental`; explicit values override it.
+For example, keep IC state for a larger module while compiling a small consumer
+without the adapter:
+
+```starlark
+elide_kotlin_library(
+    name = "core",
+    srcs = glob(["core/*.kt"]),
+    incremental_mode = "on",
+    abi_mode = "separate",
+)
+
+elide_kotlin_library(
+    name = "consumer",
+    srcs = glob(["consumer/*.kt"]),
+    deps = [":core"],
+    incremental_mode = "off",
+    abi_mode = "combined",
+)
+```
+
+IC targets retain all inputs and use separate ABI emission even if combined
+emission is requested. Targets with IC off can use combined emission and
+`--@rules_elide//elide:prune_unused_inputs=true`, subject to the normal safety
+fallbacks. This layout addresses the costs exposed by the
+[production Kotlin comparison](../benchmarks/KOTLIN_BUILDER_RESULTS.md), but is
+experimental; measure it on your workload. The `elide_selective` benchmark mode
+uses IC only for Core and combined emission plus pruning for consumers. Select it
+explicitly with `--modes` locally or the hosted workflow's `modes` input.
+
 ## Remaining rule-side work
 
 1. **Mixed-strategy measurement.** Use per-target `abi_mode` to compare early

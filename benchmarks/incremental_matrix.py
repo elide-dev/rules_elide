@@ -23,7 +23,7 @@ SCENARIOS = (
     "public_module_api", "multi_file_body", "multi_module_body",
     "multi_module_api", "unused_dependency_api", "inline_or_constant",
 )
-MODES = ("vanilla", "vanilla_abi", "elide", "elide_abi", "elide_pruned", "elide_incremental", "elide_fused", "elide_fused_pruned", "elide_hybrid")
+MODES = ("vanilla", "vanilla_abi", "elide", "elide_abi", "elide_pruned", "elide_incremental", "elide_fused", "elide_fused_pruned", "elide_hybrid", "elide_selective")
 COMPILERS = {"Javac", "KotlinCompile", "ElideJavac", "ElideKotlinc"}
 
 
@@ -100,6 +100,8 @@ def fixture(work, language, mode, size, fanout):
         options = ", javac_opts=[\"--release\", \"21\"]" if language == "java" and mode != "vanilla" else ""
         if mode == "elide_hybrid":
             options += ', abi_mode="' + ("separate" if package == "core" else "combined") + '"'
+        if mode == "elide_selective":
+            options += ', abi_mode="combined", incremental_mode="' + ("on" if package == "core" else "off") + '"'
         stanza = f'{rule}(name={json.dumps(name)}, srcs={json.dumps([c + "." + extension for c in classes])}, deps={json.dumps(deps)}{options})\n'
         build.write_text((build.read_text() if build.exists() else prefix) + stanza)
         for name, expression in classes.items():
@@ -201,7 +203,7 @@ def main():
     parser.add_argument("--rounds", type=positive, default=3)
     parser.add_argument("--warmups", type=positive, default=1)
     parser.add_argument("--languages", nargs="+", choices=["java", "kotlin"], default=["java", "kotlin"])
-    parser.add_argument("--modes", nargs="+", choices=MODES, default=[mode for mode in MODES if mode != "elide_hybrid"])
+    parser.add_argument("--modes", nargs="+", choices=MODES, default=[mode for mode in MODES if mode not in ("elide_hybrid", "elide_selective")])
     parser.add_argument("--scenarios", nargs="+", choices=SCENARIOS, default=None)
     parser.add_argument("--output", type=Path, default=REPO / "benchmarks/results/incremental")
     parser.add_argument("--distdir", action="append", default=[])
@@ -281,7 +283,7 @@ def main():
         try:
             for language in args.languages:
                 for mode in args.modes:
-                    if language == "java" and mode in ("vanilla_abi", "elide_incremental"):
+                    if language == "java" and mode in ("vanilla_abi", "elide_incremental", "elide_selective"):
                         continue
                     # Each mode gets a fresh server/worker pool. Baseline builds
                     # and warm-ups remain untimed, so measured builds stay warm.
@@ -300,7 +302,7 @@ def main():
                         flags.append("--define=experimental_use_abi_jars=1")
                     if mode in ("elide_abi", "elide_pruned", "elide_incremental", "elide_fused", "elide_fused_pruned"):
                         flags.append(f"--@rules_elide//config/{'javac' if language == 'java' else 'kotlinc'}:abi_compile_avoidance=true")
-                    if mode in ("elide_pruned", "elide_fused_pruned"):
+                    if mode in ("elide_pruned", "elide_fused_pruned", "elide_selective"):
                         flags += ["--@rules_elide//elide:emit_jdeps=true", "--@rules_elide//elide:prune_unused_inputs=true"]
                     if mode in ("elide_fused", "elide_fused_pruned"):
                         flags.append(f"--@rules_elide//config/{'javac' if language == 'java' else 'kotlinc'}:abi_from_compile=true")

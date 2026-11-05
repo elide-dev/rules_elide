@@ -8,6 +8,10 @@ on:
         type: choice
         options: [generated, commons-lang, kotlin-builder]
         default: generated
+      modes:
+        description: Optional space-separated modes (empty uses the standard matrix)
+        type: string
+        default: ""
       profiles:
         description: Retain traces and sampled memory/critical-path metrics
         type: boolean
@@ -69,12 +73,17 @@ jobs:
       - name: Measure incremental edits and action propagation
         env:
           WORKLOAD: ${{ inputs.workload }}
+          MODES: ${{ inputs.modes }}
           PROFILES: ${{ inputs.profiles }}
           LANGUAGE: ${{ inputs.language }}
           SOURCES: ${{ inputs.sources }}
           ROUNDS: ${{ inputs.rounds }}
         run: |
           args=()
+          if [[ -n "$MODES" ]]; then
+            read -r -a selected_modes <<< "$MODES"
+            args+=(--modes "${selected_modes[@]}")
+          fi
           if [[ "$PROFILES" == true ]]; then args+=(--profiles); fi
           if [[ "$WORKLOAD" == commons-lang ]]; then
             args+=(--languages java --commons-lang .benchmark-sources/commons-lang)

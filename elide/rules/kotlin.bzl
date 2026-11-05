@@ -45,6 +45,14 @@ def _elide_kotlin_library_impl(ctx):
 
 _LIBRARY_ATTRS = dict(COMMON_LIBRARY_ATTRS)
 _LIBRARY_ATTRS.update(_KOTLIN_SRCS_ATTR)
+_LIBRARY_ATTRS["incremental_mode"] = attr.string(
+    default = "inherit",
+    values = ["inherit", "off", "on"],
+    doc = "Override //config/kotlinc:incremental for this target. " +
+          "Use on for selected modules and off for small consumers. " +
+          "Incremental targets retain all compiler inputs and use separate ABI " +
+          "emission even when combined emission is requested.",
+)
 _LIBRARY_ATTRS["_ic_worker"] = attr.label(
     default = Label("//elide/private/ic_worker:ic_worker"),
     executable = True,
