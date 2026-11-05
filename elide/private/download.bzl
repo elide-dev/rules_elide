@@ -21,7 +21,7 @@ package(default_visibility = ["//visibility:public"])
 exports_files(["{binary_path}"])
 
 # Minimal input set for JVM compile actions (elide javac, kotlinc, jar).
-# Excludes: doc/ (HTML docs), lib/svm/ + lib/truffle/ (native-image only),
+# Excludes: doc/ (HTML docs), lib/svm/ + lib/truffle/ + lib/static/ (native-image),
 #           lib/llvm/ (C tools), lib/resources/python/ (Python runtime), lib/maven/.
 filegroup(
     name = "elide_compile_files",
@@ -29,6 +29,7 @@ filegroup(
         ["bin/**", "lib/**"],
         exclude = [
             "lib/llvm/**",
+            "lib/static/**",
             "lib/svm/**",
             "lib/truffle/**",
             "lib/resources/python/**",

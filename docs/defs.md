@@ -528,7 +528,7 @@ Resolved Elide toolchain information.
 | Name  | Description |
 | :------------- | :------------- |
 | <a id="ElideToolchainInfo-binary"></a>binary |  File. The elide binary executable.    |
-| <a id="ElideToolchainInfo-compile_tool_files"></a>compile_tool_files |  depset[File]. Inputs for JVM compile actions (javac, kotlinc, jar). Excludes LLVM and native-image-only subtrees (lib/llvm, lib/svm, lib/truffle, doc).    |
+| <a id="ElideToolchainInfo-compile_tool_files"></a>compile_tool_files |  depset[File]. Inputs for JVM compile actions (javac, kotlinc, jar). Excludes LLVM and native-image-only subtrees (lib/llvm, lib/static, lib/svm, lib/truffle, doc).    |
 | <a id="ElideToolchainInfo-jextract_tool_files"></a>jextract_tool_files |  depset[File]. JVM tools plus LLVM inputs needed for C binding generation.    |
 | <a id="ElideToolchainInfo-kotlin_stdlib_jars"></a>kotlin_stdlib_jars |  depset[File]. Kotlin stdlib jar(s) bundled with this Elide release.    |
 | <a id="ElideToolchainInfo-python_tool_files"></a>python_tool_files |  depset[File]. Python runtime inputs, including resources and component markers.    |

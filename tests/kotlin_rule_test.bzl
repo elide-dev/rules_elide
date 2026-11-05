@@ -35,6 +35,7 @@ def _library_action_test_impl(ctx):
     kotlincs = [a for a in actions if a.mnemonic == "ElideKotlinc"]
     asserts.equals(env, 1, len(kotlincs), "expected one ElideKotlinc action")
     asserts.false(env, any(["/lib/llvm/" in f.path for f in kotlincs[0].inputs.to_list()]), "JVM compilation must not carry the LLVM toolchain")
+    asserts.false(env, any(["/lib/static/" in f.path for f in kotlincs[0].inputs.to_list()]), "JVM compilation must not carry native-linking static libraries")
     argv = kotlincs[0].argv
     asserts.true(env, "kotlinc" in argv, "expected `kotlinc` subcommand in argv")
 

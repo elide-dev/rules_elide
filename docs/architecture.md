@@ -43,7 +43,7 @@ See [testing](testing.md) for contract and execution coverage and
 ## Tool input boundaries
 
 Downloaded and local Elide toolchains expose separate input sets. JVM compilation,
-archive operations, and Java inspection/documentation omit `lib/llvm`, native-image
+archive operations, and Java inspection/documentation omit `lib/llvm`, `lib/static`, native-image
 support, Python resources, and Maven tools. C binding generation adds LLVM back
 through `jextract_tool_files`; native-image keeps its full native tool input set.
 This reduces compiler action input discovery and the blobs required by a cold

@@ -13,7 +13,7 @@ needed; it is not a claim that every workload is already faster.
 | No-op builds | Small differences sit near the measurement floor | Measure Bazel analysis overhead separately from compiler work |
 | Memory and worker startup | Combined emission removes a separate compiler action and worker pool | Optional traces now record sampled worker memory and critical paths; measure true peak RSS and cold/warm startup next |
 | Incremental compiler state | Opt-in Kotlin IC was slower than ABI-only on the small graph | Larger targets, deleted/renamed files, cache lifetime, and packing cost |
-| Remote execution and caching | Existing RBE and cache correctness checks pass | Measure transfer/cache-hit latency; execute combined-emission correctness tests remotely |
+| Remote execution and caching | RBE and cache correctness checks pass; JVM compiler inputs now omit LLVM and native-linking static libraries | Measure transfer/cache-hit latency with the smaller input set; execute combined-emission correctness tests remotely |
 | Correctness | Header digests, rebuild boundaries, runtime output, constants, inline code, and resource edits have checks | Broader language constructs, processors/plugins, mixed sources, and cache restoration |
 | Feature coverage and usability | Native rules, KotlinBuilder adapter, JVM tools, documentation, and Python wiring exist | Maintain an explicit compatibility matrix; add target-level performance controls |
 
