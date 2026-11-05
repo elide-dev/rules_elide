@@ -330,7 +330,9 @@ The [production KotlinBuilder comparison](benchmarks/KOTLIN_BUILDER_RESULTS.md)
 favored combined compilation for clean builds and native incremental compilation
 for implementation edits. Public API edits still favored stock defaults, and
 enabling incremental compilation everywhere increased clean-build and memory costs.
-Microbenchmarks do not establish an application-wide speedup; compare your own
+A [follow-up with selective IC](benchmarks/KOTLIN_WORKER_RESULTS.md) beat both stock
+modes by median in all eight timing scenarios on that fixture, while using more
+sampled worker memory. Microbenchmarks do not establish an application-wide speedup; compare your own
 clean and incremental builds.
 
 ## Local development against a non-released elide

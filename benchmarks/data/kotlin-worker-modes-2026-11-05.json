@@ -1,0 +1,4227 @@
+{
+  "commit": "5e53353e49929c97fbb7b4a01257274129b8afac",
+  "tracked_changes": false,
+  "host": "Linux-7.0.0-1017-azure-x86_64-with-glibc2.39",
+  "cpus": 4,
+  "jobs": 4,
+  "bazel_version": "9.3.1",
+  "elide_version": "1.6.2",
+  "jvm_rule_versions": {
+    "rules_java": "9.9.0",
+    "rules_kotlin": "2.4.21"
+  },
+  "isolated_mode_servers": true,
+  "java_release": 21,
+  "parameters": {
+    "kotlin_builder": true,
+    "commons_lang": null,
+    "profiles": true,
+    "sources": 20,
+    "fanout": 3,
+    "rounds": 3,
+    "warmups": 1,
+    "languages": [
+      "kotlin"
+    ],
+    "modes": [
+      "vanilla",
+      "vanilla_abi",
+      "elide_fused_pruned",
+      "elide_incremental",
+      "elide_selective",
+      "elide_parallel"
+    ],
+    "scenarios": [
+      "clean",
+      "no_op",
+      "comment",
+      "body",
+      "private_member",
+      "internal_module_api",
+      "public_module_api",
+      "multi_file_body"
+    ],
+    "output": "/home/runner/work/rules_elide/rules_elide/benchmarks/results/incremental",
+    "distdir": []
+  },
+  "results": [
+    {
+      "language": "kotlin",
+      "mode": "vanilla",
+      "scenario": "clean",
+      "samples": [
+        {
+          "seconds": 29.664817973999988,
+          "compile_targets": [
+            "//app:app",
+            "//app:verify",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade",
+            "//protocol:deps_proto",
+            "//protocol:worker_protocol_proto",
+            "//spare:spare",
+            "@@protobuf+//java/core:core",
+            "@@protobuf+//java/core:lite_runtime_only",
+            "@@rules_kotlin+//src/main/kotlin:build",
+            "@@rules_kotlin+//src/main/kotlin:jdeps_merger"
+          ],
+          "abi_targets": [
+            "//protocol:deps_proto",
+            "//protocol:worker_protocol_proto",
+            "@@protobuf+//java/core:core",
+            "@@protobuf+//java/core:lite_runtime_only"
+          ],
+          "actions": {
+            "ProtocAuthenticityCheck": 1,
+            "GenProtoDescriptorSet": 13,
+            "ProtoCompile": 1,
+            "JavaToolchainCompileBootClasspath": 2,
+            "Ijar": 2,
+            "Javac": 7,
+            "Turbine": 4,
+            "GenProto": 2,
+            "KotlinCompile": 7,
+            "KotlinFoldJarsAbi": 6,
+            "KotlinFoldJarsRuntime": 7,
+            "JdepsMerge": 7
+          },
+          "execution_log": "kotlin-vanilla-clean-1.json",
+          "profile": {
+            "critical_path_action_seconds": 26.531507,
+            "critical_path_span_seconds": 26.991452,
+            "worker_memory_mib_max_sample": 1381.0659999999998,
+            "bazel_heap_nonheap_mib_max_sample": 288.673,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "Javac": 768.4733203125,
+              "KotlinCompile": 552.7620117187499,
+              "JdepsMerge": 65.9472265625
+            }
+          },
+          "profile_file": "kotlin-vanilla-clean-1.profile.json.gz"
+        },
+        {
+          "seconds": 28.924562129999998,
+          "compile_targets": [
+            "//app:app",
+            "//app:verify",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade",
+            "//protocol:deps_proto",
+            "//protocol:worker_protocol_proto",
+            "//spare:spare",
+            "@@protobuf+//java/core:core",
+            "@@protobuf+//java/core:lite_runtime_only",
+            "@@rules_kotlin+//src/main/kotlin:build",
+            "@@rules_kotlin+//src/main/kotlin:jdeps_merger"
+          ],
+          "abi_targets": [
+            "//protocol:deps_proto",
+            "//protocol:worker_protocol_proto",
+            "@@protobuf+//java/core:core",
+            "@@protobuf+//java/core:lite_runtime_only"
+          ],
+          "actions": {
+            "ProtocAuthenticityCheck": 1,
+            "GenProtoDescriptorSet": 13,
+            "ProtoCompile": 1,
+            "JavaToolchainCompileBootClasspath": 2,
+            "Ijar": 2,
+            "Javac": 7,
+            "Turbine": 4,
+            "GenProto": 2,
+            "KotlinCompile": 7,
+            "KotlinFoldJarsAbi": 6,
+            "KotlinFoldJarsRuntime": 7,
+            "JdepsMerge": 7
+          },
+          "execution_log": "kotlin-vanilla-clean-2.json",
+          "profile": {
+            "critical_path_action_seconds": 26.315137,
+            "critical_path_span_seconds": 26.773644,
+            "worker_memory_mib_max_sample": 1157.399,
+            "bazel_heap_nonheap_mib_max_sample": 247.234,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "Javac": 640.63202734375,
+              "KotlinCompile": 533.3099921874999,
+              "JdepsMerge": 65.4409140625
+            }
+          },
+          "profile_file": "kotlin-vanilla-clean-2.profile.json.gz"
+        },
+        {
+          "seconds": 29.459091162999982,
+          "compile_targets": [
+            "//app:app",
+            "//app:verify",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade",
+            "//protocol:deps_proto",
+            "//protocol:worker_protocol_proto",
+            "//spare:spare",
+            "@@protobuf+//java/core:core",
+            "@@protobuf+//java/core:lite_runtime_only",
+            "@@rules_kotlin+//src/main/kotlin:build",
+            "@@rules_kotlin+//src/main/kotlin:jdeps_merger"
+          ],
+          "abi_targets": [
+            "//protocol:deps_proto",
+            "//protocol:worker_protocol_proto",
+            "@@protobuf+//java/core:core",
+            "@@protobuf+//java/core:lite_runtime_only"
+          ],
+          "actions": {
+            "ProtocAuthenticityCheck": 1,
+            "GenProtoDescriptorSet": 13,
+            "ProtoCompile": 1,
+            "JavaToolchainCompileBootClasspath": 2,
+            "Ijar": 2,
+            "Javac": 7,
+            "Turbine": 4,
+            "GenProto": 2,
+            "KotlinCompile": 7,
+            "KotlinFoldJarsAbi": 6,
+            "KotlinFoldJarsRuntime": 7,
+            "JdepsMerge": 7
+          },
+          "execution_log": "kotlin-vanilla-clean-3.json",
+          "profile": {
+            "critical_path_action_seconds": 26.665878,
+            "critical_path_span_seconds": 27.225448,
+            "worker_memory_mib_max_sample": 1078.8700000000001,
+            "bazel_heap_nonheap_mib_max_sample": 278.432,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "Javac": 609.7388671875,
+              "KotlinCompile": 501.49605078125,
+              "JdepsMerge": 66.4226640625
+            }
+          },
+          "profile_file": "kotlin-vanilla-clean-3.profile.json.gz"
+        }
+      ]
+    },
+    {
+      "language": "kotlin",
+      "mode": "vanilla",
+      "scenario": "no_op",
+      "samples": [
+        {
+          "seconds": 0.26339967699999534,
+          "compile_targets": [],
+          "abi_targets": [],
+          "actions": {},
+          "execution_log": "kotlin-vanilla-no_op-1.json",
+          "profile": {
+            "critical_path_action_seconds": 0.000917,
+            "critical_path_span_seconds": 0.000917,
+            "worker_memory_mib_max_sample": null,
+            "bazel_heap_nonheap_mib_max_sample": null,
+            "worker_memory_mib_by_mnemonic_max_sample": {}
+          },
+          "profile_file": "kotlin-vanilla-no_op-1.profile.json.gz"
+        },
+        {
+          "seconds": 0.20253502999997863,
+          "compile_targets": [],
+          "abi_targets": [],
+          "actions": {},
+          "execution_log": "kotlin-vanilla-no_op-2.json",
+          "profile": {
+            "critical_path_action_seconds": 0.000795,
+            "critical_path_span_seconds": 0.000795,
+            "worker_memory_mib_max_sample": null,
+            "bazel_heap_nonheap_mib_max_sample": null,
+            "worker_memory_mib_by_mnemonic_max_sample": {}
+          },
+          "profile_file": "kotlin-vanilla-no_op-2.profile.json.gz"
+        },
+        {
+          "seconds": 0.2480592960000081,
+          "compile_targets": [],
+          "abi_targets": [],
+          "actions": {},
+          "execution_log": "kotlin-vanilla-no_op-3.json",
+          "profile": {
+            "critical_path_action_seconds": 0.001104,
+            "critical_path_span_seconds": 0.001104,
+            "worker_memory_mib_max_sample": null,
+            "bazel_heap_nonheap_mib_max_sample": null,
+            "worker_memory_mib_by_mnemonic_max_sample": {}
+          },
+          "profile_file": "kotlin-vanilla-no_op-3.profile.json.gz"
+        }
+      ]
+    },
+    {
+      "language": "kotlin",
+      "mode": "vanilla",
+      "scenario": "comment",
+      "samples": [
+        {
+          "seconds": 3.6149283499999854,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "KotlinCompile": 6,
+            "KotlinFoldJarsAbi": 1,
+            "KotlinFoldJarsRuntime": 1
+          },
+          "execution_log": "kotlin-vanilla-comment-1.json",
+          "profile": {
+            "critical_path_action_seconds": 3.38,
+            "critical_path_span_seconds": 3.385156,
+            "worker_memory_mib_max_sample": 1208.648,
+            "bazel_heap_nonheap_mib_max_sample": 399.9260000000001,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "Javac": 480.0156250000001,
+              "KotlinCompile": 662.67009375,
+              "JdepsMerge": 66.64843750000001
+            }
+          },
+          "profile_file": "kotlin-vanilla-comment-1.profile.json.gz"
+        },
+        {
+          "seconds": 3.0186605420000205,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "KotlinCompile": 6,
+            "KotlinFoldJarsAbi": 1,
+            "KotlinFoldJarsRuntime": 1
+          },
+          "execution_log": "kotlin-vanilla-comment-2.json",
+          "profile": {
+            "critical_path_action_seconds": 2.818606,
+            "critical_path_span_seconds": 2.822144,
+            "worker_memory_mib_max_sample": 1193.2449999999997,
+            "bazel_heap_nonheap_mib_max_sample": 273.18199999999996,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "Javac": 480.015625,
+              "KotlinCompile": 646.8248242187499,
+              "JdepsMerge": 66.6484375
+            }
+          },
+          "profile_file": "kotlin-vanilla-comment-2.profile.json.gz"
+        },
+        {
+          "seconds": 2.8604528910000226,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "KotlinCompile": 6,
+            "KotlinFoldJarsAbi": 1,
+            "KotlinFoldJarsRuntime": 1
+          },
+          "execution_log": "kotlin-vanilla-comment-3.json",
+          "profile": {
+            "critical_path_action_seconds": 2.559987,
+            "critical_path_span_seconds": 2.56661,
+            "worker_memory_mib_max_sample": 1436.6719999999996,
+            "bazel_heap_nonheap_mib_max_sample": 396.85399999999987,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "Javac": 480.015625,
+              "KotlinCompile": 890.5476328124998,
+              "JdepsMerge": 66.6484375
+            }
+          },
+          "profile_file": "kotlin-vanilla-comment-3.profile.json.gz"
+        }
+      ]
+    },
+    {
+      "language": "kotlin",
+      "mode": "vanilla",
+      "scenario": "body",
+      "samples": [
+        {
+          "seconds": 2.163959845000022,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "KotlinCompile": 6,
+            "KotlinFoldJarsAbi": 1,
+            "KotlinFoldJarsRuntime": 1
+          },
+          "execution_log": "kotlin-vanilla-body-1.json",
+          "profile": {
+            "critical_path_action_seconds": 1.931858,
+            "critical_path_span_seconds": 1.935554,
+            "worker_memory_mib_max_sample": 1213.874,
+            "bazel_heap_nonheap_mib_max_sample": 421.166,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "Javac": 480.01562500000006,
+              "KotlinCompile": 667.5509296875,
+              "JdepsMerge": 66.6484375
+            }
+          },
+          "profile_file": "kotlin-vanilla-body-1.profile.json.gz"
+        },
+        {
+          "seconds": 2.029443893000007,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "KotlinCompile": 6,
+            "KotlinFoldJarsAbi": 1,
+            "KotlinFoldJarsRuntime": 1
+          },
+          "execution_log": "kotlin-vanilla-body-2.json",
+          "profile": {
+            "critical_path_action_seconds": 1.852544,
+            "critical_path_span_seconds": 1.857599,
+            "worker_memory_mib_max_sample": 1191.4060000000002,
+            "bazel_heap_nonheap_mib_max_sample": 333.19599999999997,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "Javac": 480.02734375,
+              "KotlinCompile": 645.2088828125,
+              "JdepsMerge": 66.6484375
+            }
+          },
+          "profile_file": "kotlin-vanilla-body-2.profile.json.gz"
+        },
+        {
+          "seconds": 2.121518299999991,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "KotlinCompile": 6,
+            "KotlinFoldJarsAbi": 1,
+            "KotlinFoldJarsRuntime": 1
+          },
+          "execution_log": "kotlin-vanilla-body-3.json",
+          "profile": {
+            "critical_path_action_seconds": 1.909181,
+            "critical_path_span_seconds": 1.913647,
+            "worker_memory_mib_max_sample": 1202.015,
+            "bazel_heap_nonheap_mib_max_sample": 240.00000000000003,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "Javac": 480.02734375,
+              "KotlinCompile": 655.50703515625,
+              "JdepsMerge": 66.6484375
+            }
+          },
+          "profile_file": "kotlin-vanilla-body-3.profile.json.gz"
+        }
+      ]
+    },
+    {
+      "language": "kotlin",
+      "mode": "vanilla",
+      "scenario": "private_member",
+      "samples": [
+        {
+          "seconds": 2.1067581590000373,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "KotlinCompile": 6,
+            "KotlinFoldJarsAbi": 1,
+            "KotlinFoldJarsRuntime": 1
+          },
+          "execution_log": "kotlin-vanilla-private_member-1.json",
+          "profile": {
+            "critical_path_action_seconds": 1.894739,
+            "critical_path_span_seconds": 1.901407,
+            "worker_memory_mib_max_sample": 1241.016,
+            "bazel_heap_nonheap_mib_max_sample": 229.0,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "Javac": 480.02734375,
+              "KotlinCompile": 694.9930312500001,
+              "JdepsMerge": 66.6640625
+            }
+          },
+          "profile_file": "kotlin-vanilla-private_member-1.profile.json.gz"
+        },
+        {
+          "seconds": 1.862047777999976,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "KotlinCompile": 6,
+            "KotlinFoldJarsAbi": 1,
+            "KotlinFoldJarsRuntime": 1
+          },
+          "execution_log": "kotlin-vanilla-private_member-2.json",
+          "profile": {
+            "critical_path_action_seconds": 1.655701,
+            "critical_path_span_seconds": 1.658868,
+            "worker_memory_mib_max_sample": 1294.442,
+            "bazel_heap_nonheap_mib_max_sample": 357.37,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "Javac": 479.84765625,
+              "KotlinCompile": 748.2105,
+              "JdepsMerge": 66.6640625
+            }
+          },
+          "profile_file": "kotlin-vanilla-private_member-2.profile.json.gz"
+        },
+        {
+          "seconds": 1.8651639540000247,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "KotlinCompile": 6,
+            "KotlinFoldJarsAbi": 1,
+            "KotlinFoldJarsRuntime": 1
+          },
+          "execution_log": "kotlin-vanilla-private_member-3.json",
+          "profile": {
+            "critical_path_action_seconds": 1.673643,
+            "critical_path_span_seconds": 1.676367,
+            "worker_memory_mib_max_sample": 1271.5880000000002,
+            "bazel_heap_nonheap_mib_max_sample": 235.794,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "Javac": 479.84765625,
+              "KotlinCompile": 725.760234375,
+              "JdepsMerge": 66.6640625
+            }
+          },
+          "profile_file": "kotlin-vanilla-private_member-3.profile.json.gz"
+        }
+      ]
+    },
+    {
+      "language": "kotlin",
+      "mode": "vanilla",
+      "scenario": "internal_module_api",
+      "samples": [
+        {
+          "seconds": 1.9109903959999883,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "KotlinCompile": 6,
+            "KotlinFoldJarsAbi": 1,
+            "KotlinFoldJarsRuntime": 1
+          },
+          "execution_log": "kotlin-vanilla-internal_module_api-1.json",
+          "profile": {
+            "critical_path_action_seconds": 1.736475,
+            "critical_path_span_seconds": 1.739782,
+            "worker_memory_mib_max_sample": 1435.206,
+            "bazel_heap_nonheap_mib_max_sample": 404.13800000000003,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "Javac": 479.84765625,
+              "KotlinCompile": 889.2901328125001,
+              "JdepsMerge": 66.66406250000001
+            }
+          },
+          "profile_file": "kotlin-vanilla-internal_module_api-1.profile.json.gz"
+        },
+        {
+          "seconds": 1.5638842639999666,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "KotlinCompile": 6,
+            "KotlinFoldJarsAbi": 1,
+            "KotlinFoldJarsRuntime": 1
+          },
+          "execution_log": "kotlin-vanilla-internal_module_api-2.json",
+          "profile": {
+            "critical_path_action_seconds": 1.397803,
+            "critical_path_span_seconds": 1.39996,
+            "worker_memory_mib_max_sample": 1399.6200000000003,
+            "bazel_heap_nonheap_mib_max_sample": 320.35800000000006,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "Javac": 479.84765625000006,
+              "KotlinCompile": 853.7820078125001,
+              "JdepsMerge": 66.66406250000001
+            }
+          },
+          "profile_file": "kotlin-vanilla-internal_module_api-2.profile.json.gz"
+        },
+        {
+          "seconds": 1.7772534110000038,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "KotlinCompile": 6,
+            "KotlinFoldJarsAbi": 1,
+            "KotlinFoldJarsRuntime": 1
+          },
+          "execution_log": "kotlin-vanilla-internal_module_api-3.json",
+          "profile": {
+            "critical_path_action_seconds": 1.599335,
+            "critical_path_span_seconds": 1.603232,
+            "worker_memory_mib_max_sample": 1333.617,
+            "bazel_heap_nonheap_mib_max_sample": 436.3660000000001,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "Javac": 479.84765625,
+              "KotlinCompile": 788.02858203125,
+              "JdepsMerge": 66.6640625
+            }
+          },
+          "profile_file": "kotlin-vanilla-internal_module_api-3.profile.json.gz"
+        }
+      ]
+    },
+    {
+      "language": "kotlin",
+      "mode": "vanilla",
+      "scenario": "public_module_api",
+      "samples": [
+        {
+          "seconds": 0.8594946470000195,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//facade:facade"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "KotlinCompile": 5,
+            "KotlinFoldJarsAbi": 1,
+            "KotlinFoldJarsRuntime": 1
+          },
+          "execution_log": "kotlin-vanilla-public_module_api-1.json",
+          "profile": {
+            "critical_path_action_seconds": 0.685302,
+            "critical_path_span_seconds": 0.687425,
+            "worker_memory_mib_max_sample": null,
+            "bazel_heap_nonheap_mib_max_sample": null,
+            "worker_memory_mib_by_mnemonic_max_sample": {}
+          },
+          "profile_file": "kotlin-vanilla-public_module_api-1.profile.json.gz"
+        },
+        {
+          "seconds": 0.768283671000006,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//facade:facade"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "KotlinCompile": 5,
+            "KotlinFoldJarsAbi": 1,
+            "KotlinFoldJarsRuntime": 1
+          },
+          "execution_log": "kotlin-vanilla-public_module_api-2.json",
+          "profile": {
+            "critical_path_action_seconds": 0.609542,
+            "critical_path_span_seconds": 0.611379,
+            "worker_memory_mib_max_sample": null,
+            "bazel_heap_nonheap_mib_max_sample": null,
+            "worker_memory_mib_by_mnemonic_max_sample": {}
+          },
+          "profile_file": "kotlin-vanilla-public_module_api-2.profile.json.gz"
+        },
+        {
+          "seconds": 0.8361960130000057,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//facade:facade"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "KotlinCompile": 5,
+            "KotlinFoldJarsAbi": 1,
+            "KotlinFoldJarsRuntime": 1
+          },
+          "execution_log": "kotlin-vanilla-public_module_api-3.json",
+          "profile": {
+            "critical_path_action_seconds": 0.659013,
+            "critical_path_span_seconds": 0.661296,
+            "worker_memory_mib_max_sample": null,
+            "bazel_heap_nonheap_mib_max_sample": null,
+            "worker_memory_mib_by_mnemonic_max_sample": {}
+          },
+          "profile_file": "kotlin-vanilla-public_module_api-3.profile.json.gz"
+        }
+      ]
+    },
+    {
+      "language": "kotlin",
+      "mode": "vanilla",
+      "scenario": "multi_file_body",
+      "samples": [
+        {
+          "seconds": 1.5022671870000295,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "KotlinCompile": 6,
+            "KotlinFoldJarsAbi": 1,
+            "KotlinFoldJarsRuntime": 1
+          },
+          "execution_log": "kotlin-vanilla-multi_file_body-1.json",
+          "profile": {
+            "critical_path_action_seconds": 1.314204,
+            "critical_path_span_seconds": 1.317115,
+            "worker_memory_mib_max_sample": 1713.3960000000002,
+            "bazel_heap_nonheap_mib_max_sample": 433.158,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "Javac": 479.84765625,
+              "KotlinCompile": 1167.6502695312502,
+              "JdepsMerge": 66.6640625
+            }
+          },
+          "profile_file": "kotlin-vanilla-multi_file_body-1.profile.json.gz"
+        },
+        {
+          "seconds": 1.492258325000023,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "KotlinCompile": 6,
+            "KotlinFoldJarsAbi": 1,
+            "KotlinFoldJarsRuntime": 1
+          },
+          "execution_log": "kotlin-vanilla-multi_file_body-2.json",
+          "profile": {
+            "critical_path_action_seconds": 1.304154,
+            "critical_path_span_seconds": 1.306348,
+            "worker_memory_mib_max_sample": 1402.0,
+            "bazel_heap_nonheap_mib_max_sample": 302.37,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "Javac": 479.84765625,
+              "KotlinCompile": 856.0246289062501,
+              "JdepsMerge": 66.6640625
+            }
+          },
+          "profile_file": "kotlin-vanilla-multi_file_body-2.profile.json.gz"
+        },
+        {
+          "seconds": 1.5154116889999614,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "KotlinCompile": 6,
+            "KotlinFoldJarsAbi": 1,
+            "KotlinFoldJarsRuntime": 1
+          },
+          "execution_log": "kotlin-vanilla-multi_file_body-3.json",
+          "profile": {
+            "critical_path_action_seconds": 1.355757,
+            "critical_path_span_seconds": 1.35799,
+            "worker_memory_mib_max_sample": 1317.71,
+            "bazel_heap_nonheap_mib_max_sample": 421.358,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "Javac": 479.84765625,
+              "KotlinCompile": 771.5011640625,
+              "JdepsMerge": 66.6640625
+            }
+          },
+          "profile_file": "kotlin-vanilla-multi_file_body-3.profile.json.gz"
+        }
+      ]
+    },
+    {
+      "language": "kotlin",
+      "mode": "vanilla_abi",
+      "scenario": "clean",
+      "samples": [
+        {
+          "seconds": 29.96984786099995,
+          "compile_targets": [
+            "//app:app",
+            "//app:verify",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade",
+            "//protocol:deps_proto",
+            "//protocol:worker_protocol_proto",
+            "//spare:spare",
+            "@@protobuf+//java/core:core",
+            "@@protobuf+//java/core:lite_runtime_only",
+            "@@rules_kotlin+//src/main/kotlin:build",
+            "@@rules_kotlin+//src/main/kotlin:jdeps_merger"
+          ],
+          "abi_targets": [
+            "//protocol:deps_proto",
+            "//protocol:worker_protocol_proto",
+            "@@protobuf+//java/core:core",
+            "@@protobuf+//java/core:lite_runtime_only"
+          ],
+          "actions": {
+            "ProtocAuthenticityCheck": 1,
+            "GenProtoDescriptorSet": 13,
+            "ProtoCompile": 1,
+            "JavaToolchainCompileBootClasspath": 2,
+            "Ijar": 2,
+            "Javac": 7,
+            "Turbine": 4,
+            "GenProto": 2,
+            "KotlinCompile": 7,
+            "KotlinFoldJarsAbi": 6,
+            "KotlinFoldJarsRuntime": 7,
+            "JdepsMerge": 7
+          },
+          "execution_log": "kotlin-vanilla_abi-clean-1.json",
+          "profile": {
+            "critical_path_action_seconds": 27.001338,
+            "critical_path_span_seconds": 27.321512,
+            "worker_memory_mib_max_sample": 1421.866,
+            "bazel_heap_nonheap_mib_max_sample": 316.01699999999994,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "Javac": 841.49358984375,
+              "KotlinCompile": 520.5162343750001,
+              "JdepsMerge": 65.78698437499999
+            }
+          },
+          "profile_file": "kotlin-vanilla_abi-clean-1.profile.json.gz"
+        },
+        {
+          "seconds": 29.62190415499998,
+          "compile_targets": [
+            "//app:app",
+            "//app:verify",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade",
+            "//protocol:deps_proto",
+            "//protocol:worker_protocol_proto",
+            "//spare:spare",
+            "@@protobuf+//java/core:core",
+            "@@protobuf+//java/core:lite_runtime_only",
+            "@@rules_kotlin+//src/main/kotlin:build",
+            "@@rules_kotlin+//src/main/kotlin:jdeps_merger"
+          ],
+          "abi_targets": [
+            "//protocol:deps_proto",
+            "//protocol:worker_protocol_proto",
+            "@@protobuf+//java/core:core",
+            "@@protobuf+//java/core:lite_runtime_only"
+          ],
+          "actions": {
+            "ProtocAuthenticityCheck": 1,
+            "GenProtoDescriptorSet": 13,
+            "ProtoCompile": 1,
+            "JavaToolchainCompileBootClasspath": 2,
+            "Ijar": 2,
+            "Javac": 7,
+            "Turbine": 4,
+            "GenProto": 2,
+            "KotlinCompile": 7,
+            "KotlinFoldJarsAbi": 6,
+            "KotlinFoldJarsRuntime": 7,
+            "JdepsMerge": 7
+          },
+          "execution_log": "kotlin-vanilla_abi-clean-2.json",
+          "profile": {
+            "critical_path_action_seconds": 27.130371,
+            "critical_path_span_seconds": 27.34923,
+            "worker_memory_mib_max_sample": 1239.8559999999998,
+            "bazel_heap_nonheap_mib_max_sample": 266.044,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "Javac": 712.0183085937499,
+              "KotlinCompile": 547.2664062499999,
+              "JdepsMerge": 66.36279296875
+            }
+          },
+          "profile_file": "kotlin-vanilla_abi-clean-2.profile.json.gz"
+        },
+        {
+          "seconds": 29.447999105999997,
+          "compile_targets": [
+            "//app:app",
+            "//app:verify",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade",
+            "//protocol:deps_proto",
+            "//protocol:worker_protocol_proto",
+            "//spare:spare",
+            "@@protobuf+//java/core:core",
+            "@@protobuf+//java/core:lite_runtime_only",
+            "@@rules_kotlin+//src/main/kotlin:build",
+            "@@rules_kotlin+//src/main/kotlin:jdeps_merger"
+          ],
+          "abi_targets": [
+            "//protocol:deps_proto",
+            "//protocol:worker_protocol_proto",
+            "@@protobuf+//java/core:core",
+            "@@protobuf+//java/core:lite_runtime_only"
+          ],
+          "actions": {
+            "ProtocAuthenticityCheck": 1,
+            "GenProtoDescriptorSet": 13,
+            "ProtoCompile": 1,
+            "JavaToolchainCompileBootClasspath": 2,
+            "Ijar": 2,
+            "Javac": 7,
+            "Turbine": 4,
+            "GenProto": 2,
+            "KotlinCompile": 7,
+            "KotlinFoldJarsAbi": 6,
+            "KotlinFoldJarsRuntime": 7,
+            "JdepsMerge": 7
+          },
+          "execution_log": "kotlin-vanilla_abi-clean-3.json",
+          "profile": {
+            "critical_path_action_seconds": 24.552234,
+            "critical_path_span_seconds": 27.184805,
+            "worker_memory_mib_max_sample": 1155.097,
+            "bazel_heap_nonheap_mib_max_sample": 332.77,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "Javac": 740.0800703125,
+              "KotlinCompile": 452.45228906250003,
+              "JdepsMerge": 64.8746796875
+            }
+          },
+          "profile_file": "kotlin-vanilla_abi-clean-3.profile.json.gz"
+        }
+      ]
+    },
+    {
+      "language": "kotlin",
+      "mode": "vanilla_abi",
+      "scenario": "no_op",
+      "samples": [
+        {
+          "seconds": 0.20681886899996016,
+          "compile_targets": [],
+          "abi_targets": [],
+          "actions": {},
+          "execution_log": "kotlin-vanilla_abi-no_op-1.json",
+          "profile": {
+            "critical_path_action_seconds": 0.000803,
+            "critical_path_span_seconds": 0.000803,
+            "worker_memory_mib_max_sample": null,
+            "bazel_heap_nonheap_mib_max_sample": null,
+            "worker_memory_mib_by_mnemonic_max_sample": {}
+          },
+          "profile_file": "kotlin-vanilla_abi-no_op-1.profile.json.gz"
+        },
+        {
+          "seconds": 0.25294777599998497,
+          "compile_targets": [],
+          "abi_targets": [],
+          "actions": {},
+          "execution_log": "kotlin-vanilla_abi-no_op-2.json",
+          "profile": {
+            "critical_path_action_seconds": 0.000911,
+            "critical_path_span_seconds": 0.000911,
+            "worker_memory_mib_max_sample": null,
+            "bazel_heap_nonheap_mib_max_sample": null,
+            "worker_memory_mib_by_mnemonic_max_sample": {}
+          },
+          "profile_file": "kotlin-vanilla_abi-no_op-2.profile.json.gz"
+        },
+        {
+          "seconds": 0.23832962500000576,
+          "compile_targets": [],
+          "abi_targets": [],
+          "actions": {},
+          "execution_log": "kotlin-vanilla_abi-no_op-3.json",
+          "profile": {
+            "critical_path_action_seconds": 0.000942,
+            "critical_path_span_seconds": 0.000942,
+            "worker_memory_mib_max_sample": null,
+            "bazel_heap_nonheap_mib_max_sample": null,
+            "worker_memory_mib_by_mnemonic_max_sample": {}
+          },
+          "profile_file": "kotlin-vanilla_abi-no_op-3.profile.json.gz"
+        }
+      ]
+    },
+    {
+      "language": "kotlin",
+      "mode": "vanilla_abi",
+      "scenario": "comment",
+      "samples": [
+        {
+          "seconds": 2.1023899380000444,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "KotlinCompile": 1,
+            "KotlinFoldJarsRuntime": 1
+          },
+          "execution_log": "kotlin-vanilla_abi-comment-1.json",
+          "profile": {
+            "critical_path_action_seconds": 1.885742,
+            "critical_path_span_seconds": 1.886998,
+            "worker_memory_mib_max_sample": 1152.386,
+            "bazel_heap_nonheap_mib_max_sample": 314.00000000000006,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "Javac": 485.23828125,
+              "KotlinCompile": 601.59362890625,
+              "JdepsMerge": 65.9609375
+            }
+          },
+          "profile_file": "kotlin-vanilla_abi-comment-1.profile.json.gz"
+        },
+        {
+          "seconds": 1.9259309149999808,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "KotlinCompile": 1,
+            "KotlinFoldJarsRuntime": 1
+          },
+          "execution_log": "kotlin-vanilla_abi-comment-2.json",
+          "profile": {
+            "critical_path_action_seconds": 1.716896,
+            "critical_path_span_seconds": 1.718954,
+            "worker_memory_mib_max_sample": 1106.272,
+            "bazel_heap_nonheap_mib_max_sample": 407.752,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "Javac": 485.23828125,
+              "KotlinCompile": 555.775359375,
+              "JdepsMerge": 65.9609375
+            }
+          },
+          "profile_file": "kotlin-vanilla_abi-comment-2.profile.json.gz"
+        },
+        {
+          "seconds": 1.773676509999973,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "KotlinCompile": 1,
+            "KotlinFoldJarsRuntime": 1
+          },
+          "execution_log": "kotlin-vanilla_abi-comment-3.json",
+          "profile": {
+            "critical_path_action_seconds": 1.531877,
+            "critical_path_span_seconds": 1.536119,
+            "worker_memory_mib_max_sample": 1181.8200000000002,
+            "bazel_heap_nonheap_mib_max_sample": 499.0000000000001,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "Javac": 485.2382812500001,
+              "KotlinCompile": 631.05640625,
+              "JdepsMerge": 65.96093750000001
+            }
+          },
+          "profile_file": "kotlin-vanilla_abi-comment-3.profile.json.gz"
+        }
+      ]
+    },
+    {
+      "language": "kotlin",
+      "mode": "vanilla_abi",
+      "scenario": "body",
+      "samples": [
+        {
+          "seconds": 1.7283908239999164,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "KotlinCompile": 1,
+            "KotlinFoldJarsRuntime": 1
+          },
+          "execution_log": "kotlin-vanilla_abi-body-1.json",
+          "profile": {
+            "critical_path_action_seconds": 1.494387,
+            "critical_path_span_seconds": 1.495669,
+            "worker_memory_mib_max_sample": 1194.7150000000001,
+            "bazel_heap_nonheap_mib_max_sample": 404.35400000000004,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "Javac": 485.23828125,
+              "KotlinCompile": 644.02598828125,
+              "JdepsMerge": 65.96093750000001
+            }
+          },
+          "profile_file": "kotlin-vanilla_abi-body-1.profile.json.gz"
+        },
+        {
+          "seconds": 1.3880131559999427,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "KotlinCompile": 1,
+            "KotlinFoldJarsRuntime": 1
+          },
+          "execution_log": "kotlin-vanilla_abi-body-2.json",
+          "profile": {
+            "critical_path_action_seconds": 1.199958,
+            "critical_path_span_seconds": 1.200783,
+            "worker_memory_mib_max_sample": 1191.31,
+            "bazel_heap_nonheap_mib_max_sample": 203.0,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "Javac": 485.23828124999994,
+              "KotlinCompile": 640.583609375,
+              "JdepsMerge": 65.9609375
+            }
+          },
+          "profile_file": "kotlin-vanilla_abi-body-2.profile.json.gz"
+        },
+        {
+          "seconds": 1.7617963809999537,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "KotlinCompile": 1,
+            "KotlinFoldJarsRuntime": 1
+          },
+          "execution_log": "kotlin-vanilla_abi-body-3.json",
+          "profile": {
+            "critical_path_action_seconds": 1.545305,
+            "critical_path_span_seconds": 1.54661,
+            "worker_memory_mib_max_sample": 1078.429,
+            "bazel_heap_nonheap_mib_max_sample": 303.35400000000004,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "Javac": 485.2382812500001,
+              "KotlinCompile": 527.6430781250001,
+              "JdepsMerge": 65.96093750000001
+            }
+          },
+          "profile_file": "kotlin-vanilla_abi-body-3.profile.json.gz"
+        }
+      ]
+    },
+    {
+      "language": "kotlin",
+      "mode": "vanilla_abi",
+      "scenario": "private_member",
+      "samples": [
+        {
+          "seconds": 1.5110576309999715,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "KotlinCompile": 1,
+            "KotlinFoldJarsRuntime": 1
+          },
+          "execution_log": "kotlin-vanilla_abi-private_member-1.json",
+          "profile": {
+            "critical_path_action_seconds": 1.244341,
+            "critical_path_span_seconds": 1.245029,
+            "worker_memory_mib_max_sample": 1242.58,
+            "bazel_heap_nonheap_mib_max_sample": 201.60000000000002,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "Javac": 485.25,
+              "KotlinCompile": 691.5816953125,
+              "JdepsMerge": 65.96093750000001
+            }
+          },
+          "profile_file": "kotlin-vanilla_abi-private_member-1.profile.json.gz"
+        },
+        {
+          "seconds": 1.6167120630000227,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "KotlinCompile": 1,
+            "KotlinFoldJarsRuntime": 1
+          },
+          "execution_log": "kotlin-vanilla_abi-private_member-2.json",
+          "profile": {
+            "critical_path_action_seconds": 1.434964,
+            "critical_path_span_seconds": 1.435717,
+            "worker_memory_mib_max_sample": 1094.6320000000003,
+            "bazel_heap_nonheap_mib_max_sample": 298.00000000000006,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "Javac": 485.25000000000006,
+              "KotlinCompile": 544.010546875,
+              "JdepsMerge": 65.96093750000001
+            }
+          },
+          "profile_file": "kotlin-vanilla_abi-private_member-2.profile.json.gz"
+        },
+        {
+          "seconds": 1.3062035579999929,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "KotlinCompile": 1,
+            "KotlinFoldJarsRuntime": 1
+          },
+          "execution_log": "kotlin-vanilla_abi-private_member-3.json",
+          "profile": {
+            "critical_path_action_seconds": 1.108988,
+            "critical_path_span_seconds": 1.110231,
+            "worker_memory_mib_max_sample": 1265.8149999999998,
+            "bazel_heap_nonheap_mib_max_sample": 396.0,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "Javac": 485.2499999999999,
+              "KotlinCompile": 715.0237148437499,
+              "JdepsMerge": 65.9609375
+            }
+          },
+          "profile_file": "kotlin-vanilla_abi-private_member-3.profile.json.gz"
+        }
+      ]
+    },
+    {
+      "language": "kotlin",
+      "mode": "vanilla_abi",
+      "scenario": "internal_module_api",
+      "samples": [
+        {
+          "seconds": 2.7360235759999796,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "KotlinCompile": 6,
+            "KotlinFoldJarsAbi": 1,
+            "KotlinFoldJarsRuntime": 1
+          },
+          "execution_log": "kotlin-vanilla_abi-internal_module_api-1.json",
+          "profile": {
+            "critical_path_action_seconds": 2.548905,
+            "critical_path_span_seconds": 2.551768,
+            "worker_memory_mib_max_sample": 1396.8020000000001,
+            "bazel_heap_nonheap_mib_max_sample": 324.97,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "Javac": 485.25000000000006,
+              "KotlinCompile": 845.9665859375001,
+              "JdepsMerge": 65.9609375
+            }
+          },
+          "profile_file": "kotlin-vanilla_abi-internal_module_api-1.profile.json.gz"
+        },
+        {
+          "seconds": 2.35986776499999,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "KotlinCompile": 6,
+            "KotlinFoldJarsAbi": 1,
+            "KotlinFoldJarsRuntime": 1
+          },
+          "execution_log": "kotlin-vanilla_abi-internal_module_api-2.json",
+          "profile": {
+            "critical_path_action_seconds": 2.174813,
+            "critical_path_span_seconds": 2.177594,
+            "worker_memory_mib_max_sample": 1250.5040000000001,
+            "bazel_heap_nonheap_mib_max_sample": 463.048,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "Javac": 485.06640625,
+              "KotlinCompile": 699.8093203125,
+              "JdepsMerge": 65.9609375
+            }
+          },
+          "profile_file": "kotlin-vanilla_abi-internal_module_api-2.profile.json.gz"
+        },
+        {
+          "seconds": 2.1643531849999817,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "KotlinCompile": 6,
+            "KotlinFoldJarsAbi": 1,
+            "KotlinFoldJarsRuntime": 1
+          },
+          "execution_log": "kotlin-vanilla_abi-internal_module_api-3.json",
+          "profile": {
+            "critical_path_action_seconds": 1.993438,
+            "critical_path_span_seconds": 1.995957,
+            "worker_memory_mib_max_sample": 1442.583,
+            "bazel_heap_nonheap_mib_max_sample": 275.42400000000004,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "Javac": 485.06640625000006,
+              "KotlinCompile": 892.0773203125001,
+              "JdepsMerge": 65.9609375
+            }
+          },
+          "profile_file": "kotlin-vanilla_abi-internal_module_api-3.profile.json.gz"
+        }
+      ]
+    },
+    {
+      "language": "kotlin",
+      "mode": "vanilla_abi",
+      "scenario": "public_module_api",
+      "samples": [
+        {
+          "seconds": 1.0562415100000635,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//facade:facade"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "KotlinCompile": 5,
+            "KotlinFoldJarsAbi": 1,
+            "KotlinFoldJarsRuntime": 1
+          },
+          "execution_log": "kotlin-vanilla_abi-public_module_api-1.json",
+          "profile": {
+            "critical_path_action_seconds": 0.87158,
+            "critical_path_span_seconds": 0.873126,
+            "worker_memory_mib_max_sample": null,
+            "bazel_heap_nonheap_mib_max_sample": null,
+            "worker_memory_mib_by_mnemonic_max_sample": {}
+          },
+          "profile_file": "kotlin-vanilla_abi-public_module_api-1.profile.json.gz"
+        },
+        {
+          "seconds": 1.047468389999949,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//facade:facade"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "KotlinCompile": 5,
+            "KotlinFoldJarsAbi": 1,
+            "KotlinFoldJarsRuntime": 1
+          },
+          "execution_log": "kotlin-vanilla_abi-public_module_api-2.json",
+          "profile": {
+            "critical_path_action_seconds": 0.888268,
+            "critical_path_span_seconds": 0.889953,
+            "worker_memory_mib_max_sample": null,
+            "bazel_heap_nonheap_mib_max_sample": null,
+            "worker_memory_mib_by_mnemonic_max_sample": {}
+          },
+          "profile_file": "kotlin-vanilla_abi-public_module_api-2.profile.json.gz"
+        },
+        {
+          "seconds": 1.05214037799999,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//facade:facade"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "KotlinCompile": 5,
+            "KotlinFoldJarsAbi": 1,
+            "KotlinFoldJarsRuntime": 1
+          },
+          "execution_log": "kotlin-vanilla_abi-public_module_api-3.json",
+          "profile": {
+            "critical_path_action_seconds": 0.881787,
+            "critical_path_span_seconds": 0.883552,
+            "worker_memory_mib_max_sample": null,
+            "bazel_heap_nonheap_mib_max_sample": null,
+            "worker_memory_mib_by_mnemonic_max_sample": {}
+          },
+          "profile_file": "kotlin-vanilla_abi-public_module_api-3.profile.json.gz"
+        }
+      ]
+    },
+    {
+      "language": "kotlin",
+      "mode": "vanilla_abi",
+      "scenario": "multi_file_body",
+      "samples": [
+        {
+          "seconds": 1.397748882999963,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "KotlinCompile": 1,
+            "KotlinFoldJarsRuntime": 1
+          },
+          "execution_log": "kotlin-vanilla_abi-multi_file_body-1.json",
+          "profile": {
+            "critical_path_action_seconds": 1.201184,
+            "critical_path_span_seconds": 1.201818,
+            "worker_memory_mib_max_sample": 1143.776,
+            "bazel_heap_nonheap_mib_max_sample": 270.6,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "Javac": 485.06640625,
+              "KotlinCompile": 593.3163281250002,
+              "JdepsMerge": 65.9609375
+            }
+          },
+          "profile_file": "kotlin-vanilla_abi-multi_file_body-1.profile.json.gz"
+        },
+        {
+          "seconds": 1.0090791000000081,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "KotlinCompile": 1,
+            "KotlinFoldJarsRuntime": 1
+          },
+          "execution_log": "kotlin-vanilla_abi-multi_file_body-2.json",
+          "profile": {
+            "critical_path_action_seconds": 0.848707,
+            "critical_path_span_seconds": 0.849697,
+            "worker_memory_mib_max_sample": null,
+            "bazel_heap_nonheap_mib_max_sample": null,
+            "worker_memory_mib_by_mnemonic_max_sample": {}
+          },
+          "profile_file": "kotlin-vanilla_abi-multi_file_body-2.profile.json.gz"
+        },
+        {
+          "seconds": 1.3136456019999514,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "KotlinCompile": 1,
+            "KotlinFoldJarsRuntime": 1
+          },
+          "execution_log": "kotlin-vanilla_abi-multi_file_body-3.json",
+          "profile": {
+            "critical_path_action_seconds": 1.138089,
+            "critical_path_span_seconds": 1.138654,
+            "worker_memory_mib_max_sample": 1218.5,
+            "bazel_heap_nonheap_mib_max_sample": 437.00000000000006,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "Javac": 485.06640625,
+              "KotlinCompile": 667.9733593750001,
+              "JdepsMerge": 65.9609375
+            }
+          },
+          "profile_file": "kotlin-vanilla_abi-multi_file_body-3.profile.json.gz"
+        }
+      ]
+    },
+    {
+      "language": "kotlin",
+      "mode": "elide_fused_pruned",
+      "scenario": "clean",
+      "samples": [
+        {
+          "seconds": 20.128411704999962,
+          "compile_targets": [
+            "//app:app",
+            "//app:verify",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade",
+            "//protocol:deps_proto",
+            "//protocol:worker_protocol_proto",
+            "//spare:spare",
+            "@@protobuf+//java/core:core",
+            "@@protobuf+//java/core:lite_runtime_only"
+          ],
+          "abi_targets": [
+            "//protocol:deps_proto",
+            "//protocol:worker_protocol_proto",
+            "@@protobuf+//java/core:core",
+            "@@protobuf+//java/core:lite_runtime_only"
+          ],
+          "actions": {
+            "ProtocAuthenticityCheck": 1,
+            "GenProtoDescriptorSet": 13,
+            "ProtoCompile": 1,
+            "JavaToolchainCompileBootClasspath": 1,
+            "Ijar": 1,
+            "Javac": 5,
+            "Turbine": 4,
+            "GenProto": 2,
+            "ElideKotlinc": 7
+          },
+          "execution_log": "kotlin-elide_fused_pruned-clean-1.json",
+          "profile": {
+            "critical_path_action_seconds": 16.842522,
+            "critical_path_span_seconds": 16.845989,
+            "worker_memory_mib_max_sample": 927.33,
+            "bazel_heap_nonheap_mib_max_sample": 314.00000000000006,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "ElideKotlinc": 394.116078125,
+              "Javac": 577.58956640625
+            }
+          },
+          "profile_file": "kotlin-elide_fused_pruned-clean-1.profile.json.gz"
+        },
+        {
+          "seconds": 19.265322362999996,
+          "compile_targets": [
+            "//app:app",
+            "//app:verify",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade",
+            "//protocol:deps_proto",
+            "//protocol:worker_protocol_proto",
+            "//spare:spare",
+            "@@protobuf+//java/core:core",
+            "@@protobuf+//java/core:lite_runtime_only"
+          ],
+          "abi_targets": [
+            "//protocol:deps_proto",
+            "//protocol:worker_protocol_proto",
+            "@@protobuf+//java/core:core",
+            "@@protobuf+//java/core:lite_runtime_only"
+          ],
+          "actions": {
+            "ProtocAuthenticityCheck": 1,
+            "GenProtoDescriptorSet": 13,
+            "ProtoCompile": 1,
+            "JavaToolchainCompileBootClasspath": 1,
+            "Ijar": 1,
+            "Javac": 5,
+            "Turbine": 4,
+            "GenProto": 2,
+            "ElideKotlinc": 7
+          },
+          "execution_log": "kotlin-elide_fused_pruned-clean-2.json",
+          "profile": {
+            "critical_path_action_seconds": 16.359638,
+            "critical_path_span_seconds": 16.363555,
+            "worker_memory_mib_max_sample": 1055.4070000000004,
+            "bazel_heap_nonheap_mib_max_sample": 333.0,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "ElideKotlinc": 404.295609375,
+              "Javac": 706.2044414062501
+            }
+          },
+          "profile_file": "kotlin-elide_fused_pruned-clean-2.profile.json.gz"
+        },
+        {
+          "seconds": 19.28829117700002,
+          "compile_targets": [
+            "//app:app",
+            "//app:verify",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade",
+            "//protocol:deps_proto",
+            "//protocol:worker_protocol_proto",
+            "//spare:spare",
+            "@@protobuf+//java/core:core",
+            "@@protobuf+//java/core:lite_runtime_only"
+          ],
+          "abi_targets": [
+            "//protocol:deps_proto",
+            "//protocol:worker_protocol_proto",
+            "@@protobuf+//java/core:core",
+            "@@protobuf+//java/core:lite_runtime_only"
+          ],
+          "actions": {
+            "ProtocAuthenticityCheck": 1,
+            "GenProtoDescriptorSet": 13,
+            "ProtoCompile": 1,
+            "JavaToolchainCompileBootClasspath": 1,
+            "Ijar": 1,
+            "Javac": 5,
+            "Turbine": 4,
+            "GenProto": 2,
+            "ElideKotlinc": 7
+          },
+          "execution_log": "kotlin-elide_fused_pruned-clean-3.json",
+          "profile": {
+            "critical_path_action_seconds": 16.606688,
+            "critical_path_span_seconds": 16.610567,
+            "worker_memory_mib_max_sample": 1090.6039999999998,
+            "bazel_heap_nonheap_mib_max_sample": 253.14900000000003,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "ElideKotlinc": 389.8241562500001,
+              "Javac": 739.0504374999999
+            }
+          },
+          "profile_file": "kotlin-elide_fused_pruned-clean-3.profile.json.gz"
+        }
+      ]
+    },
+    {
+      "language": "kotlin",
+      "mode": "elide_fused_pruned",
+      "scenario": "no_op",
+      "samples": [
+        {
+          "seconds": 0.22823358899995583,
+          "compile_targets": [],
+          "abi_targets": [],
+          "actions": {},
+          "execution_log": "kotlin-elide_fused_pruned-no_op-1.json",
+          "profile": {
+            "critical_path_action_seconds": 0.000946,
+            "critical_path_span_seconds": 0.000946,
+            "worker_memory_mib_max_sample": null,
+            "bazel_heap_nonheap_mib_max_sample": null,
+            "worker_memory_mib_by_mnemonic_max_sample": {}
+          },
+          "profile_file": "kotlin-elide_fused_pruned-no_op-1.profile.json.gz"
+        },
+        {
+          "seconds": 0.21723902999997335,
+          "compile_targets": [],
+          "abi_targets": [],
+          "actions": {},
+          "execution_log": "kotlin-elide_fused_pruned-no_op-2.json",
+          "profile": {
+            "critical_path_action_seconds": 0.001381,
+            "critical_path_span_seconds": 0.001381,
+            "worker_memory_mib_max_sample": null,
+            "bazel_heap_nonheap_mib_max_sample": null,
+            "worker_memory_mib_by_mnemonic_max_sample": {}
+          },
+          "profile_file": "kotlin-elide_fused_pruned-no_op-2.profile.json.gz"
+        },
+        {
+          "seconds": 0.22225914999989982,
+          "compile_targets": [],
+          "abi_targets": [],
+          "actions": {},
+          "execution_log": "kotlin-elide_fused_pruned-no_op-3.json",
+          "profile": {
+            "critical_path_action_seconds": 0.001104,
+            "critical_path_span_seconds": 0.001104,
+            "worker_memory_mib_max_sample": null,
+            "bazel_heap_nonheap_mib_max_sample": null,
+            "worker_memory_mib_by_mnemonic_max_sample": {}
+          },
+          "profile_file": "kotlin-elide_fused_pruned-no_op-3.profile.json.gz"
+        }
+      ]
+    },
+    {
+      "language": "kotlin",
+      "mode": "elide_fused_pruned",
+      "scenario": "comment",
+      "samples": [
+        {
+          "seconds": 1.080868000999999,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideKotlinc": 1
+          },
+          "execution_log": "kotlin-elide_fused_pruned-comment-1.json",
+          "profile": {
+            "critical_path_action_seconds": 0.899841,
+            "critical_path_span_seconds": 0.902016,
+            "worker_memory_mib_max_sample": 851.9940000000001,
+            "bazel_heap_nonheap_mib_max_sample": 307.372,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "ElideKotlinc": 367.8709140625,
+              "Javac": 484.6312500000001
+            }
+          },
+          "profile_file": "kotlin-elide_fused_pruned-comment-1.profile.json.gz"
+        },
+        {
+          "seconds": 1.109032677000073,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideKotlinc": 1
+          },
+          "execution_log": "kotlin-elide_fused_pruned-comment-2.json",
+          "profile": {
+            "critical_path_action_seconds": 0.939813,
+            "critical_path_span_seconds": 0.942019,
+            "worker_memory_mib_max_sample": 866.01,
+            "bazel_heap_nonheap_mib_max_sample": 416.00000000000006,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "ElideKotlinc": 381.95566406250003,
+              "Javac": 484.62890625000006
+            }
+          },
+          "profile_file": "kotlin-elide_fused_pruned-comment-2.profile.json.gz"
+        },
+        {
+          "seconds": 1.0883884779999562,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideKotlinc": 1
+          },
+          "execution_log": "kotlin-elide_fused_pruned-comment-3.json",
+          "profile": {
+            "critical_path_action_seconds": 0.920866,
+            "critical_path_span_seconds": 0.922857,
+            "worker_memory_mib_max_sample": 835.4680000000001,
+            "bazel_heap_nonheap_mib_max_sample": 282.0,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "ElideKotlinc": 351.5234882812501,
+              "Javac": 484.62890625
+            }
+          },
+          "profile_file": "kotlin-elide_fused_pruned-comment-3.profile.json.gz"
+        }
+      ]
+    },
+    {
+      "language": "kotlin",
+      "mode": "elide_fused_pruned",
+      "scenario": "body",
+      "samples": [
+        {
+          "seconds": 1.2207610430000386,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideKotlinc": 1
+          },
+          "execution_log": "kotlin-elide_fused_pruned-body-1.json",
+          "profile": {
+            "critical_path_action_seconds": 1.04511,
+            "critical_path_span_seconds": 1.0468,
+            "worker_memory_mib_max_sample": 843.7120000000002,
+            "bazel_heap_nonheap_mib_max_sample": 231.00000000000003,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "ElideKotlinc": 359.3125820312501,
+              "Javac": 484.62890625000006
+            }
+          },
+          "profile_file": "kotlin-elide_fused_pruned-body-1.profile.json.gz"
+        },
+        {
+          "seconds": 1.2219832350000388,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideKotlinc": 1
+          },
+          "execution_log": "kotlin-elide_fused_pruned-body-2.json",
+          "profile": {
+            "critical_path_action_seconds": 1.048547,
+            "critical_path_span_seconds": 1.050456,
+            "worker_memory_mib_max_sample": 848.7040000000001,
+            "bazel_heap_nonheap_mib_max_sample": 309.374,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "ElideKotlinc": 364.51340625,
+              "Javac": 484.62890625
+            }
+          },
+          "profile_file": "kotlin-elide_fused_pruned-body-2.profile.json.gz"
+        },
+        {
+          "seconds": 1.1486517739999726,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideKotlinc": 1
+          },
+          "execution_log": "kotlin-elide_fused_pruned-body-3.json",
+          "profile": {
+            "critical_path_action_seconds": 0.975408,
+            "critical_path_span_seconds": 0.977631,
+            "worker_memory_mib_max_sample": 837.624,
+            "bazel_heap_nonheap_mib_max_sample": 391.00000000000006,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "ElideKotlinc": 353.4829375,
+              "Javac": 484.62890625
+            }
+          },
+          "profile_file": "kotlin-elide_fused_pruned-body-3.profile.json.gz"
+        }
+      ]
+    },
+    {
+      "language": "kotlin",
+      "mode": "elide_fused_pruned",
+      "scenario": "private_member",
+      "samples": [
+        {
+          "seconds": 1.2248369910000747,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideKotlinc": 1
+          },
+          "execution_log": "kotlin-elide_fused_pruned-private_member-1.json",
+          "profile": {
+            "critical_path_action_seconds": 1.058878,
+            "critical_path_span_seconds": 1.060717,
+            "worker_memory_mib_max_sample": 834.988,
+            "bazel_heap_nonheap_mib_max_sample": 345.0,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "ElideKotlinc": 350.827390625,
+              "Javac": 484.62890625
+            }
+          },
+          "profile_file": "kotlin-elide_fused_pruned-private_member-1.profile.json.gz"
+        },
+        {
+          "seconds": 1.2665207370000644,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideKotlinc": 1
+          },
+          "execution_log": "kotlin-elide_fused_pruned-private_member-2.json",
+          "profile": {
+            "critical_path_action_seconds": 1.100881,
+            "critical_path_span_seconds": 1.102825,
+            "worker_memory_mib_max_sample": 878.5070000000002,
+            "bazel_heap_nonheap_mib_max_sample": 254.20000000000005,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "ElideKotlinc": 394.33723046875,
+              "Javac": 484.6289062500001
+            }
+          },
+          "profile_file": "kotlin-elide_fused_pruned-private_member-2.profile.json.gz"
+        },
+        {
+          "seconds": 1.3094954750000625,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideKotlinc": 1
+          },
+          "execution_log": "kotlin-elide_fused_pruned-private_member-3.json",
+          "profile": {
+            "critical_path_action_seconds": 1.1325,
+            "critical_path_span_seconds": 1.134343,
+            "worker_memory_mib_max_sample": 843.7050000000002,
+            "bazel_heap_nonheap_mib_max_sample": 309.0,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "ElideKotlinc": 359.37294921875,
+              "Javac": 484.62890625
+            }
+          },
+          "profile_file": "kotlin-elide_fused_pruned-private_member-3.profile.json.gz"
+        }
+      ]
+    },
+    {
+      "language": "kotlin",
+      "mode": "elide_fused_pruned",
+      "scenario": "internal_module_api",
+      "samples": [
+        {
+          "seconds": 1.5081901429999789,
+          "compile_targets": [
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideKotlinc": 2
+          },
+          "execution_log": "kotlin-elide_fused_pruned-internal_module_api-1.json",
+          "profile": {
+            "critical_path_action_seconds": 1.322884,
+            "critical_path_span_seconds": 1.324976,
+            "worker_memory_mib_max_sample": 871.5720000000001,
+            "bazel_heap_nonheap_mib_max_sample": 287.0,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "ElideKotlinc": 387.533015625,
+              "Javac": 484.62890625
+            }
+          },
+          "profile_file": "kotlin-elide_fused_pruned-internal_module_api-1.profile.json.gz"
+        },
+        {
+          "seconds": 1.4538732770000706,
+          "compile_targets": [
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideKotlinc": 2
+          },
+          "execution_log": "kotlin-elide_fused_pruned-internal_module_api-2.json",
+          "profile": {
+            "critical_path_action_seconds": 1.274614,
+            "critical_path_span_seconds": 1.277058,
+            "worker_memory_mib_max_sample": 836.0120000000001,
+            "bazel_heap_nonheap_mib_max_sample": 371.00000000000006,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "ElideKotlinc": 351.90645312500004,
+              "Javac": 484.62890625
+            }
+          },
+          "profile_file": "kotlin-elide_fused_pruned-internal_module_api-2.profile.json.gz"
+        },
+        {
+          "seconds": 1.495813582999972,
+          "compile_targets": [
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideKotlinc": 2
+          },
+          "execution_log": "kotlin-elide_fused_pruned-internal_module_api-3.json",
+          "profile": {
+            "critical_path_action_seconds": 1.310534,
+            "critical_path_span_seconds": 1.312971,
+            "worker_memory_mib_max_sample": 832.236,
+            "bazel_heap_nonheap_mib_max_sample": 235.37599999999998,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "ElideKotlinc": 347.925203125,
+              "Javac": 484.62890625
+            }
+          },
+          "profile_file": "kotlin-elide_fused_pruned-internal_module_api-3.profile.json.gz"
+        }
+      ]
+    },
+    {
+      "language": "kotlin",
+      "mode": "elide_fused_pruned",
+      "scenario": "public_module_api",
+      "samples": [
+        {
+          "seconds": 0.8527583070000446,
+          "compile_targets": [
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//facade:facade"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideKotlinc": 4
+          },
+          "execution_log": "kotlin-elide_fused_pruned-public_module_api-1.json",
+          "profile": {
+            "critical_path_action_seconds": 0.680504,
+            "critical_path_span_seconds": 0.682192,
+            "worker_memory_mib_max_sample": null,
+            "bazel_heap_nonheap_mib_max_sample": null,
+            "worker_memory_mib_by_mnemonic_max_sample": {}
+          },
+          "profile_file": "kotlin-elide_fused_pruned-public_module_api-1.profile.json.gz"
+        },
+        {
+          "seconds": 0.7763755750000882,
+          "compile_targets": [
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//facade:facade"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideKotlinc": 4
+          },
+          "execution_log": "kotlin-elide_fused_pruned-public_module_api-2.json",
+          "profile": {
+            "critical_path_action_seconds": 0.603305,
+            "critical_path_span_seconds": 0.605054,
+            "worker_memory_mib_max_sample": null,
+            "bazel_heap_nonheap_mib_max_sample": null,
+            "worker_memory_mib_by_mnemonic_max_sample": {}
+          },
+          "profile_file": "kotlin-elide_fused_pruned-public_module_api-2.profile.json.gz"
+        },
+        {
+          "seconds": 0.8075114370000165,
+          "compile_targets": [
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//facade:facade"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideKotlinc": 4
+          },
+          "execution_log": "kotlin-elide_fused_pruned-public_module_api-3.json",
+          "profile": {
+            "critical_path_action_seconds": 0.638835,
+            "critical_path_span_seconds": 0.640548,
+            "worker_memory_mib_max_sample": null,
+            "bazel_heap_nonheap_mib_max_sample": null,
+            "worker_memory_mib_by_mnemonic_max_sample": {}
+          },
+          "profile_file": "kotlin-elide_fused_pruned-public_module_api-3.profile.json.gz"
+        }
+      ]
+    },
+    {
+      "language": "kotlin",
+      "mode": "elide_fused_pruned",
+      "scenario": "multi_file_body",
+      "samples": [
+        {
+          "seconds": 1.2250712059999387,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideKotlinc": 1
+          },
+          "execution_log": "kotlin-elide_fused_pruned-multi_file_body-1.json",
+          "profile": {
+            "critical_path_action_seconds": 1.062366,
+            "critical_path_span_seconds": 1.063821,
+            "worker_memory_mib_max_sample": 815.5780000000001,
+            "bazel_heap_nonheap_mib_max_sample": 328.6,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "ElideKotlinc": 331.11858593750003,
+              "Javac": 484.640625
+            }
+          },
+          "profile_file": "kotlin-elide_fused_pruned-multi_file_body-1.profile.json.gz"
+        },
+        {
+          "seconds": 1.1700007310000728,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideKotlinc": 1
+          },
+          "execution_log": "kotlin-elide_fused_pruned-multi_file_body-2.json",
+          "profile": {
+            "critical_path_action_seconds": 1.015981,
+            "critical_path_span_seconds": 1.017606,
+            "worker_memory_mib_max_sample": 804.46,
+            "bazel_heap_nonheap_mib_max_sample": 429.374,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "ElideKotlinc": 320.57675000000006,
+              "Javac": 484.567875
+            }
+          },
+          "profile_file": "kotlin-elide_fused_pruned-multi_file_body-2.profile.json.gz"
+        },
+        {
+          "seconds": 1.2401703360000056,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideKotlinc": 1
+          },
+          "execution_log": "kotlin-elide_fused_pruned-multi_file_body-3.json",
+          "profile": {
+            "critical_path_action_seconds": 1.081529,
+            "critical_path_span_seconds": 1.083179,
+            "worker_memory_mib_max_sample": 841.9440000000001,
+            "bazel_heap_nonheap_mib_max_sample": 300.6,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "ElideKotlinc": 357.99379687500004,
+              "Javac": 484.453125
+            }
+          },
+          "profile_file": "kotlin-elide_fused_pruned-multi_file_body-3.profile.json.gz"
+        }
+      ]
+    },
+    {
+      "language": "kotlin",
+      "mode": "elide_incremental",
+      "scenario": "clean",
+      "samples": [
+        {
+          "seconds": 24.819010302999914,
+          "compile_targets": [
+            "//app:app",
+            "//app:verify",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade",
+            "//protocol:deps_proto",
+            "//protocol:worker_protocol_proto",
+            "//spare:spare",
+            "@@protobuf+//java/core:core",
+            "@@protobuf+//java/core:lite_runtime_only",
+            "@@rules_elide+//elide/private/ic_worker:ic_worker"
+          ],
+          "abi_targets": [
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade",
+            "//protocol:deps_proto",
+            "//protocol:worker_protocol_proto",
+            "//spare:spare",
+            "@@protobuf+//java/core:core",
+            "@@protobuf+//java/core:lite_runtime_only"
+          ],
+          "actions": {
+            "ProtocAuthenticityCheck": 1,
+            "GenProtoDescriptorSet": 13,
+            "ProtoCompile": 1,
+            "JavaToolchainCompileBootClasspath": 2,
+            "Ijar": 2,
+            "Javac": 6,
+            "Turbine": 4,
+            "GenProto": 2,
+            "ElideKotlincAbi": 6,
+            "ElideKotlinc": 7
+          },
+          "execution_log": "kotlin-elide_incremental-clean-1.json",
+          "profile": {
+            "critical_path_action_seconds": 21.178198,
+            "critical_path_span_seconds": 21.184117,
+            "worker_memory_mib_max_sample": 2019.2200000000003,
+            "bazel_heap_nonheap_mib_max_sample": 326.1859999999999,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "ElideKotlincAbi": 356.66614062499997,
+              "Javac": 758.4886640625,
+              "ElideKotlinc": 1201.6875
+            }
+          },
+          "profile_file": "kotlin-elide_incremental-clean-1.profile.json.gz"
+        },
+        {
+          "seconds": 23.142161647999956,
+          "compile_targets": [
+            "//app:app",
+            "//app:verify",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade",
+            "//protocol:deps_proto",
+            "//protocol:worker_protocol_proto",
+            "//spare:spare",
+            "@@protobuf+//java/core:core",
+            "@@protobuf+//java/core:lite_runtime_only",
+            "@@rules_elide+//elide/private/ic_worker:ic_worker"
+          ],
+          "abi_targets": [
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade",
+            "//protocol:deps_proto",
+            "//protocol:worker_protocol_proto",
+            "//spare:spare",
+            "@@protobuf+//java/core:core",
+            "@@protobuf+//java/core:lite_runtime_only"
+          ],
+          "actions": {
+            "ProtocAuthenticityCheck": 1,
+            "GenProtoDescriptorSet": 13,
+            "ProtoCompile": 1,
+            "JavaToolchainCompileBootClasspath": 2,
+            "Ijar": 2,
+            "Javac": 6,
+            "Turbine": 4,
+            "GenProto": 2,
+            "ElideKotlincAbi": 6,
+            "ElideKotlinc": 7
+          },
+          "execution_log": "kotlin-elide_incremental-clean-2.json",
+          "profile": {
+            "critical_path_action_seconds": 20.464274,
+            "critical_path_span_seconds": 20.467324,
+            "worker_memory_mib_max_sample": 1840.7469999999998,
+            "bazel_heap_nonheap_mib_max_sample": 357.0,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "ElideKotlincAbi": 372.64453124999994,
+              "Javac": 721.2011249999999,
+              "ElideKotlinc": 840.1180781249999
+            }
+          },
+          "profile_file": "kotlin-elide_incremental-clean-2.profile.json.gz"
+        },
+        {
+          "seconds": 23.78670352000006,
+          "compile_targets": [
+            "//app:app",
+            "//app:verify",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade",
+            "//protocol:deps_proto",
+            "//protocol:worker_protocol_proto",
+            "//spare:spare",
+            "@@protobuf+//java/core:core",
+            "@@protobuf+//java/core:lite_runtime_only",
+            "@@rules_elide+//elide/private/ic_worker:ic_worker"
+          ],
+          "abi_targets": [
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade",
+            "//protocol:deps_proto",
+            "//protocol:worker_protocol_proto",
+            "//spare:spare",
+            "@@protobuf+//java/core:core",
+            "@@protobuf+//java/core:lite_runtime_only"
+          ],
+          "actions": {
+            "ProtocAuthenticityCheck": 1,
+            "GenProtoDescriptorSet": 13,
+            "ProtoCompile": 1,
+            "JavaToolchainCompileBootClasspath": 2,
+            "Ijar": 2,
+            "Javac": 6,
+            "Turbine": 4,
+            "GenProto": 2,
+            "ElideKotlincAbi": 6,
+            "ElideKotlinc": 7
+          },
+          "execution_log": "kotlin-elide_incremental-clean-3.json",
+          "profile": {
+            "critical_path_action_seconds": 21.15492,
+            "critical_path_span_seconds": 21.15817,
+            "worker_memory_mib_max_sample": 2037.153,
+            "bazel_heap_nonheap_mib_max_sample": 351.00000000000006,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "ElideKotlincAbi": 371.0114609375,
+              "Javac": 608.4700390625001,
+              "ElideKotlinc": 1212.2130351562496
+            }
+          },
+          "profile_file": "kotlin-elide_incremental-clean-3.profile.json.gz"
+        }
+      ]
+    },
+    {
+      "language": "kotlin",
+      "mode": "elide_incremental",
+      "scenario": "no_op",
+      "samples": [
+        {
+          "seconds": 0.19679161999999906,
+          "compile_targets": [],
+          "abi_targets": [],
+          "actions": {},
+          "execution_log": "kotlin-elide_incremental-no_op-1.json",
+          "profile": {
+            "critical_path_action_seconds": 0.000795,
+            "critical_path_span_seconds": 0.000795,
+            "worker_memory_mib_max_sample": null,
+            "bazel_heap_nonheap_mib_max_sample": null,
+            "worker_memory_mib_by_mnemonic_max_sample": {}
+          },
+          "profile_file": "kotlin-elide_incremental-no_op-1.profile.json.gz"
+        },
+        {
+          "seconds": 0.20299236100004237,
+          "compile_targets": [],
+          "abi_targets": [],
+          "actions": {},
+          "execution_log": "kotlin-elide_incremental-no_op-2.json",
+          "profile": {
+            "critical_path_action_seconds": 0.000919,
+            "critical_path_span_seconds": 0.000919,
+            "worker_memory_mib_max_sample": null,
+            "bazel_heap_nonheap_mib_max_sample": null,
+            "worker_memory_mib_by_mnemonic_max_sample": {}
+          },
+          "profile_file": "kotlin-elide_incremental-no_op-2.profile.json.gz"
+        },
+        {
+          "seconds": 0.23245795699995142,
+          "compile_targets": [],
+          "abi_targets": [],
+          "actions": {},
+          "execution_log": "kotlin-elide_incremental-no_op-3.json",
+          "profile": {
+            "critical_path_action_seconds": 0.000904,
+            "critical_path_span_seconds": 0.000904,
+            "worker_memory_mib_max_sample": null,
+            "bazel_heap_nonheap_mib_max_sample": null,
+            "worker_memory_mib_by_mnemonic_max_sample": {}
+          },
+          "profile_file": "kotlin-elide_incremental-no_op-3.profile.json.gz"
+        }
+      ]
+    },
+    {
+      "language": "kotlin",
+      "mode": "elide_incremental",
+      "scenario": "comment",
+      "samples": [
+        {
+          "seconds": 0.8936537089999774,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "ElideKotlinc": 1,
+            "ElideKotlincAbi": 1
+          },
+          "execution_log": "kotlin-elide_incremental-comment-1.json",
+          "profile": {
+            "critical_path_action_seconds": 0.700944,
+            "critical_path_span_seconds": 0.702487,
+            "worker_memory_mib_max_sample": null,
+            "bazel_heap_nonheap_mib_max_sample": null,
+            "worker_memory_mib_by_mnemonic_max_sample": {}
+          },
+          "profile_file": "kotlin-elide_incremental-comment-1.profile.json.gz"
+        },
+        {
+          "seconds": 0.8470973970000841,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "ElideKotlinc": 1,
+            "ElideKotlincAbi": 1
+          },
+          "execution_log": "kotlin-elide_incremental-comment-2.json",
+          "profile": {
+            "critical_path_action_seconds": 0.681017,
+            "critical_path_span_seconds": 0.682947,
+            "worker_memory_mib_max_sample": null,
+            "bazel_heap_nonheap_mib_max_sample": null,
+            "worker_memory_mib_by_mnemonic_max_sample": {}
+          },
+          "profile_file": "kotlin-elide_incremental-comment-2.profile.json.gz"
+        },
+        {
+          "seconds": 0.8477008610000212,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "ElideKotlinc": 1,
+            "ElideKotlincAbi": 1
+          },
+          "execution_log": "kotlin-elide_incremental-comment-3.json",
+          "profile": {
+            "critical_path_action_seconds": 0.669903,
+            "critical_path_span_seconds": 0.67145,
+            "worker_memory_mib_max_sample": null,
+            "bazel_heap_nonheap_mib_max_sample": null,
+            "worker_memory_mib_by_mnemonic_max_sample": {}
+          },
+          "profile_file": "kotlin-elide_incremental-comment-3.profile.json.gz"
+        }
+      ]
+    },
+    {
+      "language": "kotlin",
+      "mode": "elide_incremental",
+      "scenario": "body",
+      "samples": [
+        {
+          "seconds": 0.8766461730000401,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "ElideKotlinc": 1,
+            "ElideKotlincAbi": 1
+          },
+          "execution_log": "kotlin-elide_incremental-body-1.json",
+          "profile": {
+            "critical_path_action_seconds": 0.705523,
+            "critical_path_span_seconds": 0.707077,
+            "worker_memory_mib_max_sample": null,
+            "bazel_heap_nonheap_mib_max_sample": null,
+            "worker_memory_mib_by_mnemonic_max_sample": {}
+          },
+          "profile_file": "kotlin-elide_incremental-body-1.profile.json.gz"
+        },
+        {
+          "seconds": 0.9932309680000344,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "ElideKotlinc": 1,
+            "ElideKotlincAbi": 1
+          },
+          "execution_log": "kotlin-elide_incremental-body-2.json",
+          "profile": {
+            "critical_path_action_seconds": 0.719904,
+            "critical_path_span_seconds": 0.721065,
+            "worker_memory_mib_max_sample": null,
+            "bazel_heap_nonheap_mib_max_sample": null,
+            "worker_memory_mib_by_mnemonic_max_sample": {}
+          },
+          "profile_file": "kotlin-elide_incremental-body-2.profile.json.gz"
+        },
+        {
+          "seconds": 0.9480016320000004,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "ElideKotlinc": 1,
+            "ElideKotlincAbi": 1
+          },
+          "execution_log": "kotlin-elide_incremental-body-3.json",
+          "profile": {
+            "critical_path_action_seconds": 0.77643,
+            "critical_path_span_seconds": 0.778115,
+            "worker_memory_mib_max_sample": null,
+            "bazel_heap_nonheap_mib_max_sample": null,
+            "worker_memory_mib_by_mnemonic_max_sample": {}
+          },
+          "profile_file": "kotlin-elide_incremental-body-3.profile.json.gz"
+        }
+      ]
+    },
+    {
+      "language": "kotlin",
+      "mode": "elide_incremental",
+      "scenario": "private_member",
+      "samples": [
+        {
+          "seconds": 1.0752641139999923,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "ElideKotlinc": 1,
+            "ElideKotlincAbi": 1
+          },
+          "execution_log": "kotlin-elide_incremental-private_member-1.json",
+          "profile": {
+            "critical_path_action_seconds": 0.879208,
+            "critical_path_span_seconds": 0.880095,
+            "worker_memory_mib_max_sample": null,
+            "bazel_heap_nonheap_mib_max_sample": null,
+            "worker_memory_mib_by_mnemonic_max_sample": {}
+          },
+          "profile_file": "kotlin-elide_incremental-private_member-1.profile.json.gz"
+        },
+        {
+          "seconds": 0.9519034810000448,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "ElideKotlinc": 1,
+            "ElideKotlincAbi": 1
+          },
+          "execution_log": "kotlin-elide_incremental-private_member-2.json",
+          "profile": {
+            "critical_path_action_seconds": 0.784999,
+            "critical_path_span_seconds": 0.786222,
+            "worker_memory_mib_max_sample": null,
+            "bazel_heap_nonheap_mib_max_sample": null,
+            "worker_memory_mib_by_mnemonic_max_sample": {}
+          },
+          "profile_file": "kotlin-elide_incremental-private_member-2.profile.json.gz"
+        },
+        {
+          "seconds": 0.9519947339999817,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "ElideKotlinc": 1,
+            "ElideKotlincAbi": 1
+          },
+          "execution_log": "kotlin-elide_incremental-private_member-3.json",
+          "profile": {
+            "critical_path_action_seconds": 0.785625,
+            "critical_path_span_seconds": 0.786918,
+            "worker_memory_mib_max_sample": null,
+            "bazel_heap_nonheap_mib_max_sample": null,
+            "worker_memory_mib_by_mnemonic_max_sample": {}
+          },
+          "profile_file": "kotlin-elide_incremental-private_member-3.profile.json.gz"
+        }
+      ]
+    },
+    {
+      "language": "kotlin",
+      "mode": "elide_incremental",
+      "scenario": "internal_module_api",
+      "samples": [
+        {
+          "seconds": 3.034628415000043,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "actions": {
+            "ElideKotlinc": 6,
+            "ElideKotlincAbi": 5
+          },
+          "execution_log": "kotlin-elide_incremental-internal_module_api-1.json",
+          "profile": {
+            "critical_path_action_seconds": 2.618484,
+            "critical_path_span_seconds": 2.859275,
+            "worker_memory_mib_max_sample": 2535.2299999999996,
+            "bazel_heap_nonheap_mib_max_sample": 271.386,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "ElideKotlinc": 1697.6530156250003,
+              "Javac": 515.4570312500001,
+              "ElideKotlincAbi": 322.89906640625
+            }
+          },
+          "profile_file": "kotlin-elide_incremental-internal_module_api-1.profile.json.gz"
+        },
+        {
+          "seconds": 3.011694972999976,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "actions": {
+            "ElideKotlinc": 6,
+            "ElideKotlincAbi": 5
+          },
+          "execution_log": "kotlin-elide_incremental-internal_module_api-2.json",
+          "profile": {
+            "critical_path_action_seconds": 2.401056,
+            "critical_path_span_seconds": 2.832139,
+            "worker_memory_mib_max_sample": 2618.968,
+            "bazel_heap_nonheap_mib_max_sample": 379.212,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "ElideKotlinc": 1801.7370624999999,
+              "Javac": 515.45703125,
+              "ElideKotlincAbi": 322.44153125
+            }
+          },
+          "profile_file": "kotlin-elide_incremental-internal_module_api-2.profile.json.gz"
+        },
+        {
+          "seconds": 3.2646145260000594,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "actions": {
+            "ElideKotlinc": 6,
+            "ElideKotlincAbi": 5
+          },
+          "execution_log": "kotlin-elide_incremental-internal_module_api-3.json",
+          "profile": {
+            "critical_path_action_seconds": 2.176896,
+            "critical_path_span_seconds": 3.080224,
+            "worker_memory_mib_max_sample": 2713.798,
+            "bazel_heap_nonheap_mib_max_sample": 217.596,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "ElideKotlinc": 1892.42039453125,
+              "Javac": 515.4687500000001,
+              "ElideKotlincAbi": 313.19235546874995
+            }
+          },
+          "profile_file": "kotlin-elide_incremental-internal_module_api-3.profile.json.gz"
+        }
+      ]
+    },
+    {
+      "language": "kotlin",
+      "mode": "elide_incremental",
+      "scenario": "public_module_api",
+      "samples": [
+        {
+          "seconds": 2.399432409000042,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//facade:facade"
+          ],
+          "abi_targets": [
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//facade:facade"
+          ],
+          "actions": {
+            "ElideKotlinc": 5,
+            "ElideKotlincAbi": 4
+          },
+          "execution_log": "kotlin-elide_incremental-public_module_api-1.json",
+          "profile": {
+            "critical_path_action_seconds": 1.573959,
+            "critical_path_span_seconds": 2.218551,
+            "worker_memory_mib_max_sample": 2739.7670000000007,
+            "bazel_heap_nonheap_mib_max_sample": 437.25199999999995,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "ElideKotlinc": 1931.1280859375006,
+              "Javac": 515.4687500000001,
+              "ElideKotlincAbi": 294.10325781250003
+            }
+          },
+          "profile_file": "kotlin-elide_incremental-public_module_api-1.profile.json.gz"
+        },
+        {
+          "seconds": 1.939905193999948,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//facade:facade"
+          ],
+          "abi_targets": [
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//facade:facade"
+          ],
+          "actions": {
+            "ElideKotlinc": 5,
+            "ElideKotlincAbi": 4
+          },
+          "execution_log": "kotlin-elide_incremental-public_module_api-2.json",
+          "profile": {
+            "critical_path_action_seconds": 1.585742,
+            "critical_path_span_seconds": 1.771818,
+            "worker_memory_mib_max_sample": 2723.2400000000002,
+            "bazel_heap_nonheap_mib_max_sample": 269.96000000000004,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "ElideKotlinc": 1914.6857031250001,
+              "Javac": 515.28125,
+              "ElideKotlincAbi": 293.910234375
+            }
+          },
+          "profile_file": "kotlin-elide_incremental-public_module_api-2.profile.json.gz"
+        },
+        {
+          "seconds": 2.3883887409999716,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//facade:facade"
+          ],
+          "abi_targets": [
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//facade:facade"
+          ],
+          "actions": {
+            "ElideKotlinc": 5,
+            "ElideKotlincAbi": 4
+          },
+          "execution_log": "kotlin-elide_incremental-public_module_api-3.json",
+          "profile": {
+            "critical_path_action_seconds": 1.369318,
+            "critical_path_span_seconds": 2.223261,
+            "worker_memory_mib_max_sample": 2812.0599999999995,
+            "bazel_heap_nonheap_mib_max_sample": 373.742,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "ElideKotlinc": 2000.1400195312503,
+              "Javac": 515.28125,
+              "ElideKotlincAbi": 300.14987109375005
+            }
+          },
+          "profile_file": "kotlin-elide_incremental-public_module_api-3.profile.json.gz"
+        }
+      ]
+    },
+    {
+      "language": "kotlin",
+      "mode": "elide_incremental",
+      "scenario": "multi_file_body",
+      "samples": [
+        {
+          "seconds": 1.093313164000051,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "ElideKotlinc": 1,
+            "ElideKotlincAbi": 1
+          },
+          "execution_log": "kotlin-elide_incremental-multi_file_body-1.json",
+          "profile": {
+            "critical_path_action_seconds": 0.935049,
+            "critical_path_span_seconds": 0.936184,
+            "worker_memory_mib_max_sample": 2901.717,
+            "bazel_heap_nonheap_mib_max_sample": 294.0,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "ElideKotlinc": 2058.0452187499995,
+              "Javac": 515.28125,
+              "ElideKotlincAbi": 328.87944921875
+            }
+          },
+          "profile_file": "kotlin-elide_incremental-multi_file_body-1.profile.json.gz"
+        },
+        {
+          "seconds": 1.0493749290000096,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "ElideKotlinc": 1,
+            "ElideKotlincAbi": 1
+          },
+          "execution_log": "kotlin-elide_incremental-multi_file_body-2.json",
+          "profile": {
+            "critical_path_action_seconds": 0.85075,
+            "critical_path_span_seconds": 0.851941,
+            "worker_memory_mib_max_sample": null,
+            "bazel_heap_nonheap_mib_max_sample": null,
+            "worker_memory_mib_by_mnemonic_max_sample": {}
+          },
+          "profile_file": "kotlin-elide_incremental-multi_file_body-2.profile.json.gz"
+        },
+        {
+          "seconds": 0.9618736810000428,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "ElideKotlinc": 1,
+            "ElideKotlincAbi": 1
+          },
+          "execution_log": "kotlin-elide_incremental-multi_file_body-3.json",
+          "profile": {
+            "critical_path_action_seconds": 0.781601,
+            "critical_path_span_seconds": 0.782694,
+            "worker_memory_mib_max_sample": null,
+            "bazel_heap_nonheap_mib_max_sample": null,
+            "worker_memory_mib_by_mnemonic_max_sample": {}
+          },
+          "profile_file": "kotlin-elide_incremental-multi_file_body-3.profile.json.gz"
+        }
+      ]
+    },
+    {
+      "language": "kotlin",
+      "mode": "elide_selective",
+      "scenario": "clean",
+      "samples": [
+        {
+          "seconds": 23.23821520499996,
+          "compile_targets": [
+            "//app:app",
+            "//app:verify",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade",
+            "//protocol:deps_proto",
+            "//protocol:worker_protocol_proto",
+            "//spare:spare",
+            "@@protobuf+//java/core:core",
+            "@@protobuf+//java/core:lite_runtime_only",
+            "@@rules_elide+//elide/private/ic_worker:ic_worker"
+          ],
+          "abi_targets": [
+            "//core:core",
+            "//protocol:deps_proto",
+            "//protocol:worker_protocol_proto",
+            "@@protobuf+//java/core:core",
+            "@@protobuf+//java/core:lite_runtime_only"
+          ],
+          "actions": {
+            "ProtocAuthenticityCheck": 1,
+            "GenProtoDescriptorSet": 13,
+            "ProtoCompile": 1,
+            "JavaToolchainCompileBootClasspath": 2,
+            "Ijar": 2,
+            "Javac": 6,
+            "Turbine": 4,
+            "GenProto": 2,
+            "ElideKotlincAbi": 1,
+            "ElideKotlinc": 7
+          },
+          "execution_log": "kotlin-elide_selective-clean-1.json",
+          "profile": {
+            "critical_path_action_seconds": 19.661445,
+            "critical_path_span_seconds": 19.665864,
+            "worker_memory_mib_max_sample": 1917.2959999999998,
+            "bazel_heap_nonheap_mib_max_sample": 251.23499999999996,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "ElideKotlinc": 765.1484375000001,
+              "Javac": 834.8301875,
+              "ElideKotlincAbi": 328.42578125000006
+            }
+          },
+          "profile_file": "kotlin-elide_selective-clean-1.profile.json.gz"
+        },
+        {
+          "seconds": 21.668206935999933,
+          "compile_targets": [
+            "//app:app",
+            "//app:verify",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade",
+            "//protocol:deps_proto",
+            "//protocol:worker_protocol_proto",
+            "//spare:spare",
+            "@@protobuf+//java/core:core",
+            "@@protobuf+//java/core:lite_runtime_only",
+            "@@rules_elide+//elide/private/ic_worker:ic_worker"
+          ],
+          "abi_targets": [
+            "//core:core",
+            "//protocol:deps_proto",
+            "//protocol:worker_protocol_proto",
+            "@@protobuf+//java/core:core",
+            "@@protobuf+//java/core:lite_runtime_only"
+          ],
+          "actions": {
+            "ProtocAuthenticityCheck": 1,
+            "GenProtoDescriptorSet": 13,
+            "ProtoCompile": 1,
+            "JavaToolchainCompileBootClasspath": 2,
+            "Ijar": 2,
+            "Javac": 6,
+            "Turbine": 4,
+            "GenProto": 2,
+            "ElideKotlincAbi": 1,
+            "ElideKotlinc": 7
+          },
+          "execution_log": "kotlin-elide_selective-clean-2.json",
+          "profile": {
+            "critical_path_action_seconds": 18.711057,
+            "critical_path_span_seconds": 18.714696,
+            "worker_memory_mib_max_sample": 1881.0960000000005,
+            "bazel_heap_nonheap_mib_max_sample": 287.00000000000006,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "ElideKotlinc": 770.6391875000002,
+              "Javac": 784.2914921875002,
+              "ElideKotlincAbi": 326.21875000000006
+            }
+          },
+          "profile_file": "kotlin-elide_selective-clean-2.profile.json.gz"
+        },
+        {
+          "seconds": 21.11306442199998,
+          "compile_targets": [
+            "//app:app",
+            "//app:verify",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade",
+            "//protocol:deps_proto",
+            "//protocol:worker_protocol_proto",
+            "//spare:spare",
+            "@@protobuf+//java/core:core",
+            "@@protobuf+//java/core:lite_runtime_only",
+            "@@rules_elide+//elide/private/ic_worker:ic_worker"
+          ],
+          "abi_targets": [
+            "//core:core",
+            "//protocol:deps_proto",
+            "//protocol:worker_protocol_proto",
+            "@@protobuf+//java/core:core",
+            "@@protobuf+//java/core:lite_runtime_only"
+          ],
+          "actions": {
+            "ProtocAuthenticityCheck": 1,
+            "GenProtoDescriptorSet": 13,
+            "ProtoCompile": 1,
+            "JavaToolchainCompileBootClasspath": 2,
+            "Ijar": 2,
+            "Javac": 6,
+            "Turbine": 4,
+            "GenProto": 2,
+            "ElideKotlincAbi": 1,
+            "ElideKotlinc": 7
+          },
+          "execution_log": "kotlin-elide_selective-clean-3.json",
+          "profile": {
+            "critical_path_action_seconds": 18.681364,
+            "critical_path_span_seconds": 18.684237,
+            "worker_memory_mib_max_sample": 1828.7200000000003,
+            "bazel_heap_nonheap_mib_max_sample": 371.754,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "ElideKotlinc": 763.2109375,
+              "Javac": 742.6604296875001,
+              "ElideKotlincAbi": 326.31640625000006
+            }
+          },
+          "profile_file": "kotlin-elide_selective-clean-3.profile.json.gz"
+        }
+      ]
+    },
+    {
+      "language": "kotlin",
+      "mode": "elide_selective",
+      "scenario": "no_op",
+      "samples": [
+        {
+          "seconds": 0.21626056000013705,
+          "compile_targets": [],
+          "abi_targets": [],
+          "actions": {},
+          "execution_log": "kotlin-elide_selective-no_op-1.json",
+          "profile": {
+            "critical_path_action_seconds": 0.000844,
+            "critical_path_span_seconds": 0.000844,
+            "worker_memory_mib_max_sample": null,
+            "bazel_heap_nonheap_mib_max_sample": null,
+            "worker_memory_mib_by_mnemonic_max_sample": {}
+          },
+          "profile_file": "kotlin-elide_selective-no_op-1.profile.json.gz"
+        },
+        {
+          "seconds": 0.22584922999999435,
+          "compile_targets": [],
+          "abi_targets": [],
+          "actions": {},
+          "execution_log": "kotlin-elide_selective-no_op-2.json",
+          "profile": {
+            "critical_path_action_seconds": 0.000933,
+            "critical_path_span_seconds": 0.000933,
+            "worker_memory_mib_max_sample": null,
+            "bazel_heap_nonheap_mib_max_sample": null,
+            "worker_memory_mib_by_mnemonic_max_sample": {}
+          },
+          "profile_file": "kotlin-elide_selective-no_op-2.profile.json.gz"
+        },
+        {
+          "seconds": 0.22946406899995964,
+          "compile_targets": [],
+          "abi_targets": [],
+          "actions": {},
+          "execution_log": "kotlin-elide_selective-no_op-3.json",
+          "profile": {
+            "critical_path_action_seconds": 0.000976,
+            "critical_path_span_seconds": 0.000976,
+            "worker_memory_mib_max_sample": null,
+            "bazel_heap_nonheap_mib_max_sample": null,
+            "worker_memory_mib_by_mnemonic_max_sample": {}
+          },
+          "profile_file": "kotlin-elide_selective-no_op-3.profile.json.gz"
+        }
+      ]
+    },
+    {
+      "language": "kotlin",
+      "mode": "elide_selective",
+      "scenario": "comment",
+      "samples": [
+        {
+          "seconds": 0.9214350909999212,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "ElideKotlinc": 1,
+            "ElideKotlincAbi": 1
+          },
+          "execution_log": "kotlin-elide_selective-comment-1.json",
+          "profile": {
+            "critical_path_action_seconds": 0.735935,
+            "critical_path_span_seconds": 0.737643,
+            "worker_memory_mib_max_sample": null,
+            "bazel_heap_nonheap_mib_max_sample": null,
+            "worker_memory_mib_by_mnemonic_max_sample": {}
+          },
+          "profile_file": "kotlin-elide_selective-comment-1.profile.json.gz"
+        },
+        {
+          "seconds": 0.870962431999942,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "ElideKotlinc": 1,
+            "ElideKotlincAbi": 1
+          },
+          "execution_log": "kotlin-elide_selective-comment-2.json",
+          "profile": {
+            "critical_path_action_seconds": 0.704457,
+            "critical_path_span_seconds": 0.706229,
+            "worker_memory_mib_max_sample": null,
+            "bazel_heap_nonheap_mib_max_sample": null,
+            "worker_memory_mib_by_mnemonic_max_sample": {}
+          },
+          "profile_file": "kotlin-elide_selective-comment-2.profile.json.gz"
+        },
+        {
+          "seconds": 0.8890830600000754,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "ElideKotlinc": 1,
+            "ElideKotlincAbi": 1
+          },
+          "execution_log": "kotlin-elide_selective-comment-3.json",
+          "profile": {
+            "critical_path_action_seconds": 0.718419,
+            "critical_path_span_seconds": 0.720248,
+            "worker_memory_mib_max_sample": null,
+            "bazel_heap_nonheap_mib_max_sample": null,
+            "worker_memory_mib_by_mnemonic_max_sample": {}
+          },
+          "profile_file": "kotlin-elide_selective-comment-3.profile.json.gz"
+        }
+      ]
+    },
+    {
+      "language": "kotlin",
+      "mode": "elide_selective",
+      "scenario": "body",
+      "samples": [
+        {
+          "seconds": 0.9215550880001047,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "ElideKotlinc": 1,
+            "ElideKotlincAbi": 1
+          },
+          "execution_log": "kotlin-elide_selective-body-1.json",
+          "profile": {
+            "critical_path_action_seconds": 0.745351,
+            "critical_path_span_seconds": 0.746989,
+            "worker_memory_mib_max_sample": null,
+            "bazel_heap_nonheap_mib_max_sample": null,
+            "worker_memory_mib_by_mnemonic_max_sample": {}
+          },
+          "profile_file": "kotlin-elide_selective-body-1.profile.json.gz"
+        },
+        {
+          "seconds": 0.940188500999966,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "ElideKotlinc": 1,
+            "ElideKotlincAbi": 1
+          },
+          "execution_log": "kotlin-elide_selective-body-2.json",
+          "profile": {
+            "critical_path_action_seconds": 0.768569,
+            "critical_path_span_seconds": 0.770296,
+            "worker_memory_mib_max_sample": null,
+            "bazel_heap_nonheap_mib_max_sample": null,
+            "worker_memory_mib_by_mnemonic_max_sample": {}
+          },
+          "profile_file": "kotlin-elide_selective-body-2.profile.json.gz"
+        },
+        {
+          "seconds": 1.0120293999998466,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "ElideKotlinc": 1,
+            "ElideKotlincAbi": 1
+          },
+          "execution_log": "kotlin-elide_selective-body-3.json",
+          "profile": {
+            "critical_path_action_seconds": 0.829067,
+            "critical_path_span_seconds": 0.830759,
+            "worker_memory_mib_max_sample": null,
+            "bazel_heap_nonheap_mib_max_sample": null,
+            "worker_memory_mib_by_mnemonic_max_sample": {}
+          },
+          "profile_file": "kotlin-elide_selective-body-3.profile.json.gz"
+        }
+      ]
+    },
+    {
+      "language": "kotlin",
+      "mode": "elide_selective",
+      "scenario": "private_member",
+      "samples": [
+        {
+          "seconds": 0.9875336979998792,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "ElideKotlinc": 1,
+            "ElideKotlincAbi": 1
+          },
+          "execution_log": "kotlin-elide_selective-private_member-1.json",
+          "profile": {
+            "critical_path_action_seconds": 0.81655,
+            "critical_path_span_seconds": 0.818241,
+            "worker_memory_mib_max_sample": null,
+            "bazel_heap_nonheap_mib_max_sample": null,
+            "worker_memory_mib_by_mnemonic_max_sample": {}
+          },
+          "profile_file": "kotlin-elide_selective-private_member-1.profile.json.gz"
+        },
+        {
+          "seconds": 0.964191905000007,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "ElideKotlinc": 1,
+            "ElideKotlincAbi": 1
+          },
+          "execution_log": "kotlin-elide_selective-private_member-2.json",
+          "profile": {
+            "critical_path_action_seconds": 0.792002,
+            "critical_path_span_seconds": 0.794146,
+            "worker_memory_mib_max_sample": null,
+            "bazel_heap_nonheap_mib_max_sample": null,
+            "worker_memory_mib_by_mnemonic_max_sample": {}
+          },
+          "profile_file": "kotlin-elide_selective-private_member-2.profile.json.gz"
+        },
+        {
+          "seconds": 0.9864706609998848,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "ElideKotlinc": 1,
+            "ElideKotlincAbi": 1
+          },
+          "execution_log": "kotlin-elide_selective-private_member-3.json",
+          "profile": {
+            "critical_path_action_seconds": 0.814833,
+            "critical_path_span_seconds": 0.816258,
+            "worker_memory_mib_max_sample": null,
+            "bazel_heap_nonheap_mib_max_sample": null,
+            "worker_memory_mib_by_mnemonic_max_sample": {}
+          },
+          "profile_file": "kotlin-elide_selective-private_member-3.profile.json.gz"
+        }
+      ]
+    },
+    {
+      "language": "kotlin",
+      "mode": "elide_selective",
+      "scenario": "internal_module_api",
+      "samples": [
+        {
+          "seconds": 1.2534418560001086,
+          "compile_targets": [
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "ElideKotlinc": 2,
+            "ElideKotlincAbi": 1
+          },
+          "execution_log": "kotlin-elide_selective-internal_module_api-1.json",
+          "profile": {
+            "critical_path_action_seconds": 1.083548,
+            "critical_path_span_seconds": 1.085473,
+            "worker_memory_mib_max_sample": 1656.098,
+            "bazel_heap_nonheap_mib_max_sample": 270.0,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "Javac": 532.54296875,
+              "ElideKotlinc": 791.9768203125001,
+              "ElideKotlincAbi": 331.99560156250004
+            }
+          },
+          "profile_file": "kotlin-elide_selective-internal_module_api-1.profile.json.gz"
+        },
+        {
+          "seconds": 1.103632209999887,
+          "compile_targets": [
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "ElideKotlinc": 2,
+            "ElideKotlincAbi": 1
+          },
+          "execution_log": "kotlin-elide_selective-internal_module_api-2.json",
+          "profile": {
+            "critical_path_action_seconds": 0.932266,
+            "critical_path_span_seconds": 0.934121,
+            "worker_memory_mib_max_sample": 1657.1350000000002,
+            "bazel_heap_nonheap_mib_max_sample": 353.6,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "Javac": 532.54296875,
+              "ElideKotlinc": 785.97689453125,
+              "ElideKotlincAbi": 339.414859375
+            }
+          },
+          "profile_file": "kotlin-elide_selective-internal_module_api-2.profile.json.gz"
+        },
+        {
+          "seconds": 1.1415732750001553,
+          "compile_targets": [
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "ElideKotlinc": 2,
+            "ElideKotlincAbi": 1
+          },
+          "execution_log": "kotlin-elide_selective-internal_module_api-3.json",
+          "profile": {
+            "critical_path_action_seconds": 0.970971,
+            "critical_path_span_seconds": 0.973026,
+            "worker_memory_mib_max_sample": 1679.431,
+            "bazel_heap_nonheap_mib_max_sample": 245.00000000000003,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "Javac": 532.54296875,
+              "ElideKotlinc": 800.3076015625,
+              "ElideKotlincAbi": 346.82848046875006
+            }
+          },
+          "profile_file": "kotlin-elide_selective-internal_module_api-3.profile.json.gz"
+        }
+      ]
+    },
+    {
+      "language": "kotlin",
+      "mode": "elide_selective",
+      "scenario": "public_module_api",
+      "samples": [
+        {
+          "seconds": 0.7305624929999794,
+          "compile_targets": [
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//facade:facade"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideKotlinc": 4
+          },
+          "execution_log": "kotlin-elide_selective-public_module_api-1.json",
+          "profile": {
+            "critical_path_action_seconds": 0.557955,
+            "critical_path_span_seconds": 0.559649,
+            "worker_memory_mib_max_sample": null,
+            "bazel_heap_nonheap_mib_max_sample": null,
+            "worker_memory_mib_by_mnemonic_max_sample": {}
+          },
+          "profile_file": "kotlin-elide_selective-public_module_api-1.profile.json.gz"
+        },
+        {
+          "seconds": 0.8565493690000494,
+          "compile_targets": [
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//facade:facade"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideKotlinc": 4
+          },
+          "execution_log": "kotlin-elide_selective-public_module_api-2.json",
+          "profile": {
+            "critical_path_action_seconds": 0.681791,
+            "critical_path_span_seconds": 0.68365,
+            "worker_memory_mib_max_sample": null,
+            "bazel_heap_nonheap_mib_max_sample": null,
+            "worker_memory_mib_by_mnemonic_max_sample": {}
+          },
+          "profile_file": "kotlin-elide_selective-public_module_api-2.profile.json.gz"
+        },
+        {
+          "seconds": 0.7422105209998335,
+          "compile_targets": [
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//facade:facade"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideKotlinc": 4
+          },
+          "execution_log": "kotlin-elide_selective-public_module_api-3.json",
+          "profile": {
+            "critical_path_action_seconds": 0.575831,
+            "critical_path_span_seconds": 0.577401,
+            "worker_memory_mib_max_sample": null,
+            "bazel_heap_nonheap_mib_max_sample": null,
+            "worker_memory_mib_by_mnemonic_max_sample": {}
+          },
+          "profile_file": "kotlin-elide_selective-public_module_api-3.profile.json.gz"
+        }
+      ]
+    },
+    {
+      "language": "kotlin",
+      "mode": "elide_selective",
+      "scenario": "multi_file_body",
+      "samples": [
+        {
+          "seconds": 1.0055840190000254,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "ElideKotlinc": 1,
+            "ElideKotlincAbi": 1
+          },
+          "execution_log": "kotlin-elide_selective-multi_file_body-1.json",
+          "profile": {
+            "critical_path_action_seconds": 0.818589,
+            "critical_path_span_seconds": 0.820036,
+            "worker_memory_mib_max_sample": null,
+            "bazel_heap_nonheap_mib_max_sample": null,
+            "worker_memory_mib_by_mnemonic_max_sample": {}
+          },
+          "profile_file": "kotlin-elide_selective-multi_file_body-1.profile.json.gz"
+        },
+        {
+          "seconds": 1.0164579779998348,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "ElideKotlinc": 1,
+            "ElideKotlincAbi": 1
+          },
+          "execution_log": "kotlin-elide_selective-multi_file_body-2.json",
+          "profile": {
+            "critical_path_action_seconds": 0.846245,
+            "critical_path_span_seconds": 0.847574,
+            "worker_memory_mib_max_sample": null,
+            "bazel_heap_nonheap_mib_max_sample": null,
+            "worker_memory_mib_by_mnemonic_max_sample": {}
+          },
+          "profile_file": "kotlin-elide_selective-multi_file_body-2.profile.json.gz"
+        },
+        {
+          "seconds": 1.1325544189999164,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "ElideKotlinc": 1,
+            "ElideKotlincAbi": 1
+          },
+          "execution_log": "kotlin-elide_selective-multi_file_body-3.json",
+          "profile": {
+            "critical_path_action_seconds": 0.963931,
+            "critical_path_span_seconds": 0.965478,
+            "worker_memory_mib_max_sample": 1665.9360000000001,
+            "bazel_heap_nonheap_mib_max_sample": 348.7660000000001,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "Javac": 532.5546875000001,
+              "ElideKotlinc": 805.7087734375,
+              "ElideKotlincAbi": 328.0303515625
+            }
+          },
+          "profile_file": "kotlin-elide_selective-multi_file_body-3.profile.json.gz"
+        }
+      ]
+    },
+    {
+      "language": "kotlin",
+      "mode": "elide_parallel",
+      "scenario": "clean",
+      "samples": [
+        {
+          "seconds": 28.804599826999947,
+          "compile_targets": [
+            "//app:app",
+            "//app:verify",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade",
+            "//protocol:deps_proto",
+            "//protocol:worker_protocol_proto",
+            "//spare:spare",
+            "@@protobuf+//java/core:core",
+            "@@protobuf+//java/core:lite_runtime_only"
+          ],
+          "abi_targets": [
+            "//protocol:deps_proto",
+            "//protocol:worker_protocol_proto",
+            "@@protobuf+//java/core:core",
+            "@@protobuf+//java/core:lite_runtime_only"
+          ],
+          "actions": {
+            "ProtocAuthenticityCheck": 1,
+            "GenProtoDescriptorSet": 13,
+            "ProtoCompile": 1,
+            "JavaToolchainCompileBootClasspath": 1,
+            "Ijar": 1,
+            "Javac": 5,
+            "Turbine": 4,
+            "GenProto": 2,
+            "ElideKotlinc": 7
+          },
+          "execution_log": "kotlin-elide_parallel-clean-1.json",
+          "profile": {
+            "critical_path_action_seconds": 25.484652,
+            "critical_path_span_seconds": 25.494562,
+            "worker_memory_mib_max_sample": 1381.127,
+            "bazel_heap_nonheap_mib_max_sample": 325.13800000000003,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "ElideKotlinc": 394.20684375,
+              "Javac": 1029.0380078125
+            }
+          },
+          "profile_file": "kotlin-elide_parallel-clean-1.profile.json.gz"
+        },
+        {
+          "seconds": 27.121024014999875,
+          "compile_targets": [
+            "//app:app",
+            "//app:verify",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade",
+            "//protocol:deps_proto",
+            "//protocol:worker_protocol_proto",
+            "//spare:spare",
+            "@@protobuf+//java/core:core",
+            "@@protobuf+//java/core:lite_runtime_only"
+          ],
+          "abi_targets": [
+            "//protocol:deps_proto",
+            "//protocol:worker_protocol_proto",
+            "@@protobuf+//java/core:core",
+            "@@protobuf+//java/core:lite_runtime_only"
+          ],
+          "actions": {
+            "ProtocAuthenticityCheck": 1,
+            "GenProtoDescriptorSet": 13,
+            "ProtoCompile": 1,
+            "JavaToolchainCompileBootClasspath": 1,
+            "Ijar": 1,
+            "Javac": 5,
+            "Turbine": 4,
+            "GenProto": 2,
+            "ElideKotlinc": 7
+          },
+          "execution_log": "kotlin-elide_parallel-clean-2.json",
+          "profile": {
+            "critical_path_action_seconds": 24.109023,
+            "critical_path_span_seconds": 24.11243,
+            "worker_memory_mib_max_sample": 1342.812,
+            "bazel_heap_nonheap_mib_max_sample": 333.0,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "ElideKotlinc": 400.07733593750004,
+              "Javac": 992.4135859374999
+            }
+          },
+          "profile_file": "kotlin-elide_parallel-clean-2.profile.json.gz"
+        },
+        {
+          "seconds": 28.64634407099993,
+          "compile_targets": [
+            "//app:app",
+            "//app:verify",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade",
+            "//protocol:deps_proto",
+            "//protocol:worker_protocol_proto",
+            "//spare:spare",
+            "@@protobuf+//java/core:core",
+            "@@protobuf+//java/core:lite_runtime_only"
+          ],
+          "abi_targets": [
+            "//protocol:deps_proto",
+            "//protocol:worker_protocol_proto",
+            "@@protobuf+//java/core:core",
+            "@@protobuf+//java/core:lite_runtime_only"
+          ],
+          "actions": {
+            "ProtocAuthenticityCheck": 1,
+            "GenProtoDescriptorSet": 13,
+            "ProtoCompile": 1,
+            "JavaToolchainCompileBootClasspath": 1,
+            "Ijar": 1,
+            "Javac": 5,
+            "Turbine": 4,
+            "GenProto": 2,
+            "ElideKotlinc": 7
+          },
+          "execution_log": "kotlin-elide_parallel-clean-3.json",
+          "profile": {
+            "critical_path_action_seconds": 26.207053,
+            "critical_path_span_seconds": 26.212975,
+            "worker_memory_mib_max_sample": 1560.489,
+            "bazel_heap_nonheap_mib_max_sample": 323.86199999999997,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "ElideKotlinc": 407.00939843750007,
+              "Javac": 1211.3090078124997
+            }
+          },
+          "profile_file": "kotlin-elide_parallel-clean-3.profile.json.gz"
+        }
+      ]
+    },
+    {
+      "language": "kotlin",
+      "mode": "elide_parallel",
+      "scenario": "no_op",
+      "samples": [
+        {
+          "seconds": 0.2825471920000382,
+          "compile_targets": [],
+          "abi_targets": [],
+          "actions": {},
+          "execution_log": "kotlin-elide_parallel-no_op-1.json",
+          "profile": {
+            "critical_path_action_seconds": 0.000825,
+            "critical_path_span_seconds": 0.000825,
+            "worker_memory_mib_max_sample": null,
+            "bazel_heap_nonheap_mib_max_sample": null,
+            "worker_memory_mib_by_mnemonic_max_sample": {}
+          },
+          "profile_file": "kotlin-elide_parallel-no_op-1.profile.json.gz"
+        },
+        {
+          "seconds": 0.2390930889998799,
+          "compile_targets": [],
+          "abi_targets": [],
+          "actions": {},
+          "execution_log": "kotlin-elide_parallel-no_op-2.json",
+          "profile": {
+            "critical_path_action_seconds": 0.000923,
+            "critical_path_span_seconds": 0.000923,
+            "worker_memory_mib_max_sample": null,
+            "bazel_heap_nonheap_mib_max_sample": null,
+            "worker_memory_mib_by_mnemonic_max_sample": {}
+          },
+          "profile_file": "kotlin-elide_parallel-no_op-2.profile.json.gz"
+        },
+        {
+          "seconds": 0.19706337600018742,
+          "compile_targets": [],
+          "abi_targets": [],
+          "actions": {},
+          "execution_log": "kotlin-elide_parallel-no_op-3.json",
+          "profile": {
+            "critical_path_action_seconds": 0.00064,
+            "critical_path_span_seconds": 0.00064,
+            "worker_memory_mib_max_sample": null,
+            "bazel_heap_nonheap_mib_max_sample": null,
+            "worker_memory_mib_by_mnemonic_max_sample": {}
+          },
+          "profile_file": "kotlin-elide_parallel-no_op-3.profile.json.gz"
+        }
+      ]
+    },
+    {
+      "language": "kotlin",
+      "mode": "elide_parallel",
+      "scenario": "comment",
+      "samples": [
+        {
+          "seconds": 1.0973911689998204,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideKotlinc": 1
+          },
+          "execution_log": "kotlin-elide_parallel-comment-1.json",
+          "profile": {
+            "critical_path_action_seconds": 0.90763,
+            "critical_path_span_seconds": 0.91009,
+            "worker_memory_mib_max_sample": 1446.384,
+            "bazel_heap_nonheap_mib_max_sample": 482.0,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "Javac": 1079.9570312499998,
+              "ElideKotlinc": 366.6645234375
+            }
+          },
+          "profile_file": "kotlin-elide_parallel-comment-1.profile.json.gz"
+        },
+        {
+          "seconds": 1.0728470349999952,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideKotlinc": 1
+          },
+          "execution_log": "kotlin-elide_parallel-comment-2.json",
+          "profile": {
+            "critical_path_action_seconds": 0.905121,
+            "critical_path_span_seconds": 0.907466,
+            "worker_memory_mib_max_sample": null,
+            "bazel_heap_nonheap_mib_max_sample": null,
+            "worker_memory_mib_by_mnemonic_max_sample": {}
+          },
+          "profile_file": "kotlin-elide_parallel-comment-2.profile.json.gz"
+        },
+        {
+          "seconds": 1.0879769969999415,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideKotlinc": 1
+          },
+          "execution_log": "kotlin-elide_parallel-comment-3.json",
+          "profile": {
+            "critical_path_action_seconds": 0.916388,
+            "critical_path_span_seconds": 0.918309,
+            "worker_memory_mib_max_sample": 1430.8760000000002,
+            "bazel_heap_nonheap_mib_max_sample": 426.6,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "Javac": 1079.95703125,
+              "ElideKotlinc": 351.41978125
+            }
+          },
+          "profile_file": "kotlin-elide_parallel-comment-3.profile.json.gz"
+        }
+      ]
+    },
+    {
+      "language": "kotlin",
+      "mode": "elide_parallel",
+      "scenario": "body",
+      "samples": [
+        {
+          "seconds": 1.1728384149998874,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideKotlinc": 1
+          },
+          "execution_log": "kotlin-elide_parallel-body-1.json",
+          "profile": {
+            "critical_path_action_seconds": 1.007683,
+            "critical_path_span_seconds": 1.009615,
+            "worker_memory_mib_max_sample": 1436.623,
+            "bazel_heap_nonheap_mib_max_sample": 349.198,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "Javac": 1079.9570312499998,
+              "ElideKotlinc": 356.98471484375
+            }
+          },
+          "profile_file": "kotlin-elide_parallel-body-1.profile.json.gz"
+        },
+        {
+          "seconds": 1.3102784130001055,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideKotlinc": 1
+          },
+          "execution_log": "kotlin-elide_parallel-body-2.json",
+          "profile": {
+            "critical_path_action_seconds": 1.146442,
+            "critical_path_span_seconds": 1.148316,
+            "worker_memory_mib_max_sample": 1440.0220000000002,
+            "bazel_heap_nonheap_mib_max_sample": 442.0,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "Javac": 1079.95703125,
+              "ElideKotlinc": 360.35459375
+            }
+          },
+          "profile_file": "kotlin-elide_parallel-body-2.profile.json.gz"
+        },
+        {
+          "seconds": 1.2680895450000662,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideKotlinc": 1
+          },
+          "execution_log": "kotlin-elide_parallel-body-3.json",
+          "profile": {
+            "critical_path_action_seconds": 1.108059,
+            "critical_path_span_seconds": 1.110191,
+            "worker_memory_mib_max_sample": 1437.192,
+            "bazel_heap_nonheap_mib_max_sample": 262.0,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "Javac": 1079.95703125,
+              "ElideKotlinc": 358.039734375
+            }
+          },
+          "profile_file": "kotlin-elide_parallel-body-3.profile.json.gz"
+        }
+      ]
+    },
+    {
+      "language": "kotlin",
+      "mode": "elide_parallel",
+      "scenario": "private_member",
+      "samples": [
+        {
+          "seconds": 1.2224731359999623,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideKotlinc": 1
+          },
+          "execution_log": "kotlin-elide_parallel-private_member-1.json",
+          "profile": {
+            "critical_path_action_seconds": 1.05447,
+            "critical_path_span_seconds": 1.056909,
+            "worker_memory_mib_max_sample": 1465.6760000000002,
+            "bazel_heap_nonheap_mib_max_sample": 471.17800000000005,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "Javac": 1079.95703125,
+              "ElideKotlinc": 385.837421875
+            }
+          },
+          "profile_file": "kotlin-elide_parallel-private_member-1.profile.json.gz"
+        },
+        {
+          "seconds": 1.2685975469998994,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideKotlinc": 1
+          },
+          "execution_log": "kotlin-elide_parallel-private_member-2.json",
+          "profile": {
+            "critical_path_action_seconds": 1.097728,
+            "critical_path_span_seconds": 1.099865,
+            "worker_memory_mib_max_sample": 1469.132,
+            "bazel_heap_nonheap_mib_max_sample": 290.0,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "Javac": 1079.95703125,
+              "ElideKotlinc": 389.448515625
+            }
+          },
+          "profile_file": "kotlin-elide_parallel-private_member-2.profile.json.gz"
+        },
+        {
+          "seconds": 1.1903017340000588,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideKotlinc": 1
+          },
+          "execution_log": "kotlin-elide_parallel-private_member-3.json",
+          "profile": {
+            "critical_path_action_seconds": 1.027556,
+            "critical_path_span_seconds": 1.029688,
+            "worker_memory_mib_max_sample": 1396.0720000000001,
+            "bazel_heap_nonheap_mib_max_sample": 382.00000000000006,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "Javac": 1079.9570312499998,
+              "ElideKotlinc": 316.4636015625
+            }
+          },
+          "profile_file": "kotlin-elide_parallel-private_member-3.profile.json.gz"
+        }
+      ]
+    },
+    {
+      "language": "kotlin",
+      "mode": "elide_parallel",
+      "scenario": "internal_module_api",
+      "samples": [
+        {
+          "seconds": 1.5167269199998827,
+          "compile_targets": [
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideKotlinc": 2
+          },
+          "execution_log": "kotlin-elide_parallel-internal_module_api-1.json",
+          "profile": {
+            "critical_path_action_seconds": 1.340207,
+            "critical_path_span_seconds": 1.342534,
+            "worker_memory_mib_max_sample": 1420.788,
+            "bazel_heap_nonheap_mib_max_sample": 303.0,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "Javac": 1079.9609375,
+              "ElideKotlinc": 341.191046875
+            }
+          },
+          "profile_file": "kotlin-elide_parallel-internal_module_api-1.profile.json.gz"
+        },
+        {
+          "seconds": 1.4725044090000665,
+          "compile_targets": [
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideKotlinc": 2
+          },
+          "execution_log": "kotlin-elide_parallel-internal_module_api-2.json",
+          "profile": {
+            "critical_path_action_seconds": 1.299684,
+            "critical_path_span_seconds": 1.301807,
+            "worker_memory_mib_max_sample": 1491.7440000000001,
+            "bazel_heap_nonheap_mib_max_sample": 405.0,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "Javac": 1079.9609374999998,
+              "ElideKotlinc": 411.9392656250001
+            }
+          },
+          "profile_file": "kotlin-elide_parallel-internal_module_api-2.profile.json.gz"
+        },
+        {
+          "seconds": 1.4609314599999834,
+          "compile_targets": [
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideKotlinc": 2
+          },
+          "execution_log": "kotlin-elide_parallel-internal_module_api-3.json",
+          "profile": {
+            "critical_path_action_seconds": 1.282427,
+            "critical_path_span_seconds": 1.284851,
+            "worker_memory_mib_max_sample": 1429.737,
+            "bazel_heap_nonheap_mib_max_sample": 231.17800000000003,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "Javac": 1079.9609374999998,
+              "ElideKotlinc": 350.17027734375006
+            }
+          },
+          "profile_file": "kotlin-elide_parallel-internal_module_api-3.profile.json.gz"
+        }
+      ]
+    },
+    {
+      "language": "kotlin",
+      "mode": "elide_parallel",
+      "scenario": "public_module_api",
+      "samples": [
+        {
+          "seconds": 0.598301395000135,
+          "compile_targets": [
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//facade:facade"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideKotlinc": 4
+          },
+          "execution_log": "kotlin-elide_parallel-public_module_api-1.json",
+          "profile": {
+            "critical_path_action_seconds": 0.435814,
+            "critical_path_span_seconds": 0.437636,
+            "worker_memory_mib_max_sample": null,
+            "bazel_heap_nonheap_mib_max_sample": null,
+            "worker_memory_mib_by_mnemonic_max_sample": {}
+          },
+          "profile_file": "kotlin-elide_parallel-public_module_api-1.profile.json.gz"
+        },
+        {
+          "seconds": 0.5873491790000571,
+          "compile_targets": [
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//facade:facade"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideKotlinc": 4
+          },
+          "execution_log": "kotlin-elide_parallel-public_module_api-2.json",
+          "profile": {
+            "critical_path_action_seconds": 0.423179,
+            "critical_path_span_seconds": 0.424654,
+            "worker_memory_mib_max_sample": null,
+            "bazel_heap_nonheap_mib_max_sample": null,
+            "worker_memory_mib_by_mnemonic_max_sample": {}
+          },
+          "profile_file": "kotlin-elide_parallel-public_module_api-2.profile.json.gz"
+        },
+        {
+          "seconds": 0.6085793929998999,
+          "compile_targets": [
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//facade:facade"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideKotlinc": 4
+          },
+          "execution_log": "kotlin-elide_parallel-public_module_api-3.json",
+          "profile": {
+            "critical_path_action_seconds": 0.444166,
+            "critical_path_span_seconds": 0.44561,
+            "worker_memory_mib_max_sample": null,
+            "bazel_heap_nonheap_mib_max_sample": null,
+            "worker_memory_mib_by_mnemonic_max_sample": {}
+          },
+          "profile_file": "kotlin-elide_parallel-public_module_api-3.profile.json.gz"
+        }
+      ]
+    },
+    {
+      "language": "kotlin",
+      "mode": "elide_parallel",
+      "scenario": "multi_file_body",
+      "samples": [
+        {
+          "seconds": 1.1346404230000644,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideKotlinc": 1
+          },
+          "execution_log": "kotlin-elide_parallel-multi_file_body-1.json",
+          "profile": {
+            "critical_path_action_seconds": 0.976278,
+            "critical_path_span_seconds": 0.977796,
+            "worker_memory_mib_max_sample": 2146.4,
+            "bazel_heap_nonheap_mib_max_sample": 211.178,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "ElideKotlinc": 1066.9209062500001,
+              "Javac": 1079.734375
+            }
+          },
+          "profile_file": "kotlin-elide_parallel-multi_file_body-1.profile.json.gz"
+        },
+        {
+          "seconds": 1.0788981590001185,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideKotlinc": 1
+          },
+          "execution_log": "kotlin-elide_parallel-multi_file_body-2.json",
+          "profile": {
+            "critical_path_action_seconds": 0.904899,
+            "critical_path_span_seconds": 0.906663,
+            "worker_memory_mib_max_sample": null,
+            "bazel_heap_nonheap_mib_max_sample": null,
+            "worker_memory_mib_by_mnemonic_max_sample": {}
+          },
+          "profile_file": "kotlin-elide_parallel-multi_file_body-2.profile.json.gz"
+        },
+        {
+          "seconds": 1.1102558410000256,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideKotlinc": 1
+          },
+          "execution_log": "kotlin-elide_parallel-multi_file_body-3.json",
+          "profile": {
+            "critical_path_action_seconds": 0.944251,
+            "critical_path_span_seconds": 0.945884,
+            "worker_memory_mib_max_sample": 2168.0,
+            "bazel_heap_nonheap_mib_max_sample": 375.374,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "ElideKotlinc": 1088.4273437499999,
+              "Javac": 1079.6757812500002
+            }
+          },
+          "profile_file": "kotlin-elide_parallel-multi_file_body-3.profile.json.gz"
+        }
+      ]
+    }
+  ],
+  "source_workload": {
+    "project": "rules_elide KotlinBuilder",
+    "revision": "5e53353e49929c97fbb7b4a01257274129b8afac",
+    "checkout_dirty": false,
+    "source_sha256": "71682b146d0a77af9b5159021a8d4ad3f743ce9768ba48a41d9ccb666dc41884",
+    "source_files": 11,
+    "kotlin_files": 9,
+    "proto_files": 2,
+    "consumer_graph": "generated",
+    "jvm_target": "21"
+  },
+  "runtime_java": "Bazel remotejdk_21 via stock java_binary launcher",
+  "protocol_rule_versions": {
+    "rules_proto": "7.1.0",
+    "protobuf": "36.2"
+  }
+}

@@ -6,8 +6,9 @@ Use the [real Java results](../benchmarks/COMMONS_LANG_CLEAN_RESULTS.md),
 optimizations for your dependency graph. The [target ledger](../benchmarks/PERFORMANCE_TARGETS.md)
 tracks measured wins and remaining gaps against stock rules. Clean rebuilds favor
 Elide in these real-source fixtures. Warm implementation edits still favor stock
-Java; Kotlin benefits from ABI avoidance and incremental state, but public API
-edits and incremental adapter memory remain gaps. No setting wins every case.
+Java. [Selective Kotlin IC](../benchmarks/KOTLIN_WORKER_RESULTS.md) beats both
+stock modes by median in all eight timing scenarios on the KotlinBuilder fixture,
+but uses more sampled worker memory. No setting wins every dimension.
 Keep clean rebuilds separate from warm edits and first-install/download costs.
 
 ## Combined Java ABI emission
@@ -122,7 +123,9 @@ emission is requested. Targets with IC off can use combined emission and
 `--@rules_elide//elide:prune_unused_inputs=true`, subject to the normal safety
 fallbacks. This layout addresses the costs exposed by the
 [production Kotlin comparison](../benchmarks/KOTLIN_BUILDER_RESULTS.md), but is
-experimental; measure it on your workload. The `elide_selective` benchmark mode
+[a hosted selective-IC comparison](../benchmarks/KOTLIN_WORKER_RESULTS.md) now
+measures its timing wins and memory tradeoffs. It remains experimental; measure
+it on your workload. The `elide_selective` benchmark mode
 uses IC only for Core and combined emission plus pruning for consumers. Select it
 explicitly with `--modes` locally or the hosted workflow's `modes` input.
 

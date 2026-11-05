@@ -315,3 +315,7 @@ its JVM and resident compiler contribute to worker memory and startup costs.
 The [hosted production Kotlin comparison](KOTLIN_BUILDER_RESULTS.md) preserves all
 64 cases and 192 measured samples, including incremental adapter clean/API and
 memory regressions.
+
+The [worker and per-target IC comparison](KOTLIN_WORKER_RESULTS.md) adds 48 cases
+and 144 samples: selective IC improves timings while memory and parallel-worker
+clean-build regressions remain explicit.
