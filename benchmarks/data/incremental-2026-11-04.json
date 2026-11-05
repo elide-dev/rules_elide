@@ -1,0 +1,5551 @@
+{
+  "commit": "5064e321bb678b50cc76b3c9ac02d66c7c8561b9",
+  "host": "Linux-7.0.0-1017-azure-x86_64-with-glibc2.39",
+  "cpus": 4,
+  "jobs": 4,
+  "bazel_version": "9.3.1",
+  "elide_version": "1.6.2",
+  "jvm_rule_versions": {
+    "rules_java": "9.9.0",
+    "rules_kotlin": "2.4.21"
+  },
+  "parameters": {
+    "sources": 20,
+    "fanout": 3,
+    "rounds": 3,
+    "warmups": 1,
+    "languages": [
+      "java",
+      "kotlin"
+    ],
+    "modes": [
+      "vanilla",
+      "elide",
+      "elide_abi",
+      "elide_pruned",
+      "elide_incremental"
+    ],
+    "scenarios": [
+      "no_op",
+      "comment",
+      "body",
+      "private_member",
+      "internal_module_api",
+      "public_module_api",
+      "multi_file_body",
+      "multi_module_body",
+      "multi_module_api",
+      "unused_dependency_api",
+      "inline_or_constant"
+    ],
+    "output": "/home/runner/work/rules_elide/rules_elide/benchmarks/results/incremental",
+    "distdir": []
+  },
+  "results": [
+    {
+      "language": "java",
+      "mode": "vanilla",
+      "scenario": "no_op",
+      "samples": [
+        {
+          "seconds": 0.22377630599999065,
+          "compile_targets": [],
+          "abi_targets": [],
+          "actions": {},
+          "execution_log": "java-vanilla-no_op-1.json"
+        },
+        {
+          "seconds": 0.18742084799998793,
+          "compile_targets": [],
+          "abi_targets": [],
+          "actions": {},
+          "execution_log": "java-vanilla-no_op-2.json"
+        },
+        {
+          "seconds": 0.16429733400002533,
+          "compile_targets": [],
+          "abi_targets": [],
+          "actions": {},
+          "execution_log": "java-vanilla-no_op-3.json"
+        }
+      ]
+    },
+    {
+      "language": "java",
+      "mode": "vanilla",
+      "scenario": "comment",
+      "samples": [
+        {
+          "seconds": 0.3562626410000007,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "Turbine": 1,
+            "Javac": 1
+          },
+          "execution_log": "java-vanilla-comment-1.json"
+        },
+        {
+          "seconds": 0.2742256670000529,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "Turbine": 1,
+            "Javac": 1
+          },
+          "execution_log": "java-vanilla-comment-2.json"
+        },
+        {
+          "seconds": 0.2439147140000273,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "Turbine": 1,
+            "Javac": 1
+          },
+          "execution_log": "java-vanilla-comment-3.json"
+        }
+      ]
+    },
+    {
+      "language": "java",
+      "mode": "vanilla",
+      "scenario": "body",
+      "samples": [
+        {
+          "seconds": 0.23595446899997796,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "Turbine": 1,
+            "Javac": 1
+          },
+          "execution_log": "java-vanilla-body-1.json"
+        },
+        {
+          "seconds": 0.27003946800004996,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "Turbine": 1,
+            "Javac": 1
+          },
+          "execution_log": "java-vanilla-body-2.json"
+        },
+        {
+          "seconds": 0.25672968700001775,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "Turbine": 1,
+            "Javac": 1
+          },
+          "execution_log": "java-vanilla-body-3.json"
+        }
+      ]
+    },
+    {
+      "language": "java",
+      "mode": "vanilla",
+      "scenario": "private_member",
+      "samples": [
+        {
+          "seconds": 0.23063012699998353,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "Turbine": 1,
+            "Javac": 1
+          },
+          "execution_log": "java-vanilla-private_member-1.json"
+        },
+        {
+          "seconds": 0.20814995900002486,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "Turbine": 1,
+            "Javac": 1
+          },
+          "execution_log": "java-vanilla-private_member-2.json"
+        },
+        {
+          "seconds": 0.25073823200000334,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "Turbine": 1,
+            "Javac": 1
+          },
+          "execution_log": "java-vanilla-private_member-3.json"
+        }
+      ]
+    },
+    {
+      "language": "java",
+      "mode": "vanilla",
+      "scenario": "internal_module_api",
+      "samples": [
+        {
+          "seconds": 0.5013749450000091,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "Javac": 6,
+            "Turbine": 1
+          },
+          "execution_log": "java-vanilla-internal_module_api-1.json"
+        },
+        {
+          "seconds": 0.5294898379999609,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "Javac": 6,
+            "Turbine": 1
+          },
+          "execution_log": "java-vanilla-internal_module_api-2.json"
+        },
+        {
+          "seconds": 0.4374806569999805,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "Javac": 6,
+            "Turbine": 1
+          },
+          "execution_log": "java-vanilla-internal_module_api-3.json"
+        }
+      ]
+    },
+    {
+      "language": "java",
+      "mode": "vanilla",
+      "scenario": "public_module_api",
+      "samples": [
+        {
+          "seconds": 0.39102830599995286,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//facade:facade"
+          ],
+          "abi_targets": [
+            "//facade:facade"
+          ],
+          "actions": {
+            "Javac": 5,
+            "Turbine": 1
+          },
+          "execution_log": "java-vanilla-public_module_api-1.json"
+        },
+        {
+          "seconds": 0.3945912129999556,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//facade:facade"
+          ],
+          "abi_targets": [
+            "//facade:facade"
+          ],
+          "actions": {
+            "Javac": 5,
+            "Turbine": 1
+          },
+          "execution_log": "java-vanilla-public_module_api-2.json"
+        },
+        {
+          "seconds": 0.4278049960000203,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//facade:facade"
+          ],
+          "abi_targets": [
+            "//facade:facade"
+          ],
+          "actions": {
+            "Javac": 5,
+            "Turbine": 1
+          },
+          "execution_log": "java-vanilla-public_module_api-3.json"
+        }
+      ]
+    },
+    {
+      "language": "java",
+      "mode": "vanilla",
+      "scenario": "multi_file_body",
+      "samples": [
+        {
+          "seconds": 0.23996873499999083,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "Turbine": 1,
+            "Javac": 1
+          },
+          "execution_log": "java-vanilla-multi_file_body-1.json"
+        },
+        {
+          "seconds": 0.26671738100003495,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "Turbine": 1,
+            "Javac": 1
+          },
+          "execution_log": "java-vanilla-multi_file_body-2.json"
+        },
+        {
+          "seconds": 0.1800510990000248,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "Turbine": 1,
+            "Javac": 1
+          },
+          "execution_log": "java-vanilla-multi_file_body-3.json"
+        }
+      ]
+    },
+    {
+      "language": "java",
+      "mode": "vanilla",
+      "scenario": "multi_module_body",
+      "samples": [
+        {
+          "seconds": 0.28031239500000993,
+          "compile_targets": [
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [
+            "//core:core",
+            "//facade:facade"
+          ],
+          "actions": {
+            "Turbine": 2,
+            "Javac": 2
+          },
+          "execution_log": "java-vanilla-multi_module_body-1.json"
+        },
+        {
+          "seconds": 0.2664635149999981,
+          "compile_targets": [
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [
+            "//core:core",
+            "//facade:facade"
+          ],
+          "actions": {
+            "Turbine": 2,
+            "Javac": 2
+          },
+          "execution_log": "java-vanilla-multi_module_body-2.json"
+        },
+        {
+          "seconds": 0.2897277690000237,
+          "compile_targets": [
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [
+            "//core:core",
+            "//facade:facade"
+          ],
+          "actions": {
+            "Turbine": 2,
+            "Javac": 2
+          },
+          "execution_log": "java-vanilla-multi_module_body-3.json"
+        }
+      ]
+    },
+    {
+      "language": "java",
+      "mode": "vanilla",
+      "scenario": "multi_module_api",
+      "samples": [
+        {
+          "seconds": 0.4724033329999884,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [
+            "//core:core",
+            "//facade:facade"
+          ],
+          "actions": {
+            "Javac": 6,
+            "Turbine": 2
+          },
+          "execution_log": "java-vanilla-multi_module_api-1.json"
+        },
+        {
+          "seconds": 0.4395677150000097,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [
+            "//core:core",
+            "//facade:facade"
+          ],
+          "actions": {
+            "Javac": 6,
+            "Turbine": 2
+          },
+          "execution_log": "java-vanilla-multi_module_api-2.json"
+        },
+        {
+          "seconds": 0.4779246830000261,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [
+            "//core:core",
+            "//facade:facade"
+          ],
+          "actions": {
+            "Javac": 6,
+            "Turbine": 2
+          },
+          "execution_log": "java-vanilla-multi_module_api-3.json"
+        }
+      ]
+    },
+    {
+      "language": "java",
+      "mode": "vanilla",
+      "scenario": "unused_dependency_api",
+      "samples": [
+        {
+          "seconds": 0.40715269099996476,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//facade:facade",
+            "//spare:spare"
+          ],
+          "abi_targets": [
+            "//spare:spare"
+          ],
+          "actions": {
+            "Javac": 6,
+            "Turbine": 1
+          },
+          "execution_log": "java-vanilla-unused_dependency_api-1.json"
+        },
+        {
+          "seconds": 0.4011689330000081,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//facade:facade",
+            "//spare:spare"
+          ],
+          "abi_targets": [
+            "//spare:spare"
+          ],
+          "actions": {
+            "Javac": 6,
+            "Turbine": 1
+          },
+          "execution_log": "java-vanilla-unused_dependency_api-2.json"
+        },
+        {
+          "seconds": 0.34598045100000263,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//facade:facade",
+            "//spare:spare"
+          ],
+          "abi_targets": [
+            "//spare:spare"
+          ],
+          "actions": {
+            "Javac": 6,
+            "Turbine": 1
+          },
+          "execution_log": "java-vanilla-unused_dependency_api-3.json"
+        }
+      ]
+    },
+    {
+      "language": "java",
+      "mode": "vanilla",
+      "scenario": "inline_or_constant",
+      "samples": [
+        {
+          "seconds": 0.5856180760000029,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [
+            "//core:core",
+            "//facade:facade"
+          ],
+          "actions": {
+            "Javac": 6,
+            "Turbine": 2
+          },
+          "execution_log": "java-vanilla-inline_or_constant-1.json"
+        },
+        {
+          "seconds": 0.6788374399999952,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [
+            "//core:core",
+            "//facade:facade"
+          ],
+          "actions": {
+            "Javac": 6,
+            "Turbine": 2
+          },
+          "execution_log": "java-vanilla-inline_or_constant-2.json"
+        },
+        {
+          "seconds": 0.482625669000015,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [
+            "//core:core",
+            "//facade:facade"
+          ],
+          "actions": {
+            "Javac": 6,
+            "Turbine": 2
+          },
+          "execution_log": "java-vanilla-inline_or_constant-3.json"
+        }
+      ]
+    },
+    {
+      "language": "java",
+      "mode": "elide",
+      "scenario": "no_op",
+      "samples": [
+        {
+          "seconds": 0.15610709199995654,
+          "compile_targets": [],
+          "abi_targets": [],
+          "actions": {},
+          "execution_log": "java-elide-no_op-1.json"
+        },
+        {
+          "seconds": 0.15941118099999585,
+          "compile_targets": [],
+          "abi_targets": [],
+          "actions": {},
+          "execution_log": "java-elide-no_op-2.json"
+        },
+        {
+          "seconds": 0.1479874820000191,
+          "compile_targets": [],
+          "abi_targets": [],
+          "actions": {},
+          "execution_log": "java-elide-no_op-3.json"
+        }
+      ]
+    },
+    {
+      "language": "java",
+      "mode": "elide",
+      "scenario": "comment",
+      "samples": [
+        {
+          "seconds": 0.20723324700003332,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 1
+          },
+          "execution_log": "java-elide-comment-1.json"
+        },
+        {
+          "seconds": 0.19375021100000822,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 1
+          },
+          "execution_log": "java-elide-comment-2.json"
+        },
+        {
+          "seconds": 0.2179222479999794,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 1
+          },
+          "execution_log": "java-elide-comment-3.json"
+        }
+      ]
+    },
+    {
+      "language": "java",
+      "mode": "elide",
+      "scenario": "body",
+      "samples": [
+        {
+          "seconds": 0.22185501600000634,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 1,
+            "JavaIjar": 1
+          },
+          "execution_log": "java-elide-body-1.json"
+        },
+        {
+          "seconds": 0.23006838199995627,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 1,
+            "JavaIjar": 1
+          },
+          "execution_log": "java-elide-body-2.json"
+        },
+        {
+          "seconds": 0.21415666900003316,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 1,
+            "JavaIjar": 1
+          },
+          "execution_log": "java-elide-body-3.json"
+        }
+      ]
+    },
+    {
+      "language": "java",
+      "mode": "elide",
+      "scenario": "private_member",
+      "samples": [
+        {
+          "seconds": 0.24520053700001654,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 1,
+            "JavaIjar": 1
+          },
+          "execution_log": "java-elide-private_member-1.json"
+        },
+        {
+          "seconds": 0.21939716299999645,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 1,
+            "JavaIjar": 1
+          },
+          "execution_log": "java-elide-private_member-2.json"
+        },
+        {
+          "seconds": 0.2271385419999774,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 1,
+            "JavaIjar": 1
+          },
+          "execution_log": "java-elide-private_member-3.json"
+        }
+      ]
+    },
+    {
+      "language": "java",
+      "mode": "elide",
+      "scenario": "internal_module_api",
+      "samples": [
+        {
+          "seconds": 0.44883838499998774,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 6,
+            "JavaIjar": 5
+          },
+          "execution_log": "java-elide-internal_module_api-1.json"
+        },
+        {
+          "seconds": 0.4334154260000105,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 6,
+            "JavaIjar": 1
+          },
+          "execution_log": "java-elide-internal_module_api-2.json"
+        },
+        {
+          "seconds": 0.4589725440000052,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 6,
+            "JavaIjar": 1
+          },
+          "execution_log": "java-elide-internal_module_api-3.json"
+        }
+      ]
+    },
+    {
+      "language": "java",
+      "mode": "elide",
+      "scenario": "public_module_api",
+      "samples": [
+        {
+          "seconds": 0.37160954600000196,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//facade:facade"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 5,
+            "JavaIjar": 1
+          },
+          "execution_log": "java-elide-public_module_api-1.json"
+        },
+        {
+          "seconds": 0.3773884780000003,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//facade:facade"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 5,
+            "JavaIjar": 2
+          },
+          "execution_log": "java-elide-public_module_api-2.json"
+        },
+        {
+          "seconds": 0.3622310339999899,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//facade:facade"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 5,
+            "JavaIjar": 1
+          },
+          "execution_log": "java-elide-public_module_api-3.json"
+        }
+      ]
+    },
+    {
+      "language": "java",
+      "mode": "elide",
+      "scenario": "multi_file_body",
+      "samples": [
+        {
+          "seconds": 0.20192088599998215,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 1,
+            "JavaIjar": 1
+          },
+          "execution_log": "java-elide-multi_file_body-1.json"
+        },
+        {
+          "seconds": 0.2072950950000063,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 1,
+            "JavaIjar": 1
+          },
+          "execution_log": "java-elide-multi_file_body-2.json"
+        },
+        {
+          "seconds": 0.21747836599996617,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 1,
+            "JavaIjar": 1
+          },
+          "execution_log": "java-elide-multi_file_body-3.json"
+        }
+      ]
+    },
+    {
+      "language": "java",
+      "mode": "elide",
+      "scenario": "multi_module_body",
+      "samples": [
+        {
+          "seconds": 0.2611483819999876,
+          "compile_targets": [
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 2,
+            "JavaIjar": 2
+          },
+          "execution_log": "java-elide-multi_module_body-1.json"
+        },
+        {
+          "seconds": 0.26306922399999166,
+          "compile_targets": [
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 2,
+            "JavaIjar": 2
+          },
+          "execution_log": "java-elide-multi_module_body-2.json"
+        },
+        {
+          "seconds": 0.26852253499998824,
+          "compile_targets": [
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 2,
+            "JavaIjar": 2
+          },
+          "execution_log": "java-elide-multi_module_body-3.json"
+        }
+      ]
+    },
+    {
+      "language": "java",
+      "mode": "elide",
+      "scenario": "multi_module_api",
+      "samples": [
+        {
+          "seconds": 0.42668525900000986,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 6,
+            "JavaIjar": 2
+          },
+          "execution_log": "java-elide-multi_module_api-1.json"
+        },
+        {
+          "seconds": 0.4399941629999944,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 6,
+            "JavaIjar": 2
+          },
+          "execution_log": "java-elide-multi_module_api-2.json"
+        },
+        {
+          "seconds": 0.4423609079999551,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 6,
+            "JavaIjar": 2
+          },
+          "execution_log": "java-elide-multi_module_api-3.json"
+        }
+      ]
+    },
+    {
+      "language": "java",
+      "mode": "elide",
+      "scenario": "unused_dependency_api",
+      "samples": [
+        {
+          "seconds": 0.4214747720000105,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//facade:facade",
+            "//spare:spare"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 6,
+            "JavaIjar": 1
+          },
+          "execution_log": "java-elide-unused_dependency_api-1.json"
+        },
+        {
+          "seconds": 0.4444676960000038,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//facade:facade",
+            "//spare:spare"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 6,
+            "JavaIjar": 2
+          },
+          "execution_log": "java-elide-unused_dependency_api-2.json"
+        },
+        {
+          "seconds": 0.42460444299996425,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//facade:facade",
+            "//spare:spare"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 6,
+            "JavaIjar": 1
+          },
+          "execution_log": "java-elide-unused_dependency_api-3.json"
+        }
+      ]
+    },
+    {
+      "language": "java",
+      "mode": "elide",
+      "scenario": "inline_or_constant",
+      "samples": [
+        {
+          "seconds": 0.45873379299996486,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 6,
+            "JavaIjar": 2
+          },
+          "execution_log": "java-elide-inline_or_constant-1.json"
+        },
+        {
+          "seconds": 0.4543266700000004,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 6,
+            "JavaIjar": 2
+          },
+          "execution_log": "java-elide-inline_or_constant-2.json"
+        },
+        {
+          "seconds": 0.43289024199998494,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 6,
+            "JavaIjar": 5
+          },
+          "execution_log": "java-elide-inline_or_constant-3.json"
+        }
+      ]
+    },
+    {
+      "language": "java",
+      "mode": "elide_abi",
+      "scenario": "no_op",
+      "samples": [
+        {
+          "seconds": 0.13933068599999388,
+          "compile_targets": [],
+          "abi_targets": [],
+          "actions": {},
+          "execution_log": "java-elide_abi-no_op-1.json"
+        },
+        {
+          "seconds": 0.20486309900002198,
+          "compile_targets": [],
+          "abi_targets": [],
+          "actions": {},
+          "execution_log": "java-elide_abi-no_op-2.json"
+        },
+        {
+          "seconds": 0.1333252610000386,
+          "compile_targets": [],
+          "abi_targets": [],
+          "actions": {},
+          "execution_log": "java-elide_abi-no_op-3.json"
+        }
+      ]
+    },
+    {
+      "language": "java",
+      "mode": "elide_abi",
+      "scenario": "comment",
+      "samples": [
+        {
+          "seconds": 0.26704942799995024,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "ElideJavac": 1,
+            "ElideJavacAbi": 1
+          },
+          "execution_log": "java-elide_abi-comment-1.json"
+        },
+        {
+          "seconds": 0.2503572779999672,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "ElideJavac": 1,
+            "ElideJavacAbi": 1
+          },
+          "execution_log": "java-elide_abi-comment-2.json"
+        },
+        {
+          "seconds": 0.22783814699999994,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "ElideJavac": 1,
+            "ElideJavacAbi": 1
+          },
+          "execution_log": "java-elide_abi-comment-3.json"
+        }
+      ]
+    },
+    {
+      "language": "java",
+      "mode": "elide_abi",
+      "scenario": "body",
+      "samples": [
+        {
+          "seconds": 0.2717222320000019,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "ElideJavac": 1,
+            "ElideJavacAbi": 1
+          },
+          "execution_log": "java-elide_abi-body-1.json"
+        },
+        {
+          "seconds": 0.2635249390000354,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "ElideJavac": 1,
+            "ElideJavacAbi": 1
+          },
+          "execution_log": "java-elide_abi-body-2.json"
+        },
+        {
+          "seconds": 0.23814194699997415,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "ElideJavac": 1,
+            "ElideJavacAbi": 1
+          },
+          "execution_log": "java-elide_abi-body-3.json"
+        }
+      ]
+    },
+    {
+      "language": "java",
+      "mode": "elide_abi",
+      "scenario": "private_member",
+      "samples": [
+        {
+          "seconds": 0.22704628799999682,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "ElideJavac": 1,
+            "ElideJavacAbi": 1
+          },
+          "execution_log": "java-elide_abi-private_member-1.json"
+        },
+        {
+          "seconds": 0.2346967329999643,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "ElideJavac": 1,
+            "ElideJavacAbi": 1
+          },
+          "execution_log": "java-elide_abi-private_member-2.json"
+        },
+        {
+          "seconds": 0.2389131310000039,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "ElideJavac": 1,
+            "ElideJavacAbi": 1
+          },
+          "execution_log": "java-elide_abi-private_member-3.json"
+        }
+      ]
+    },
+    {
+      "language": "java",
+      "mode": "elide_abi",
+      "scenario": "internal_module_api",
+      "samples": [
+        {
+          "seconds": 0.6099051249999548,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "actions": {
+            "ElideJavac": 6,
+            "ElideJavacAbi": 5
+          },
+          "execution_log": "java-elide_abi-internal_module_api-1.json"
+        },
+        {
+          "seconds": 1.3806994899999836,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "actions": {
+            "ElideJavac": 6,
+            "ElideJavacAbi": 5
+          },
+          "execution_log": "java-elide_abi-internal_module_api-2.json"
+        },
+        {
+          "seconds": 0.6383518120000531,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "actions": {
+            "ElideJavac": 6,
+            "ElideJavacAbi": 5
+          },
+          "execution_log": "java-elide_abi-internal_module_api-3.json"
+        }
+      ]
+    },
+    {
+      "language": "java",
+      "mode": "elide_abi",
+      "scenario": "public_module_api",
+      "samples": [
+        {
+          "seconds": 0.4971014849999733,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//facade:facade"
+          ],
+          "abi_targets": [
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//facade:facade"
+          ],
+          "actions": {
+            "ElideJavac": 5,
+            "ElideJavacAbi": 4
+          },
+          "execution_log": "java-elide_abi-public_module_api-1.json"
+        },
+        {
+          "seconds": 0.5018293389999826,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//facade:facade"
+          ],
+          "abi_targets": [
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//facade:facade"
+          ],
+          "actions": {
+            "ElideJavac": 5,
+            "ElideJavacAbi": 4
+          },
+          "execution_log": "java-elide_abi-public_module_api-2.json"
+        },
+        {
+          "seconds": 0.46590093899999374,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//facade:facade"
+          ],
+          "abi_targets": [
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//facade:facade"
+          ],
+          "actions": {
+            "ElideJavac": 5,
+            "ElideJavacAbi": 4
+          },
+          "execution_log": "java-elide_abi-public_module_api-3.json"
+        }
+      ]
+    },
+    {
+      "language": "java",
+      "mode": "elide_abi",
+      "scenario": "multi_file_body",
+      "samples": [
+        {
+          "seconds": 0.21692095399998834,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "ElideJavac": 1,
+            "ElideJavacAbi": 1
+          },
+          "execution_log": "java-elide_abi-multi_file_body-1.json"
+        },
+        {
+          "seconds": 0.24002160100002357,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "ElideJavac": 1,
+            "ElideJavacAbi": 1
+          },
+          "execution_log": "java-elide_abi-multi_file_body-2.json"
+        },
+        {
+          "seconds": 0.24506223700001328,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "ElideJavac": 1,
+            "ElideJavacAbi": 1
+          },
+          "execution_log": "java-elide_abi-multi_file_body-3.json"
+        }
+      ]
+    },
+    {
+      "language": "java",
+      "mode": "elide_abi",
+      "scenario": "multi_module_body",
+      "samples": [
+        {
+          "seconds": 0.290511787000014,
+          "compile_targets": [
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [
+            "//core:core",
+            "//facade:facade"
+          ],
+          "actions": {
+            "ElideJavac": 2,
+            "ElideJavacAbi": 2
+          },
+          "execution_log": "java-elide_abi-multi_module_body-1.json"
+        },
+        {
+          "seconds": 0.3228715049999664,
+          "compile_targets": [
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [
+            "//core:core",
+            "//facade:facade"
+          ],
+          "actions": {
+            "ElideJavac": 2,
+            "ElideJavacAbi": 2
+          },
+          "execution_log": "java-elide_abi-multi_module_body-2.json"
+        },
+        {
+          "seconds": 0.30581269399999655,
+          "compile_targets": [
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [
+            "//core:core",
+            "//facade:facade"
+          ],
+          "actions": {
+            "ElideJavac": 2,
+            "ElideJavacAbi": 2
+          },
+          "execution_log": "java-elide_abi-multi_module_body-3.json"
+        }
+      ]
+    },
+    {
+      "language": "java",
+      "mode": "elide_abi",
+      "scenario": "multi_module_api",
+      "samples": [
+        {
+          "seconds": 0.8880880490000322,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "actions": {
+            "ElideJavac": 6,
+            "ElideJavacAbi": 5
+          },
+          "execution_log": "java-elide_abi-multi_module_api-1.json"
+        },
+        {
+          "seconds": 0.5998674620000202,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "actions": {
+            "ElideJavac": 6,
+            "ElideJavacAbi": 5
+          },
+          "execution_log": "java-elide_abi-multi_module_api-2.json"
+        },
+        {
+          "seconds": 0.5794723610000005,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "actions": {
+            "ElideJavac": 6,
+            "ElideJavacAbi": 5
+          },
+          "execution_log": "java-elide_abi-multi_module_api-3.json"
+        }
+      ]
+    },
+    {
+      "language": "java",
+      "mode": "elide_abi",
+      "scenario": "unused_dependency_api",
+      "samples": [
+        {
+          "seconds": 0.6671015360000183,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//facade:facade",
+            "//spare:spare"
+          ],
+          "abi_targets": [
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//facade:facade",
+            "//spare:spare"
+          ],
+          "actions": {
+            "ElideJavac": 6,
+            "ElideJavacAbi": 5
+          },
+          "execution_log": "java-elide_abi-unused_dependency_api-1.json"
+        },
+        {
+          "seconds": 0.7673303090000445,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//facade:facade",
+            "//spare:spare"
+          ],
+          "abi_targets": [
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//facade:facade",
+            "//spare:spare"
+          ],
+          "actions": {
+            "ElideJavac": 6,
+            "ElideJavacAbi": 5
+          },
+          "execution_log": "java-elide_abi-unused_dependency_api-2.json"
+        },
+        {
+          "seconds": 0.5776119299999891,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//facade:facade",
+            "//spare:spare"
+          ],
+          "abi_targets": [
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//facade:facade",
+            "//spare:spare"
+          ],
+          "actions": {
+            "ElideJavac": 6,
+            "ElideJavacAbi": 5
+          },
+          "execution_log": "java-elide_abi-unused_dependency_api-3.json"
+        }
+      ]
+    },
+    {
+      "language": "java",
+      "mode": "elide_abi",
+      "scenario": "inline_or_constant",
+      "samples": [
+        {
+          "seconds": 0.5854773610000166,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "actions": {
+            "ElideJavac": 6,
+            "ElideJavacAbi": 5
+          },
+          "execution_log": "java-elide_abi-inline_or_constant-1.json"
+        },
+        {
+          "seconds": 0.5886346730000014,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "actions": {
+            "ElideJavac": 6,
+            "ElideJavacAbi": 5
+          },
+          "execution_log": "java-elide_abi-inline_or_constant-2.json"
+        },
+        {
+          "seconds": 0.5696561569999972,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "actions": {
+            "ElideJavac": 6,
+            "ElideJavacAbi": 5
+          },
+          "execution_log": "java-elide_abi-inline_or_constant-3.json"
+        }
+      ]
+    },
+    {
+      "language": "java",
+      "mode": "elide_pruned",
+      "scenario": "no_op",
+      "samples": [
+        {
+          "seconds": 0.27278522099999236,
+          "compile_targets": [],
+          "abi_targets": [],
+          "actions": {},
+          "execution_log": "java-elide_pruned-no_op-1.json"
+        },
+        {
+          "seconds": 0.26372696300001053,
+          "compile_targets": [],
+          "abi_targets": [],
+          "actions": {},
+          "execution_log": "java-elide_pruned-no_op-2.json"
+        },
+        {
+          "seconds": 0.2639008519999493,
+          "compile_targets": [],
+          "abi_targets": [],
+          "actions": {},
+          "execution_log": "java-elide_pruned-no_op-3.json"
+        }
+      ]
+    },
+    {
+      "language": "java",
+      "mode": "elide_pruned",
+      "scenario": "comment",
+      "samples": [
+        {
+          "seconds": 0.42804256600004464,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "ElideJavac": 1,
+            "ElideJavacAbi": 1
+          },
+          "execution_log": "java-elide_pruned-comment-1.json"
+        },
+        {
+          "seconds": 0.3783914809999942,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "ElideJavac": 1,
+            "ElideJavacAbi": 1
+          },
+          "execution_log": "java-elide_pruned-comment-2.json"
+        },
+        {
+          "seconds": 0.2937006539999629,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "ElideJavac": 1,
+            "ElideJavacAbi": 1
+          },
+          "execution_log": "java-elide_pruned-comment-3.json"
+        }
+      ]
+    },
+    {
+      "language": "java",
+      "mode": "elide_pruned",
+      "scenario": "body",
+      "samples": [
+        {
+          "seconds": 0.2631420039999739,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "ElideJavac": 1,
+            "ElideJavacAbi": 1
+          },
+          "execution_log": "java-elide_pruned-body-1.json"
+        },
+        {
+          "seconds": 0.27686338500001284,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "ElideJavac": 1,
+            "ElideJavacAbi": 1
+          },
+          "execution_log": "java-elide_pruned-body-2.json"
+        },
+        {
+          "seconds": 0.26124092899999596,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "ElideJavac": 1,
+            "ElideJavacAbi": 1
+          },
+          "execution_log": "java-elide_pruned-body-3.json"
+        }
+      ]
+    },
+    {
+      "language": "java",
+      "mode": "elide_pruned",
+      "scenario": "private_member",
+      "samples": [
+        {
+          "seconds": 0.25959466200004044,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "ElideJavac": 1,
+            "ElideJavacAbi": 1
+          },
+          "execution_log": "java-elide_pruned-private_member-1.json"
+        },
+        {
+          "seconds": 0.26276648900000055,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "ElideJavac": 1,
+            "ElideJavacAbi": 1
+          },
+          "execution_log": "java-elide_pruned-private_member-2.json"
+        },
+        {
+          "seconds": 0.264305289000049,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "ElideJavac": 1,
+            "ElideJavacAbi": 1
+          },
+          "execution_log": "java-elide_pruned-private_member-3.json"
+        }
+      ]
+    },
+    {
+      "language": "java",
+      "mode": "elide_pruned",
+      "scenario": "internal_module_api",
+      "samples": [
+        {
+          "seconds": 0.4754773960000307,
+          "compile_targets": [
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "actions": {
+            "ElideJavac": 2,
+            "ElideJavacAbi": 5
+          },
+          "execution_log": "java-elide_pruned-internal_module_api-1.json"
+        },
+        {
+          "seconds": 0.47708009299998366,
+          "compile_targets": [
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "actions": {
+            "ElideJavac": 2,
+            "ElideJavacAbi": 5
+          },
+          "execution_log": "java-elide_pruned-internal_module_api-2.json"
+        },
+        {
+          "seconds": 0.46520699000001287,
+          "compile_targets": [
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "actions": {
+            "ElideJavac": 2,
+            "ElideJavacAbi": 5
+          },
+          "execution_log": "java-elide_pruned-internal_module_api-3.json"
+        }
+      ]
+    },
+    {
+      "language": "java",
+      "mode": "elide_pruned",
+      "scenario": "public_module_api",
+      "samples": [
+        {
+          "seconds": 0.4930198480000172,
+          "compile_targets": [
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//facade:facade"
+          ],
+          "abi_targets": [
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//facade:facade"
+          ],
+          "actions": {
+            "ElideJavac": 4,
+            "ElideJavacAbi": 4
+          },
+          "execution_log": "java-elide_pruned-public_module_api-1.json"
+        },
+        {
+          "seconds": 0.5209097029999725,
+          "compile_targets": [
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//facade:facade"
+          ],
+          "abi_targets": [
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//facade:facade"
+          ],
+          "actions": {
+            "ElideJavac": 4,
+            "ElideJavacAbi": 4
+          },
+          "execution_log": "java-elide_pruned-public_module_api-2.json"
+        },
+        {
+          "seconds": 0.4898526409999704,
+          "compile_targets": [
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//facade:facade"
+          ],
+          "abi_targets": [
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//facade:facade"
+          ],
+          "actions": {
+            "ElideJavac": 4,
+            "ElideJavacAbi": 4
+          },
+          "execution_log": "java-elide_pruned-public_module_api-3.json"
+        }
+      ]
+    },
+    {
+      "language": "java",
+      "mode": "elide_pruned",
+      "scenario": "multi_file_body",
+      "samples": [
+        {
+          "seconds": 0.4579108289999567,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "ElideJavac": 1,
+            "ElideJavacAbi": 1
+          },
+          "execution_log": "java-elide_pruned-multi_file_body-1.json"
+        },
+        {
+          "seconds": 0.3042430099999933,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "ElideJavac": 1,
+            "ElideJavacAbi": 1
+          },
+          "execution_log": "java-elide_pruned-multi_file_body-2.json"
+        },
+        {
+          "seconds": 0.2772712830000046,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "ElideJavac": 1,
+            "ElideJavacAbi": 1
+          },
+          "execution_log": "java-elide_pruned-multi_file_body-3.json"
+        }
+      ]
+    },
+    {
+      "language": "java",
+      "mode": "elide_pruned",
+      "scenario": "multi_module_body",
+      "samples": [
+        {
+          "seconds": 0.31994423200001165,
+          "compile_targets": [
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [
+            "//core:core",
+            "//facade:facade"
+          ],
+          "actions": {
+            "ElideJavac": 2,
+            "ElideJavacAbi": 2
+          },
+          "execution_log": "java-elide_pruned-multi_module_body-1.json"
+        },
+        {
+          "seconds": 0.3349937739999973,
+          "compile_targets": [
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [
+            "//core:core",
+            "//facade:facade"
+          ],
+          "actions": {
+            "ElideJavac": 2,
+            "ElideJavacAbi": 2
+          },
+          "execution_log": "java-elide_pruned-multi_module_body-2.json"
+        },
+        {
+          "seconds": 0.3474050350000084,
+          "compile_targets": [
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [
+            "//core:core",
+            "//facade:facade"
+          ],
+          "actions": {
+            "ElideJavac": 2,
+            "ElideJavacAbi": 2
+          },
+          "execution_log": "java-elide_pruned-multi_module_body-3.json"
+        }
+      ]
+    },
+    {
+      "language": "java",
+      "mode": "elide_pruned",
+      "scenario": "multi_module_api",
+      "samples": [
+        {
+          "seconds": 0.9983487989999844,
+          "compile_targets": [
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "actions": {
+            "ElideJavac": 5,
+            "ElideJavacAbi": 5
+          },
+          "execution_log": "java-elide_pruned-multi_module_api-1.json"
+        },
+        {
+          "seconds": 0.5643657829999711,
+          "compile_targets": [
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "actions": {
+            "ElideJavac": 5,
+            "ElideJavacAbi": 5
+          },
+          "execution_log": "java-elide_pruned-multi_module_api-2.json"
+        },
+        {
+          "seconds": 0.5852995160000205,
+          "compile_targets": [
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "actions": {
+            "ElideJavac": 5,
+            "ElideJavacAbi": 5
+          },
+          "execution_log": "java-elide_pruned-multi_module_api-3.json"
+        }
+      ]
+    },
+    {
+      "language": "java",
+      "mode": "elide_pruned",
+      "scenario": "unused_dependency_api",
+      "samples": [
+        {
+          "seconds": 0.44050445400000626,
+          "compile_targets": [
+            "//spare:spare"
+          ],
+          "abi_targets": [
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//facade:facade",
+            "//spare:spare"
+          ],
+          "actions": {
+            "ElideJavac": 1,
+            "ElideJavacAbi": 5
+          },
+          "execution_log": "java-elide_pruned-unused_dependency_api-1.json"
+        },
+        {
+          "seconds": 0.4278005099999973,
+          "compile_targets": [
+            "//spare:spare"
+          ],
+          "abi_targets": [
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//facade:facade",
+            "//spare:spare"
+          ],
+          "actions": {
+            "ElideJavac": 1,
+            "ElideJavacAbi": 5
+          },
+          "execution_log": "java-elide_pruned-unused_dependency_api-2.json"
+        },
+        {
+          "seconds": 0.5483507409999788,
+          "compile_targets": [
+            "//spare:spare"
+          ],
+          "abi_targets": [
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//facade:facade",
+            "//spare:spare"
+          ],
+          "actions": {
+            "ElideJavac": 1,
+            "ElideJavacAbi": 5
+          },
+          "execution_log": "java-elide_pruned-unused_dependency_api-3.json"
+        }
+      ]
+    },
+    {
+      "language": "java",
+      "mode": "elide_pruned",
+      "scenario": "inline_or_constant",
+      "samples": [
+        {
+          "seconds": 0.48576771699998744,
+          "compile_targets": [
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "actions": {
+            "ElideJavac": 2,
+            "ElideJavacAbi": 5
+          },
+          "execution_log": "java-elide_pruned-inline_or_constant-1.json"
+        },
+        {
+          "seconds": 0.46819541500002515,
+          "compile_targets": [
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "actions": {
+            "ElideJavac": 2,
+            "ElideJavacAbi": 5
+          },
+          "execution_log": "java-elide_pruned-inline_or_constant-2.json"
+        },
+        {
+          "seconds": 0.4662379800000167,
+          "compile_targets": [
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "actions": {
+            "ElideJavac": 2,
+            "ElideJavacAbi": 5
+          },
+          "execution_log": "java-elide_pruned-inline_or_constant-3.json"
+        }
+      ]
+    },
+    {
+      "language": "kotlin",
+      "mode": "vanilla",
+      "scenario": "no_op",
+      "samples": [
+        {
+          "seconds": 0.15590509700001576,
+          "compile_targets": [],
+          "abi_targets": [],
+          "actions": {},
+          "execution_log": "kotlin-vanilla-no_op-1.json"
+        },
+        {
+          "seconds": 0.11707027599999265,
+          "compile_targets": [],
+          "abi_targets": [],
+          "actions": {},
+          "execution_log": "kotlin-vanilla-no_op-2.json"
+        },
+        {
+          "seconds": 0.14192549099999496,
+          "compile_targets": [],
+          "abi_targets": [],
+          "actions": {},
+          "execution_log": "kotlin-vanilla-no_op-3.json"
+        }
+      ]
+    },
+    {
+      "language": "kotlin",
+      "mode": "vanilla",
+      "scenario": "comment",
+      "samples": [
+        {
+          "seconds": 0.44558694899996,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "KotlinCompile": 1
+          },
+          "execution_log": "kotlin-vanilla-comment-1.json"
+        },
+        {
+          "seconds": 0.48708824999999933,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "KotlinCompile": 1
+          },
+          "execution_log": "kotlin-vanilla-comment-2.json"
+        },
+        {
+          "seconds": 0.5080278570000019,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "KotlinCompile": 1
+          },
+          "execution_log": "kotlin-vanilla-comment-3.json"
+        }
+      ]
+    },
+    {
+      "language": "kotlin",
+      "mode": "vanilla",
+      "scenario": "body",
+      "samples": [
+        {
+          "seconds": 1.2118917069999497,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "KotlinCompile": 6,
+            "KotlinFoldJarsAbi": 1,
+            "KotlinFoldJarsRuntime": 1
+          },
+          "execution_log": "kotlin-vanilla-body-1.json"
+        },
+        {
+          "seconds": 0.9389722290000009,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "KotlinCompile": 6,
+            "KotlinFoldJarsAbi": 1,
+            "KotlinFoldJarsRuntime": 1
+          },
+          "execution_log": "kotlin-vanilla-body-2.json"
+        },
+        {
+          "seconds": 1.2023686530000077,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "KotlinCompile": 6,
+            "KotlinFoldJarsAbi": 1,
+            "KotlinFoldJarsRuntime": 1
+          },
+          "execution_log": "kotlin-vanilla-body-3.json"
+        }
+      ]
+    },
+    {
+      "language": "kotlin",
+      "mode": "vanilla",
+      "scenario": "private_member",
+      "samples": [
+        {
+          "seconds": 1.1300271950000251,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "KotlinCompile": 6,
+            "KotlinFoldJarsAbi": 1,
+            "KotlinFoldJarsRuntime": 1
+          },
+          "execution_log": "kotlin-vanilla-private_member-1.json"
+        },
+        {
+          "seconds": 0.8935086569999839,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "KotlinCompile": 6,
+            "KotlinFoldJarsAbi": 1,
+            "KotlinFoldJarsRuntime": 1
+          },
+          "execution_log": "kotlin-vanilla-private_member-2.json"
+        },
+        {
+          "seconds": 1.1568091589999767,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "KotlinCompile": 6,
+            "KotlinFoldJarsAbi": 1,
+            "KotlinFoldJarsRuntime": 1
+          },
+          "execution_log": "kotlin-vanilla-private_member-3.json"
+        }
+      ]
+    },
+    {
+      "language": "kotlin",
+      "mode": "vanilla",
+      "scenario": "internal_module_api",
+      "samples": [
+        {
+          "seconds": 0.8997868370000788,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "KotlinCompile": 6,
+            "KotlinFoldJarsAbi": 1,
+            "KotlinFoldJarsRuntime": 1
+          },
+          "execution_log": "kotlin-vanilla-internal_module_api-1.json"
+        },
+        {
+          "seconds": 0.9295267809999359,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "KotlinCompile": 6,
+            "KotlinFoldJarsAbi": 1,
+            "KotlinFoldJarsRuntime": 1
+          },
+          "execution_log": "kotlin-vanilla-internal_module_api-2.json"
+        },
+        {
+          "seconds": 0.6996781249999913,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "KotlinCompile": 6,
+            "KotlinFoldJarsAbi": 1,
+            "KotlinFoldJarsRuntime": 1
+          },
+          "execution_log": "kotlin-vanilla-internal_module_api-3.json"
+        }
+      ]
+    },
+    {
+      "language": "kotlin",
+      "mode": "vanilla",
+      "scenario": "public_module_api",
+      "samples": [
+        {
+          "seconds": 0.6785256880000361,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//facade:facade"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "KotlinCompile": 5,
+            "KotlinFoldJarsAbi": 1,
+            "KotlinFoldJarsRuntime": 1
+          },
+          "execution_log": "kotlin-vanilla-public_module_api-1.json"
+        },
+        {
+          "seconds": 0.6631364270000404,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//facade:facade"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "KotlinCompile": 5,
+            "KotlinFoldJarsAbi": 1,
+            "KotlinFoldJarsRuntime": 1
+          },
+          "execution_log": "kotlin-vanilla-public_module_api-2.json"
+        },
+        {
+          "seconds": 0.7180336220000072,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//facade:facade"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "KotlinCompile": 5,
+            "KotlinFoldJarsAbi": 1,
+            "KotlinFoldJarsRuntime": 1
+          },
+          "execution_log": "kotlin-vanilla-public_module_api-3.json"
+        }
+      ]
+    },
+    {
+      "language": "kotlin",
+      "mode": "vanilla",
+      "scenario": "multi_file_body",
+      "samples": [
+        {
+          "seconds": 0.7851349100000107,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "KotlinCompile": 6,
+            "KotlinFoldJarsAbi": 1,
+            "KotlinFoldJarsRuntime": 1
+          },
+          "execution_log": "kotlin-vanilla-multi_file_body-1.json"
+        },
+        {
+          "seconds": 0.7336114099999804,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "KotlinCompile": 6,
+            "KotlinFoldJarsAbi": 1,
+            "KotlinFoldJarsRuntime": 1
+          },
+          "execution_log": "kotlin-vanilla-multi_file_body-2.json"
+        },
+        {
+          "seconds": 1.01058134099992,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "KotlinCompile": 6,
+            "KotlinFoldJarsAbi": 1,
+            "KotlinFoldJarsRuntime": 1
+          },
+          "execution_log": "kotlin-vanilla-multi_file_body-3.json"
+        }
+      ]
+    },
+    {
+      "language": "kotlin",
+      "mode": "vanilla",
+      "scenario": "multi_module_body",
+      "samples": [
+        {
+          "seconds": 0.6848920549999775,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "KotlinCompile": 6,
+            "KotlinFoldJarsAbi": 2,
+            "KotlinFoldJarsRuntime": 2
+          },
+          "execution_log": "kotlin-vanilla-multi_module_body-1.json"
+        },
+        {
+          "seconds": 0.8517614090000052,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "KotlinCompile": 6,
+            "KotlinFoldJarsAbi": 2,
+            "KotlinFoldJarsRuntime": 2
+          },
+          "execution_log": "kotlin-vanilla-multi_module_body-2.json"
+        },
+        {
+          "seconds": 0.7213418979999915,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "KotlinCompile": 6,
+            "KotlinFoldJarsAbi": 2,
+            "KotlinFoldJarsRuntime": 2
+          },
+          "execution_log": "kotlin-vanilla-multi_module_body-3.json"
+        }
+      ]
+    },
+    {
+      "language": "kotlin",
+      "mode": "vanilla",
+      "scenario": "multi_module_api",
+      "samples": [
+        {
+          "seconds": 0.7504393829999572,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "KotlinCompile": 6,
+            "KotlinFoldJarsAbi": 2,
+            "KotlinFoldJarsRuntime": 2
+          },
+          "execution_log": "kotlin-vanilla-multi_module_api-1.json"
+        },
+        {
+          "seconds": 0.9362134340000239,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "KotlinCompile": 6,
+            "KotlinFoldJarsAbi": 2,
+            "KotlinFoldJarsRuntime": 2
+          },
+          "execution_log": "kotlin-vanilla-multi_module_api-2.json"
+        },
+        {
+          "seconds": 0.7165319130000398,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "KotlinCompile": 6,
+            "KotlinFoldJarsAbi": 2,
+            "KotlinFoldJarsRuntime": 2
+          },
+          "execution_log": "kotlin-vanilla-multi_module_api-3.json"
+        }
+      ]
+    },
+    {
+      "language": "kotlin",
+      "mode": "vanilla",
+      "scenario": "unused_dependency_api",
+      "samples": [
+        {
+          "seconds": 0.5956418040000244,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//facade:facade",
+            "//spare:spare"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "KotlinCompile": 6,
+            "KotlinFoldJarsAbi": 1,
+            "KotlinFoldJarsRuntime": 1
+          },
+          "execution_log": "kotlin-vanilla-unused_dependency_api-1.json"
+        },
+        {
+          "seconds": 0.8887835740000583,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//facade:facade",
+            "//spare:spare"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "KotlinCompile": 6,
+            "KotlinFoldJarsAbi": 1,
+            "KotlinFoldJarsRuntime": 1
+          },
+          "execution_log": "kotlin-vanilla-unused_dependency_api-2.json"
+        },
+        {
+          "seconds": 0.7101409059999924,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//facade:facade",
+            "//spare:spare"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "KotlinCompile": 6,
+            "KotlinFoldJarsAbi": 1,
+            "KotlinFoldJarsRuntime": 1
+          },
+          "execution_log": "kotlin-vanilla-unused_dependency_api-3.json"
+        }
+      ]
+    },
+    {
+      "language": "kotlin",
+      "mode": "vanilla",
+      "scenario": "inline_or_constant",
+      "samples": [
+        {
+          "seconds": 0.7682720740000377,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "KotlinCompile": 6,
+            "KotlinFoldJarsAbi": 2,
+            "KotlinFoldJarsRuntime": 2
+          },
+          "execution_log": "kotlin-vanilla-inline_or_constant-1.json"
+        },
+        {
+          "seconds": 0.8807613619999302,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "KotlinCompile": 6,
+            "KotlinFoldJarsAbi": 2,
+            "KotlinFoldJarsRuntime": 2
+          },
+          "execution_log": "kotlin-vanilla-inline_or_constant-2.json"
+        },
+        {
+          "seconds": 0.7109807469998941,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "KotlinCompile": 6,
+            "KotlinFoldJarsAbi": 2,
+            "KotlinFoldJarsRuntime": 2
+          },
+          "execution_log": "kotlin-vanilla-inline_or_constant-3.json"
+        }
+      ]
+    },
+    {
+      "language": "kotlin",
+      "mode": "elide",
+      "scenario": "no_op",
+      "samples": [
+        {
+          "seconds": 0.17426646100000198,
+          "compile_targets": [],
+          "abi_targets": [],
+          "actions": {},
+          "execution_log": "kotlin-elide-no_op-1.json"
+        },
+        {
+          "seconds": 0.14177402699999675,
+          "compile_targets": [],
+          "abi_targets": [],
+          "actions": {},
+          "execution_log": "kotlin-elide-no_op-2.json"
+        },
+        {
+          "seconds": 0.13647350199994435,
+          "compile_targets": [],
+          "abi_targets": [],
+          "actions": {},
+          "execution_log": "kotlin-elide-no_op-3.json"
+        }
+      ]
+    },
+    {
+      "language": "kotlin",
+      "mode": "elide",
+      "scenario": "comment",
+      "samples": [
+        {
+          "seconds": 0.2987478990000909,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideKotlinc": 1
+          },
+          "execution_log": "kotlin-elide-comment-1.json"
+        },
+        {
+          "seconds": 0.31340471400005754,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideKotlinc": 1
+          },
+          "execution_log": "kotlin-elide-comment-2.json"
+        },
+        {
+          "seconds": 0.29742135200001485,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideKotlinc": 1
+          },
+          "execution_log": "kotlin-elide-comment-3.json"
+        }
+      ]
+    },
+    {
+      "language": "kotlin",
+      "mode": "elide",
+      "scenario": "body",
+      "samples": [
+        {
+          "seconds": 1.0956671970000116,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideKotlinc": 6,
+            "JavaIjar": 1
+          },
+          "execution_log": "kotlin-elide-body-1.json"
+        },
+        {
+          "seconds": 1.015588414999911,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideKotlinc": 6,
+            "JavaIjar": 1
+          },
+          "execution_log": "kotlin-elide-body-2.json"
+        },
+        {
+          "seconds": 1.0571368219999613,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideKotlinc": 6,
+            "JavaIjar": 1
+          },
+          "execution_log": "kotlin-elide-body-3.json"
+        }
+      ]
+    },
+    {
+      "language": "kotlin",
+      "mode": "elide",
+      "scenario": "private_member",
+      "samples": [
+        {
+          "seconds": 1.1445802340000455,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideKotlinc": 6,
+            "JavaIjar": 1
+          },
+          "execution_log": "kotlin-elide-private_member-1.json"
+        },
+        {
+          "seconds": 1.1865732589999425,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideKotlinc": 6,
+            "JavaIjar": 1
+          },
+          "execution_log": "kotlin-elide-private_member-2.json"
+        },
+        {
+          "seconds": 1.048840929999983,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideKotlinc": 6,
+            "JavaIjar": 1
+          },
+          "execution_log": "kotlin-elide-private_member-3.json"
+        }
+      ]
+    },
+    {
+      "language": "kotlin",
+      "mode": "elide",
+      "scenario": "internal_module_api",
+      "samples": [
+        {
+          "seconds": 1.033029746000011,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideKotlinc": 6,
+            "JavaIjar": 1
+          },
+          "execution_log": "kotlin-elide-internal_module_api-1.json"
+        },
+        {
+          "seconds": 1.0463701090000086,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideKotlinc": 6,
+            "JavaIjar": 1
+          },
+          "execution_log": "kotlin-elide-internal_module_api-2.json"
+        },
+        {
+          "seconds": 1.0779194120000284,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideKotlinc": 6,
+            "JavaIjar": 1
+          },
+          "execution_log": "kotlin-elide-internal_module_api-3.json"
+        }
+      ]
+    },
+    {
+      "language": "kotlin",
+      "mode": "elide",
+      "scenario": "public_module_api",
+      "samples": [
+        {
+          "seconds": 0.9230573270000377,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//facade:facade"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideKotlinc": 5,
+            "JavaIjar": 1
+          },
+          "execution_log": "kotlin-elide-public_module_api-1.json"
+        },
+        {
+          "seconds": 0.9180124350000369,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//facade:facade"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideKotlinc": 5,
+            "JavaIjar": 1
+          },
+          "execution_log": "kotlin-elide-public_module_api-2.json"
+        },
+        {
+          "seconds": 0.9468555959999776,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//facade:facade"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideKotlinc": 5,
+            "JavaIjar": 1
+          },
+          "execution_log": "kotlin-elide-public_module_api-3.json"
+        }
+      ]
+    },
+    {
+      "language": "kotlin",
+      "mode": "elide",
+      "scenario": "multi_file_body",
+      "samples": [
+        {
+          "seconds": 1.099879026999929,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideKotlinc": 6,
+            "JavaIjar": 1
+          },
+          "execution_log": "kotlin-elide-multi_file_body-1.json"
+        },
+        {
+          "seconds": 1.2349096810000901,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideKotlinc": 6,
+            "JavaIjar": 1
+          },
+          "execution_log": "kotlin-elide-multi_file_body-2.json"
+        },
+        {
+          "seconds": 1.0862541230000033,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideKotlinc": 6,
+            "JavaIjar": 1
+          },
+          "execution_log": "kotlin-elide-multi_file_body-3.json"
+        }
+      ]
+    },
+    {
+      "language": "kotlin",
+      "mode": "elide",
+      "scenario": "multi_module_body",
+      "samples": [
+        {
+          "seconds": 1.2460727989999896,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideKotlinc": 6,
+            "JavaIjar": 2
+          },
+          "execution_log": "kotlin-elide-multi_module_body-1.json"
+        },
+        {
+          "seconds": 1.2736554260000048,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideKotlinc": 6,
+            "JavaIjar": 2
+          },
+          "execution_log": "kotlin-elide-multi_module_body-2.json"
+        },
+        {
+          "seconds": 1.1063760419999653,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideKotlinc": 6,
+            "JavaIjar": 2
+          },
+          "execution_log": "kotlin-elide-multi_module_body-3.json"
+        }
+      ]
+    },
+    {
+      "language": "kotlin",
+      "mode": "elide",
+      "scenario": "multi_module_api",
+      "samples": [
+        {
+          "seconds": 1.1087084170000026,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideKotlinc": 6,
+            "JavaIjar": 2
+          },
+          "execution_log": "kotlin-elide-multi_module_api-1.json"
+        },
+        {
+          "seconds": 1.1462164330000633,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideKotlinc": 6,
+            "JavaIjar": 2
+          },
+          "execution_log": "kotlin-elide-multi_module_api-2.json"
+        },
+        {
+          "seconds": 1.1528759980000132,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideKotlinc": 6,
+            "JavaIjar": 2
+          },
+          "execution_log": "kotlin-elide-multi_module_api-3.json"
+        }
+      ]
+    },
+    {
+      "language": "kotlin",
+      "mode": "elide",
+      "scenario": "unused_dependency_api",
+      "samples": [
+        {
+          "seconds": 1.0679670679999163,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//facade:facade",
+            "//spare:spare"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideKotlinc": 6,
+            "JavaIjar": 1
+          },
+          "execution_log": "kotlin-elide-unused_dependency_api-1.json"
+        },
+        {
+          "seconds": 1.036644555999942,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//facade:facade",
+            "//spare:spare"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideKotlinc": 6,
+            "JavaIjar": 1
+          },
+          "execution_log": "kotlin-elide-unused_dependency_api-2.json"
+        },
+        {
+          "seconds": 1.076980160000062,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//facade:facade",
+            "//spare:spare"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideKotlinc": 6,
+            "JavaIjar": 1
+          },
+          "execution_log": "kotlin-elide-unused_dependency_api-3.json"
+        }
+      ]
+    },
+    {
+      "language": "kotlin",
+      "mode": "elide",
+      "scenario": "inline_or_constant",
+      "samples": [
+        {
+          "seconds": 1.0555091810000476,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideKotlinc": 6,
+            "JavaIjar": 2
+          },
+          "execution_log": "kotlin-elide-inline_or_constant-1.json"
+        },
+        {
+          "seconds": 1.0954616179999448,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideKotlinc": 6,
+            "JavaIjar": 2
+          },
+          "execution_log": "kotlin-elide-inline_or_constant-2.json"
+        },
+        {
+          "seconds": 1.1039949149999302,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideKotlinc": 6,
+            "JavaIjar": 2
+          },
+          "execution_log": "kotlin-elide-inline_or_constant-3.json"
+        }
+      ]
+    },
+    {
+      "language": "kotlin",
+      "mode": "elide_abi",
+      "scenario": "no_op",
+      "samples": [
+        {
+          "seconds": 0.1379596250000077,
+          "compile_targets": [],
+          "abi_targets": [],
+          "actions": {},
+          "execution_log": "kotlin-elide_abi-no_op-1.json"
+        },
+        {
+          "seconds": 0.13647716399998444,
+          "compile_targets": [],
+          "abi_targets": [],
+          "actions": {},
+          "execution_log": "kotlin-elide_abi-no_op-2.json"
+        },
+        {
+          "seconds": 0.1328340359999629,
+          "compile_targets": [],
+          "abi_targets": [],
+          "actions": {},
+          "execution_log": "kotlin-elide_abi-no_op-3.json"
+        }
+      ]
+    },
+    {
+      "language": "kotlin",
+      "mode": "elide_abi",
+      "scenario": "comment",
+      "samples": [
+        {
+          "seconds": 0.3363110239999969,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "ElideKotlinc": 1,
+            "ElideKotlincAbi": 1
+          },
+          "execution_log": "kotlin-elide_abi-comment-1.json"
+        },
+        {
+          "seconds": 0.3563955210000813,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "ElideKotlinc": 1,
+            "ElideKotlincAbi": 1
+          },
+          "execution_log": "kotlin-elide_abi-comment-2.json"
+        },
+        {
+          "seconds": 0.35541184099997736,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "ElideKotlinc": 1,
+            "ElideKotlincAbi": 1
+          },
+          "execution_log": "kotlin-elide_abi-comment-3.json"
+        }
+      ]
+    },
+    {
+      "language": "kotlin",
+      "mode": "elide_abi",
+      "scenario": "body",
+      "samples": [
+        {
+          "seconds": 0.36574063700004444,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "ElideKotlinc": 1,
+            "ElideKotlincAbi": 1
+          },
+          "execution_log": "kotlin-elide_abi-body-1.json"
+        },
+        {
+          "seconds": 0.3785861169999407,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "ElideKotlinc": 1,
+            "ElideKotlincAbi": 1
+          },
+          "execution_log": "kotlin-elide_abi-body-2.json"
+        },
+        {
+          "seconds": 0.3357452300000432,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "ElideKotlinc": 1,
+            "ElideKotlincAbi": 1
+          },
+          "execution_log": "kotlin-elide_abi-body-3.json"
+        }
+      ]
+    },
+    {
+      "language": "kotlin",
+      "mode": "elide_abi",
+      "scenario": "private_member",
+      "samples": [
+        {
+          "seconds": 0.33725506999996924,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "ElideKotlinc": 1,
+            "ElideKotlincAbi": 1
+          },
+          "execution_log": "kotlin-elide_abi-private_member-1.json"
+        },
+        {
+          "seconds": 0.3432421750000003,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "ElideKotlinc": 1,
+            "ElideKotlincAbi": 1
+          },
+          "execution_log": "kotlin-elide_abi-private_member-2.json"
+        },
+        {
+          "seconds": 0.34248874700006127,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "ElideKotlinc": 1,
+            "ElideKotlincAbi": 1
+          },
+          "execution_log": "kotlin-elide_abi-private_member-3.json"
+        }
+      ]
+    },
+    {
+      "language": "kotlin",
+      "mode": "elide_abi",
+      "scenario": "internal_module_api",
+      "samples": [
+        {
+          "seconds": 1.5344471180000028,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "actions": {
+            "ElideKotlinc": 6,
+            "ElideKotlincAbi": 5
+          },
+          "execution_log": "kotlin-elide_abi-internal_module_api-1.json"
+        },
+        {
+          "seconds": 1.5081389500001023,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "actions": {
+            "ElideKotlinc": 6,
+            "ElideKotlincAbi": 5
+          },
+          "execution_log": "kotlin-elide_abi-internal_module_api-2.json"
+        },
+        {
+          "seconds": 1.2264285179999206,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "actions": {
+            "ElideKotlinc": 6,
+            "ElideKotlincAbi": 5
+          },
+          "execution_log": "kotlin-elide_abi-internal_module_api-3.json"
+        }
+      ]
+    },
+    {
+      "language": "kotlin",
+      "mode": "elide_abi",
+      "scenario": "public_module_api",
+      "samples": [
+        {
+          "seconds": 1.1214763790000006,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//facade:facade"
+          ],
+          "abi_targets": [
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//facade:facade"
+          ],
+          "actions": {
+            "ElideKotlinc": 5,
+            "ElideKotlincAbi": 4
+          },
+          "execution_log": "kotlin-elide_abi-public_module_api-1.json"
+        },
+        {
+          "seconds": 1.0487485259999403,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//facade:facade"
+          ],
+          "abi_targets": [
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//facade:facade"
+          ],
+          "actions": {
+            "ElideKotlinc": 5,
+            "ElideKotlincAbi": 4
+          },
+          "execution_log": "kotlin-elide_abi-public_module_api-2.json"
+        },
+        {
+          "seconds": 1.0973223990000633,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//facade:facade"
+          ],
+          "abi_targets": [
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//facade:facade"
+          ],
+          "actions": {
+            "ElideKotlinc": 5,
+            "ElideKotlincAbi": 4
+          },
+          "execution_log": "kotlin-elide_abi-public_module_api-3.json"
+        }
+      ]
+    },
+    {
+      "language": "kotlin",
+      "mode": "elide_abi",
+      "scenario": "multi_file_body",
+      "samples": [
+        {
+          "seconds": 0.35650557200006006,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "ElideKotlinc": 1,
+            "ElideKotlincAbi": 1
+          },
+          "execution_log": "kotlin-elide_abi-multi_file_body-1.json"
+        },
+        {
+          "seconds": 0.36067832100002306,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "ElideKotlinc": 1,
+            "ElideKotlincAbi": 1
+          },
+          "execution_log": "kotlin-elide_abi-multi_file_body-2.json"
+        },
+        {
+          "seconds": 0.35050771999999597,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "ElideKotlinc": 1,
+            "ElideKotlincAbi": 1
+          },
+          "execution_log": "kotlin-elide_abi-multi_file_body-3.json"
+        }
+      ]
+    },
+    {
+      "language": "kotlin",
+      "mode": "elide_abi",
+      "scenario": "multi_module_body",
+      "samples": [
+        {
+          "seconds": 0.5278991229999974,
+          "compile_targets": [
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [
+            "//core:core",
+            "//facade:facade"
+          ],
+          "actions": {
+            "ElideKotlinc": 2,
+            "ElideKotlincAbi": 2
+          },
+          "execution_log": "kotlin-elide_abi-multi_module_body-1.json"
+        },
+        {
+          "seconds": 0.563491354000007,
+          "compile_targets": [
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [
+            "//core:core",
+            "//facade:facade"
+          ],
+          "actions": {
+            "ElideKotlinc": 2,
+            "ElideKotlincAbi": 2
+          },
+          "execution_log": "kotlin-elide_abi-multi_module_body-2.json"
+        },
+        {
+          "seconds": 0.533266061000063,
+          "compile_targets": [
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [
+            "//core:core",
+            "//facade:facade"
+          ],
+          "actions": {
+            "ElideKotlinc": 2,
+            "ElideKotlincAbi": 2
+          },
+          "execution_log": "kotlin-elide_abi-multi_module_body-3.json"
+        }
+      ]
+    },
+    {
+      "language": "kotlin",
+      "mode": "elide_abi",
+      "scenario": "multi_module_api",
+      "samples": [
+        {
+          "seconds": 1.2729118210000934,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "actions": {
+            "ElideKotlinc": 6,
+            "ElideKotlincAbi": 5
+          },
+          "execution_log": "kotlin-elide_abi-multi_module_api-1.json"
+        },
+        {
+          "seconds": 1.5326870540000073,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "actions": {
+            "ElideKotlinc": 6,
+            "ElideKotlincAbi": 5
+          },
+          "execution_log": "kotlin-elide_abi-multi_module_api-2.json"
+        },
+        {
+          "seconds": 1.2351179240000647,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "actions": {
+            "ElideKotlinc": 6,
+            "ElideKotlincAbi": 5
+          },
+          "execution_log": "kotlin-elide_abi-multi_module_api-3.json"
+        }
+      ]
+    },
+    {
+      "language": "kotlin",
+      "mode": "elide_abi",
+      "scenario": "unused_dependency_api",
+      "samples": [
+        {
+          "seconds": 1.1894969649999894,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//facade:facade",
+            "//spare:spare"
+          ],
+          "abi_targets": [
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//facade:facade",
+            "//spare:spare"
+          ],
+          "actions": {
+            "ElideKotlinc": 6,
+            "ElideKotlincAbi": 5
+          },
+          "execution_log": "kotlin-elide_abi-unused_dependency_api-1.json"
+        },
+        {
+          "seconds": 1.1693513650000114,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//facade:facade",
+            "//spare:spare"
+          ],
+          "abi_targets": [
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//facade:facade",
+            "//spare:spare"
+          ],
+          "actions": {
+            "ElideKotlinc": 6,
+            "ElideKotlincAbi": 5
+          },
+          "execution_log": "kotlin-elide_abi-unused_dependency_api-2.json"
+        },
+        {
+          "seconds": 1.3414130280000336,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//facade:facade",
+            "//spare:spare"
+          ],
+          "abi_targets": [
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//facade:facade",
+            "//spare:spare"
+          ],
+          "actions": {
+            "ElideKotlinc": 6,
+            "ElideKotlincAbi": 5
+          },
+          "execution_log": "kotlin-elide_abi-unused_dependency_api-3.json"
+        }
+      ]
+    },
+    {
+      "language": "kotlin",
+      "mode": "elide_abi",
+      "scenario": "inline_or_constant",
+      "samples": [
+        {
+          "seconds": 1.3401169229999823,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "actions": {
+            "ElideKotlinc": 6,
+            "ElideKotlincAbi": 5
+          },
+          "execution_log": "kotlin-elide_abi-inline_or_constant-1.json"
+        },
+        {
+          "seconds": 1.2436815930000193,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "actions": {
+            "ElideKotlinc": 6,
+            "ElideKotlincAbi": 5
+          },
+          "execution_log": "kotlin-elide_abi-inline_or_constant-2.json"
+        },
+        {
+          "seconds": 1.2744818570000689,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "actions": {
+            "ElideKotlinc": 6,
+            "ElideKotlincAbi": 5
+          },
+          "execution_log": "kotlin-elide_abi-inline_or_constant-3.json"
+        }
+      ]
+    },
+    {
+      "language": "kotlin",
+      "mode": "elide_pruned",
+      "scenario": "no_op",
+      "samples": [
+        {
+          "seconds": 0.17540622100000292,
+          "compile_targets": [],
+          "abi_targets": [],
+          "actions": {},
+          "execution_log": "kotlin-elide_pruned-no_op-1.json"
+        },
+        {
+          "seconds": 0.1384020350000128,
+          "compile_targets": [],
+          "abi_targets": [],
+          "actions": {},
+          "execution_log": "kotlin-elide_pruned-no_op-2.json"
+        },
+        {
+          "seconds": 0.12515423000002102,
+          "compile_targets": [],
+          "abi_targets": [],
+          "actions": {},
+          "execution_log": "kotlin-elide_pruned-no_op-3.json"
+        }
+      ]
+    },
+    {
+      "language": "kotlin",
+      "mode": "elide_pruned",
+      "scenario": "comment",
+      "samples": [
+        {
+          "seconds": 0.35315229299999373,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "ElideKotlinc": 1,
+            "ElideKotlincAbi": 1
+          },
+          "execution_log": "kotlin-elide_pruned-comment-1.json"
+        },
+        {
+          "seconds": 0.37978548699993553,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "ElideKotlinc": 1,
+            "ElideKotlincAbi": 1
+          },
+          "execution_log": "kotlin-elide_pruned-comment-2.json"
+        },
+        {
+          "seconds": 0.3778207450000082,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "ElideKotlinc": 1,
+            "ElideKotlincAbi": 1
+          },
+          "execution_log": "kotlin-elide_pruned-comment-3.json"
+        }
+      ]
+    },
+    {
+      "language": "kotlin",
+      "mode": "elide_pruned",
+      "scenario": "body",
+      "samples": [
+        {
+          "seconds": 0.3967805889999454,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "ElideKotlinc": 1,
+            "ElideKotlincAbi": 1
+          },
+          "execution_log": "kotlin-elide_pruned-body-1.json"
+        },
+        {
+          "seconds": 0.41087578299993766,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "ElideKotlinc": 1,
+            "ElideKotlincAbi": 1
+          },
+          "execution_log": "kotlin-elide_pruned-body-2.json"
+        },
+        {
+          "seconds": 0.4226536869999791,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "ElideKotlinc": 1,
+            "ElideKotlincAbi": 1
+          },
+          "execution_log": "kotlin-elide_pruned-body-3.json"
+        }
+      ]
+    },
+    {
+      "language": "kotlin",
+      "mode": "elide_pruned",
+      "scenario": "private_member",
+      "samples": [
+        {
+          "seconds": 0.3945193739999695,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "ElideKotlinc": 1,
+            "ElideKotlincAbi": 1
+          },
+          "execution_log": "kotlin-elide_pruned-private_member-1.json"
+        },
+        {
+          "seconds": 0.3504832370000486,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "ElideKotlinc": 1,
+            "ElideKotlincAbi": 1
+          },
+          "execution_log": "kotlin-elide_pruned-private_member-2.json"
+        },
+        {
+          "seconds": 0.3963048269999945,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "ElideKotlinc": 1,
+            "ElideKotlincAbi": 1
+          },
+          "execution_log": "kotlin-elide_pruned-private_member-3.json"
+        }
+      ]
+    },
+    {
+      "language": "kotlin",
+      "mode": "elide_pruned",
+      "scenario": "internal_module_api",
+      "samples": [
+        {
+          "seconds": 0.5704040839999607,
+          "compile_targets": [
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [
+            "//core:core",
+            "//facade:facade"
+          ],
+          "actions": {
+            "ElideKotlinc": 2,
+            "ElideKotlincAbi": 2
+          },
+          "execution_log": "kotlin-elide_pruned-internal_module_api-1.json"
+        },
+        {
+          "seconds": 0.5839300130000993,
+          "compile_targets": [
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [
+            "//core:core",
+            "//facade:facade"
+          ],
+          "actions": {
+            "ElideKotlinc": 2,
+            "ElideKotlincAbi": 2
+          },
+          "execution_log": "kotlin-elide_pruned-internal_module_api-2.json"
+        },
+        {
+          "seconds": 0.6485621940000783,
+          "compile_targets": [
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [
+            "//core:core",
+            "//facade:facade"
+          ],
+          "actions": {
+            "ElideKotlinc": 2,
+            "ElideKotlincAbi": 2
+          },
+          "execution_log": "kotlin-elide_pruned-internal_module_api-3.json"
+        }
+      ]
+    },
+    {
+      "language": "kotlin",
+      "mode": "elide_pruned",
+      "scenario": "public_module_api",
+      "samples": [
+        {
+          "seconds": 1.1820882689999053,
+          "compile_targets": [
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//facade:facade"
+          ],
+          "abi_targets": [
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//facade:facade"
+          ],
+          "actions": {
+            "ElideKotlinc": 4,
+            "ElideKotlincAbi": 4
+          },
+          "execution_log": "kotlin-elide_pruned-public_module_api-1.json"
+        },
+        {
+          "seconds": 0.9091249389999803,
+          "compile_targets": [
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//facade:facade"
+          ],
+          "abi_targets": [
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//facade:facade"
+          ],
+          "actions": {
+            "ElideKotlinc": 4,
+            "ElideKotlincAbi": 4
+          },
+          "execution_log": "kotlin-elide_pruned-public_module_api-2.json"
+        },
+        {
+          "seconds": 0.8990946790000862,
+          "compile_targets": [
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//facade:facade"
+          ],
+          "abi_targets": [
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//facade:facade"
+          ],
+          "actions": {
+            "ElideKotlinc": 4,
+            "ElideKotlincAbi": 4
+          },
+          "execution_log": "kotlin-elide_pruned-public_module_api-3.json"
+        }
+      ]
+    },
+    {
+      "language": "kotlin",
+      "mode": "elide_pruned",
+      "scenario": "multi_file_body",
+      "samples": [
+        {
+          "seconds": 0.37832149300004403,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "ElideKotlinc": 1,
+            "ElideKotlincAbi": 1
+          },
+          "execution_log": "kotlin-elide_pruned-multi_file_body-1.json"
+        },
+        {
+          "seconds": 0.39745099300000675,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "ElideKotlinc": 1,
+            "ElideKotlincAbi": 1
+          },
+          "execution_log": "kotlin-elide_pruned-multi_file_body-2.json"
+        },
+        {
+          "seconds": 0.3801219440000523,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "ElideKotlinc": 1,
+            "ElideKotlincAbi": 1
+          },
+          "execution_log": "kotlin-elide_pruned-multi_file_body-3.json"
+        }
+      ]
+    },
+    {
+      "language": "kotlin",
+      "mode": "elide_pruned",
+      "scenario": "multi_module_body",
+      "samples": [
+        {
+          "seconds": 0.5491784260000259,
+          "compile_targets": [
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [
+            "//core:core",
+            "//facade:facade"
+          ],
+          "actions": {
+            "ElideKotlinc": 2,
+            "ElideKotlincAbi": 2
+          },
+          "execution_log": "kotlin-elide_pruned-multi_module_body-1.json"
+        },
+        {
+          "seconds": 0.590078483999946,
+          "compile_targets": [
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [
+            "//core:core",
+            "//facade:facade"
+          ],
+          "actions": {
+            "ElideKotlinc": 2,
+            "ElideKotlincAbi": 2
+          },
+          "execution_log": "kotlin-elide_pruned-multi_module_body-2.json"
+        },
+        {
+          "seconds": 0.5602727809999806,
+          "compile_targets": [
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [
+            "//core:core",
+            "//facade:facade"
+          ],
+          "actions": {
+            "ElideKotlinc": 2,
+            "ElideKotlincAbi": 2
+          },
+          "execution_log": "kotlin-elide_pruned-multi_module_body-3.json"
+        }
+      ]
+    },
+    {
+      "language": "kotlin",
+      "mode": "elide_pruned",
+      "scenario": "multi_module_api",
+      "samples": [
+        {
+          "seconds": 1.2267961329999935,
+          "compile_targets": [
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "actions": {
+            "ElideKotlinc": 5,
+            "ElideKotlincAbi": 5
+          },
+          "execution_log": "kotlin-elide_pruned-multi_module_api-1.json"
+        },
+        {
+          "seconds": 1.1320998749999944,
+          "compile_targets": [
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "actions": {
+            "ElideKotlinc": 5,
+            "ElideKotlincAbi": 5
+          },
+          "execution_log": "kotlin-elide_pruned-multi_module_api-2.json"
+        },
+        {
+          "seconds": 1.155694875999984,
+          "compile_targets": [
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "actions": {
+            "ElideKotlinc": 5,
+            "ElideKotlincAbi": 5
+          },
+          "execution_log": "kotlin-elide_pruned-multi_module_api-3.json"
+        }
+      ]
+    },
+    {
+      "language": "kotlin",
+      "mode": "elide_pruned",
+      "scenario": "unused_dependency_api",
+      "samples": [
+        {
+          "seconds": 0.3656575210000028,
+          "compile_targets": [
+            "//spare:spare"
+          ],
+          "abi_targets": [
+            "//spare:spare"
+          ],
+          "actions": {
+            "ElideKotlinc": 1,
+            "ElideKotlincAbi": 1
+          },
+          "execution_log": "kotlin-elide_pruned-unused_dependency_api-1.json"
+        },
+        {
+          "seconds": 0.3305030640000268,
+          "compile_targets": [
+            "//spare:spare"
+          ],
+          "abi_targets": [
+            "//spare:spare"
+          ],
+          "actions": {
+            "ElideKotlinc": 1,
+            "ElideKotlincAbi": 1
+          },
+          "execution_log": "kotlin-elide_pruned-unused_dependency_api-2.json"
+        },
+        {
+          "seconds": 0.34294682499989904,
+          "compile_targets": [
+            "//spare:spare"
+          ],
+          "abi_targets": [
+            "//spare:spare"
+          ],
+          "actions": {
+            "ElideKotlinc": 1,
+            "ElideKotlincAbi": 1
+          },
+          "execution_log": "kotlin-elide_pruned-unused_dependency_api-3.json"
+        }
+      ]
+    },
+    {
+      "language": "kotlin",
+      "mode": "elide_pruned",
+      "scenario": "inline_or_constant",
+      "samples": [
+        {
+          "seconds": 0.5617157870000256,
+          "compile_targets": [
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [
+            "//core:core",
+            "//facade:facade"
+          ],
+          "actions": {
+            "ElideKotlinc": 2,
+            "ElideKotlincAbi": 2
+          },
+          "execution_log": "kotlin-elide_pruned-inline_or_constant-1.json"
+        },
+        {
+          "seconds": 0.5779449269999759,
+          "compile_targets": [
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [
+            "//core:core",
+            "//facade:facade"
+          ],
+          "actions": {
+            "ElideKotlinc": 2,
+            "ElideKotlincAbi": 2
+          },
+          "execution_log": "kotlin-elide_pruned-inline_or_constant-2.json"
+        },
+        {
+          "seconds": 0.590071193999961,
+          "compile_targets": [
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [
+            "//core:core",
+            "//facade:facade"
+          ],
+          "actions": {
+            "ElideKotlinc": 2,
+            "ElideKotlincAbi": 2
+          },
+          "execution_log": "kotlin-elide_pruned-inline_or_constant-3.json"
+        }
+      ]
+    },
+    {
+      "language": "kotlin",
+      "mode": "elide_incremental",
+      "scenario": "no_op",
+      "samples": [
+        {
+          "seconds": 0.19879461600010018,
+          "compile_targets": [],
+          "abi_targets": [],
+          "actions": {},
+          "execution_log": "kotlin-elide_incremental-no_op-1.json"
+        },
+        {
+          "seconds": 0.2614246020000337,
+          "compile_targets": [],
+          "abi_targets": [],
+          "actions": {},
+          "execution_log": "kotlin-elide_incremental-no_op-2.json"
+        },
+        {
+          "seconds": 0.1337116680000463,
+          "compile_targets": [],
+          "abi_targets": [],
+          "actions": {},
+          "execution_log": "kotlin-elide_incremental-no_op-3.json"
+        }
+      ]
+    },
+    {
+      "language": "kotlin",
+      "mode": "elide_incremental",
+      "scenario": "comment",
+      "samples": [
+        {
+          "seconds": 0.4537934799999448,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "ElideKotlincAbi": 1,
+            "ElideKotlinc": 1
+          },
+          "execution_log": "kotlin-elide_incremental-comment-1.json"
+        },
+        {
+          "seconds": 0.4777136220000102,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "ElideKotlincAbi": 1,
+            "ElideKotlinc": 1
+          },
+          "execution_log": "kotlin-elide_incremental-comment-2.json"
+        },
+        {
+          "seconds": 0.4521184299999277,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "ElideKotlincAbi": 1,
+            "ElideKotlinc": 1
+          },
+          "execution_log": "kotlin-elide_incremental-comment-3.json"
+        }
+      ]
+    },
+    {
+      "language": "kotlin",
+      "mode": "elide_incremental",
+      "scenario": "body",
+      "samples": [
+        {
+          "seconds": 0.5281077979999509,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "ElideKotlincAbi": 1,
+            "ElideKotlinc": 1,
+            "ElideKotlincPack": 1
+          },
+          "execution_log": "kotlin-elide_incremental-body-1.json"
+        },
+        {
+          "seconds": 0.656803904999947,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "ElideKotlincAbi": 1,
+            "ElideKotlinc": 1,
+            "ElideKotlincPack": 1
+          },
+          "execution_log": "kotlin-elide_incremental-body-2.json"
+        },
+        {
+          "seconds": 0.6266248760000508,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "ElideKotlincAbi": 1,
+            "ElideKotlinc": 1,
+            "ElideKotlincPack": 1
+          },
+          "execution_log": "kotlin-elide_incremental-body-3.json"
+        }
+      ]
+    },
+    {
+      "language": "kotlin",
+      "mode": "elide_incremental",
+      "scenario": "private_member",
+      "samples": [
+        {
+          "seconds": 0.5217033570000922,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "ElideKotlincAbi": 1,
+            "ElideKotlinc": 1,
+            "ElideKotlincPack": 1
+          },
+          "execution_log": "kotlin-elide_incremental-private_member-1.json"
+        },
+        {
+          "seconds": 0.563214806000019,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "ElideKotlincAbi": 1,
+            "ElideKotlinc": 1,
+            "ElideKotlincPack": 1
+          },
+          "execution_log": "kotlin-elide_incremental-private_member-2.json"
+        },
+        {
+          "seconds": 0.5410323620000099,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "ElideKotlincAbi": 1,
+            "ElideKotlinc": 1,
+            "ElideKotlincPack": 1
+          },
+          "execution_log": "kotlin-elide_incremental-private_member-3.json"
+        }
+      ]
+    },
+    {
+      "language": "kotlin",
+      "mode": "elide_incremental",
+      "scenario": "internal_module_api",
+      "samples": [
+        {
+          "seconds": 1.4025655439999127,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "actions": {
+            "ElideKotlincAbi": 5,
+            "ElideKotlinc": 6,
+            "ElideKotlincPack": 1
+          },
+          "execution_log": "kotlin-elide_incremental-internal_module_api-1.json"
+        },
+        {
+          "seconds": 1.298261077999996,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "actions": {
+            "ElideKotlincAbi": 5,
+            "ElideKotlinc": 6,
+            "ElideKotlincPack": 1
+          },
+          "execution_log": "kotlin-elide_incremental-internal_module_api-2.json"
+        },
+        {
+          "seconds": 1.414467854999998,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "actions": {
+            "ElideKotlincAbi": 5,
+            "ElideKotlinc": 6,
+            "ElideKotlincPack": 1
+          },
+          "execution_log": "kotlin-elide_incremental-internal_module_api-3.json"
+        }
+      ]
+    },
+    {
+      "language": "kotlin",
+      "mode": "elide_incremental",
+      "scenario": "public_module_api",
+      "samples": [
+        {
+          "seconds": 1.17971671600003,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//facade:facade"
+          ],
+          "abi_targets": [
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//facade:facade"
+          ],
+          "actions": {
+            "ElideKotlincAbi": 4,
+            "ElideKotlinc": 5,
+            "ElideKotlincPack": 1
+          },
+          "execution_log": "kotlin-elide_incremental-public_module_api-1.json"
+        },
+        {
+          "seconds": 1.0551026670000283,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//facade:facade"
+          ],
+          "abi_targets": [
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//facade:facade"
+          ],
+          "actions": {
+            "ElideKotlincAbi": 4,
+            "ElideKotlinc": 5,
+            "ElideKotlincPack": 1
+          },
+          "execution_log": "kotlin-elide_incremental-public_module_api-2.json"
+        },
+        {
+          "seconds": 1.259103180000011,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//facade:facade"
+          ],
+          "abi_targets": [
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//facade:facade"
+          ],
+          "actions": {
+            "ElideKotlincAbi": 4,
+            "ElideKotlinc": 5,
+            "ElideKotlincPack": 1
+          },
+          "execution_log": "kotlin-elide_incremental-public_module_api-3.json"
+        }
+      ]
+    },
+    {
+      "language": "kotlin",
+      "mode": "elide_incremental",
+      "scenario": "multi_file_body",
+      "samples": [
+        {
+          "seconds": 0.5825077319999536,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "ElideKotlincAbi": 1,
+            "ElideKotlinc": 1,
+            "ElideKotlincPack": 1
+          },
+          "execution_log": "kotlin-elide_incremental-multi_file_body-1.json"
+        },
+        {
+          "seconds": 0.5614116279999735,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "ElideKotlincAbi": 1,
+            "ElideKotlinc": 1,
+            "ElideKotlincPack": 1
+          },
+          "execution_log": "kotlin-elide_incremental-multi_file_body-2.json"
+        },
+        {
+          "seconds": 0.6553789419999703,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "ElideKotlincAbi": 1,
+            "ElideKotlinc": 1,
+            "ElideKotlincPack": 1
+          },
+          "execution_log": "kotlin-elide_incremental-multi_file_body-3.json"
+        }
+      ]
+    },
+    {
+      "language": "kotlin",
+      "mode": "elide_incremental",
+      "scenario": "multi_module_body",
+      "samples": [
+        {
+          "seconds": 1.0243160200000148,
+          "compile_targets": [
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [
+            "//core:core",
+            "//facade:facade"
+          ],
+          "actions": {
+            "ElideKotlincAbi": 2,
+            "ElideKotlinc": 2,
+            "ElideKotlincPack": 2
+          },
+          "execution_log": "kotlin-elide_incremental-multi_module_body-1.json"
+        },
+        {
+          "seconds": 0.8804589100000157,
+          "compile_targets": [
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [
+            "//core:core",
+            "//facade:facade"
+          ],
+          "actions": {
+            "ElideKotlincAbi": 2,
+            "ElideKotlinc": 2,
+            "ElideKotlincPack": 2
+          },
+          "execution_log": "kotlin-elide_incremental-multi_module_body-2.json"
+        },
+        {
+          "seconds": 1.015068327999984,
+          "compile_targets": [
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [
+            "//core:core",
+            "//facade:facade"
+          ],
+          "actions": {
+            "ElideKotlincAbi": 2,
+            "ElideKotlinc": 2,
+            "ElideKotlincPack": 2
+          },
+          "execution_log": "kotlin-elide_incremental-multi_module_body-3.json"
+        }
+      ]
+    },
+    {
+      "language": "kotlin",
+      "mode": "elide_incremental",
+      "scenario": "multi_module_api",
+      "samples": [
+        {
+          "seconds": 1.4528425789999346,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "actions": {
+            "ElideKotlincAbi": 5,
+            "ElideKotlinc": 6,
+            "ElideKotlincPack": 2
+          },
+          "execution_log": "kotlin-elide_incremental-multi_module_api-1.json"
+        },
+        {
+          "seconds": 1.3632036139999855,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "actions": {
+            "ElideKotlincAbi": 5,
+            "ElideKotlinc": 6,
+            "ElideKotlincPack": 2
+          },
+          "execution_log": "kotlin-elide_incremental-multi_module_api-2.json"
+        },
+        {
+          "seconds": 1.354685160000031,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "actions": {
+            "ElideKotlincAbi": 5,
+            "ElideKotlinc": 6,
+            "ElideKotlincPack": 2
+          },
+          "execution_log": "kotlin-elide_incremental-multi_module_api-3.json"
+        }
+      ]
+    },
+    {
+      "language": "kotlin",
+      "mode": "elide_incremental",
+      "scenario": "unused_dependency_api",
+      "samples": [
+        {
+          "seconds": 1.2615329190000466,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//facade:facade",
+            "//spare:spare"
+          ],
+          "abi_targets": [
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//facade:facade",
+            "//spare:spare"
+          ],
+          "actions": {
+            "ElideKotlincAbi": 5,
+            "ElideKotlinc": 6,
+            "ElideKotlincPack": 1
+          },
+          "execution_log": "kotlin-elide_incremental-unused_dependency_api-1.json"
+        },
+        {
+          "seconds": 1.3801672969999572,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//facade:facade",
+            "//spare:spare"
+          ],
+          "abi_targets": [
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//facade:facade",
+            "//spare:spare"
+          ],
+          "actions": {
+            "ElideKotlincAbi": 5,
+            "ElideKotlinc": 6,
+            "ElideKotlincPack": 1
+          },
+          "execution_log": "kotlin-elide_incremental-unused_dependency_api-2.json"
+        },
+        {
+          "seconds": 1.177837883000052,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//facade:facade",
+            "//spare:spare"
+          ],
+          "abi_targets": [
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//facade:facade",
+            "//spare:spare"
+          ],
+          "actions": {
+            "ElideKotlincAbi": 5,
+            "ElideKotlinc": 6,
+            "ElideKotlincPack": 1
+          },
+          "execution_log": "kotlin-elide_incremental-unused_dependency_api-3.json"
+        }
+      ]
+    },
+    {
+      "language": "kotlin",
+      "mode": "elide_incremental",
+      "scenario": "inline_or_constant",
+      "samples": [
+        {
+          "seconds": 1.3115839460000416,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "actions": {
+            "ElideKotlincAbi": 5,
+            "ElideKotlinc": 6,
+            "ElideKotlincPack": 2
+          },
+          "execution_log": "kotlin-elide_incremental-inline_or_constant-1.json"
+        },
+        {
+          "seconds": 1.6126522380000097,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "actions": {
+            "ElideKotlincAbi": 5,
+            "ElideKotlinc": 6,
+            "ElideKotlincPack": 2
+          },
+          "execution_log": "kotlin-elide_incremental-inline_or_constant-2.json"
+        },
+        {
+          "seconds": 1.3446084600000177,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "actions": {
+            "ElideKotlincAbi": 5,
+            "ElideKotlinc": 6,
+            "ElideKotlincPack": 2
+          },
+          "execution_log": "kotlin-elide_incremental-inline_or_constant-3.json"
+        }
+      ]
+    }
+  ]
+}

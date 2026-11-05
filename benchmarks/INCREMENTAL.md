@@ -41,6 +41,9 @@ internal/public module distinction is defined by the Facade boundary; it does
 not imply Java JPMS enforcement or that Bazel will automatically hide transitive
 classpath changes. The action logs reveal how far changes actually propagate.
 
+[Recorded results](INCREMENTAL_RESULTS.md) include all 99 cases and the slower paths,
+with structured sample data retained in the repository.
+
 ## Modes
 
 - `vanilla`: stock `java_library` / `kt_jvm_library` with their default ABI behavior.

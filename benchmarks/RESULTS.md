@@ -30,6 +30,9 @@ See [the incremental matrix](INCREMENTAL.md) for body-only, ABI, module-boundary
 inline/constant, unused-dependency, and multi-file edit scenarios, with timings
 and compiler-action counts across vanilla and Elide optimization modes.
 
+The [2026-11-04 incremental results](INCREMENTAL_RESULTS.md) retain timings and
+action counts for all 99 cases, including cases where vanilla was faster.
+
 ## Suite
 
 `bench_suite.sh` drives [hyperfine](https://github.com/sharkdp/hyperfine) and
