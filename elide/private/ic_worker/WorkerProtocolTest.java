@@ -24,7 +24,36 @@ public final class WorkerProtocolTest {
     return new ByteArrayInputStream(output.toByteArray());
   }
 
+  private static void incrementalSignatures() throws Exception {
+    List<String> args = List.of("--", "-classpath", "dep.jar", "-d", "out.jar", "Source.kt");
+    WorkRequest baseline = WorkRequest.newBuilder().addAllArguments(args)
+        .addInputs(Input.newBuilder().setPath("dep.jar").setDigest(ByteString.copyFromUtf8("old")))
+        .addInputs(Input.newBuilder().setPath("tool.jar").setDigest(ByteString.copyFromUtf8("old")))
+        .build();
+    var changedDependency = baseline.toBuilder().setInputs(0,
+        baseline.getInputs(0).toBuilder().setDigest(ByteString.copyFromUtf8("new"))).build();
+    String original = IncrementalWorker.signature(WorkerProtocol.WorkRequest.parseDelimitedFrom(frame(baseline)));
+    require(original.equals(IncrementalWorker.signature(
+        WorkerProtocol.WorkRequest.parseDelimitedFrom(frame(changedDependency)))));
+    var changedTool = baseline.toBuilder().setInputs(1,
+        baseline.getInputs(1).toBuilder().setDigest(ByteString.copyFromUtf8("new"))).build();
+    require(!original.equals(IncrementalWorker.signature(
+        WorkerProtocol.WorkRequest.parseDelimitedFrom(frame(changedTool)))));
+    for (String option : List.of("-Xplugin=dep.jar", "-Xcompiler-plugin=dep.jar", "-P",
+        "-Xfriend-paths=dep.jar", "--plugins=serialization")) {
+      var before = baseline.toBuilder().addArguments(option).build();
+      var after = changedDependency.toBuilder().addArguments(option).build();
+      require(!IncrementalWorker.signature(WorkerProtocol.WorkRequest.parseDelimitedFrom(frame(before)))
+          .equals(IncrementalWorker.signature(WorkerProtocol.WorkRequest.parseDelimitedFrom(frame(after)))));
+    }
+    for (String change : List.of("Added.kt", "-module-name=changed")) {
+      require(!original.equals(IncrementalWorker.signature(WorkerProtocol.WorkRequest.parseDelimitedFrom(
+          frame(baseline.toBuilder().addArguments(change).build())))));
+    }
+  }
+
   public static void main(String[] args) throws Exception {
+    incrementalSignatures();
     UnknownFieldSet unknown = UnknownFieldSet.newBuilder().addField(100,
         UnknownFieldSet.Field.newBuilder().addVarint(-1).addFixed32(42).addFixed64(123456)
             .addLengthDelimited(ByteString.copyFromUtf8("opaque"))

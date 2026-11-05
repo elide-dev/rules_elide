@@ -71,7 +71,8 @@ and is checked against generated protobuf classes in tests. Frames are limited
 to 64 MiB, and malformed or truncated messages fail explicitly. It forwards input
 digests to a resident Elide compiler, retains classes and IC state together in
 private temporary storage, and packages the complete jar before responding.
-Declared Bazel outputs are never used as persistent compiler state. Argument or
-non-source input changes invalidate the target state; compile/transport failures
+Declared Bazel outputs are never used as persistent compiler state. Argument changes and non-source inputs outside ordinary classpath jars invalidate
+the target state. Native IC tracks classpath jar content changes; explicit plugin
+and friend-module configurations retain conservative full resets; compile/transport failures
 and worker restarts cannot reuse incomplete output. The adapter is singleplex;
 ordinary native compilation still uses Elide's direct multiplex worker protocol.

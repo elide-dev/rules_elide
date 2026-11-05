@@ -84,8 +84,8 @@ must still update after compile-time values change, including with pruning enabl
 Native Kotlin IC has a real-toolchain regression in
 `e2e/integration/verify_incremental.py`, run by the JVM integration suite. It
 checks complete output after body edits, deleted nested classes, added/deleted
-sources, failed compilation and recovery, dependency constant changes, compiler
-option changes, and worker restart. Runtime assertions and jar-content checks run
+sources, failed compilation and recovery, dependency constant/inline changes,
+unused dependency API additions, compiler option changes, and worker restart. Runtime assertions and jar-content checks run
 with persistent workers, sandboxed workers, and one-shot execution. A selective
 layout also enables IC only for Core while consumers use combined headers and
 pruning, with global IC disabled. The standalone
@@ -100,6 +100,8 @@ deleted nested classes, and cold-build equivalence must still match.
 
 The native IC wire codec is tested against generated protobuf messages by
 `//elide/private/ic_worker:worker_protocol_test`, also run in hosted integration.
+The test also checks IC state signatures: ordinary classpath updates preserve
+state; tool, option, source-set, plugin, and friend-module changes retain resets.
 It checks input digests, argument rewriting, request IDs, diagnostics, cancellation
 fields, unknown fields/groups, concatenated frames, and rejection of malformed or
 truncated streams. Generated protobuf classes are test dependencies only.

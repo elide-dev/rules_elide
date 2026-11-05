@@ -3,6 +3,7 @@ package dev.elide.bazel;
 import dev.elide.bazel.WorkerProtocol.Input;
 import dev.elide.bazel.WorkerProtocol.WorkRequest;
 import dev.elide.bazel.WorkerProtocol.WorkResponse;
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -12,8 +13,10 @@ import java.util.Arrays;
 import java.util.Base64;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -53,16 +56,35 @@ public final class IncrementalWorker implements AutoCloseable {
     hash.update(bytes);
   }
 
-  private static String signature(WorkRequest request) throws Exception {
+  static String signature(WorkRequest request) throws Exception {
+    // Native IC snapshots ordinary classpath jars and invalidates affected sources.
+    // Keep full resets for plugins/friends, whose extra reads are not covered here.
+    Set<String> classpath = new HashSet<>();
+    List<String> arguments = request.getArgumentsList();
+    boolean conservative = arguments.stream().anyMatch(arg ->
+        arg.startsWith("-Xplugin") || arg.startsWith("-Xcompiler-plugin")
+            || arg.equals("-P") || arg.startsWith("-P=") || arg.startsWith("-Xfriend-paths")
+            || arg.equals("--plugins") || arg.startsWith("--plugins="));
+    if (!conservative) {
+      for (int i = arguments.indexOf("--") + 1; i + 1 < arguments.size(); i++) {
+        if (arguments.get(i).equals("-classpath") || arguments.get(i).equals("-cp")) {
+          for (String entry : arguments.get(++i).split(java.util.regex.Pattern.quote(File.pathSeparator))) {
+            // Directory inputs may have children with separate digests. Keep their reset behavior.
+            if (entry.endsWith(".jar")) classpath.add(entry);
+          }
+        }
+      }
+    }
     MessageDigest hash = MessageDigest.getInstance("SHA-256");
     for (String arg : request.getArgumentsList()) {
       hash(hash, arg.getBytes(java.nio.charset.StandardCharsets.UTF_8));
     }
-    // Native IC tracks source-content edits. All other changes invalidate both
-    // the cache and the output tree, including flags and added/deleted sources.
+    // Native IC tracks source and ordinary classpath content edits. Other changes
+    // invalidate both cache and output, including flags and added/deleted sources.
     for (Input input : request.getInputsList().stream()
         .sorted(Comparator.comparing(Input::getPath)).collect(Collectors.toList())) {
-      if (input.getPath().endsWith(".kt") || input.getPath().endsWith(".java")) continue;
+      if (input.getPath().endsWith(".kt") || input.getPath().endsWith(".java")
+          || classpath.contains(input.getPath())) continue;
       hash(hash, input.getPath().getBytes(java.nio.charset.StandardCharsets.UTF_8));
       hash(hash, input.getDigest());
     }
