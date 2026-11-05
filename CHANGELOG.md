@@ -1,5 +1,34 @@
 # Changelog
 
+## [0.8.0](https://github.com/elide-dev/rules_elide/compare/v0.7.0...v0.8.0) (2026-11-05)
+
+
+### Features
+
+* add opt-in combined Kotlin compilation and ABI emission ([576a69f](https://github.com/elide-dev/rules_elide/commit/576a69feff702cae7cdee6bba75d9597c43dbf0b))
+* emit Java ABI headers alongside full compilation ([1c4d231](https://github.com/elide-dev/rules_elide/commit/1c4d231716568ea490288e2ee179553c887bbb86))
+* select ABI compilation strategy per JVM target ([f3de522](https://github.com/elide-dev/rules_elide/commit/f3de522d8ffcf5d25cfd1949fcba9300cad58505))
+* select Kotlin incremental compilation per target ([abbca75](https://github.com/elide-dev/rules_elide/commit/abbca7551de3104f8e4e26e49d18c5ebe129bd4c))
+
+
+### Bug Fixes
+
+* align Java benchmark targets and verify emitted bytecode ([0f5d896](https://github.com/elide-dev/rules_elide/commit/0f5d8960d1b50c23058794de6c87a43174f3f91a))
+* install Bazelisk explicitly for benchmark runner cleanup ([302506a](https://github.com/elide-dev/rules_elide/commit/302506ad9de0eb3397e0489d3dd39c25d3beff90))
+* preserve complete Kotlin incremental outputs across Bazel actions ([09b7e56](https://github.com/elide-dev/rules_elide/commit/09b7e5650c597b39108ee219dd5eb58794512e4c))
+* propagate Kotlin stdlib to Java consumers ([09e5049](https://github.com/elide-dev/rules_elide/commit/09e5049992d02e2e8e092a53ab1b21816c914c23))
+* reuse verified Elide distribution in isolated CodSpeed fixtures ([7553d8b](https://github.com/elide-dev/rules_elide/commit/7553d8bb7dbc9dea1ba6b98f3c46bd68887febca))
+
+
+### Performance Improvements
+
+* activate eligible Java classpath cache requests ([66a71b7](https://github.com/elide-dev/rules_elide/commit/66a71b70ae5e61425b54fd383dd1b295729d8fb6))
+* exclude LLVM from JVM compiler action inputs ([a9a0e8e](https://github.com/elide-dev/rules_elide/commit/a9a0e8ebc038e5be1ce5052cfa066d8e4dbb607c))
+* isolate jextract resources from JVM compiler inputs ([9353ffc](https://github.com/elide-dev/rules_elide/commit/9353ffcc53509681002f9c827676671c95da8f1d))
+* omit native static libraries from JVM action inputs ([3abfccc](https://github.com/elide-dev/rules_elide/commit/3abfccc9b8c15603e7dff53371c15ae24db3a0a9))
+* remove protobuf bootstrap from native IC worker ([dcb303f](https://github.com/elide-dev/rules_elide/commit/dcb303fa5fd59a60c14b1dc258de998bd6ee21c2))
+* retain Kotlin incremental state across classpath updates ([b1d08e5](https://github.com/elide-dev/rules_elide/commit/b1d08e593c49a0be31c07d5ca8d481e1647a3e2a))
+
 ## [0.7.0](https://github.com/elide-dev/rules_elide/compare/v0.6.1...v0.7.0) (2026-11-04)
 
 
