@@ -228,6 +228,32 @@ The [clean-and-incremental hosted comparison](COMMONS_LANG_CLEAN_RESULTS.md)
 adds 48 cases after compiler input reduction. Elide led clean rebuilds while
 stock retained the implementation-edit advantage; both outcomes are preserved.
 
+## Java partial-compilation correctness probe
+
+`java_partial_compile.py` explores compiling only edited Commons Lang sources
+after checking that the whole-module ABI is unchanged. It copies the sources
+into a temporary directory and compares every merged class entry with a fresh
+full compilation. It records correctness, not timing:
+
+```sh
+python3 benchmarks/java_partial_compile.py \
+  --commons-lang /path/to/commons-lang --elide /path/to/elide \
+  --output /tmp/java-partial-proof.json
+```
+
+With Elide 1.6.2, body, private-member, and three-file body edits each matched all
+381 classes from a full compile. An internal-module API edit changed the header
+and was excluded from partial compilation. The JSON records the source revision
+and digest. Annotation processing is disabled and both paths target Java 21.
+
+This is a manual experiment, not a supported incremental Java rule. Its output
+ownership mapping applies only to the edited fixture classes. General support
+requires tracking secondary top-level and generated classes, deleted outputs,
+package-private dependencies and constants, compiler options, and cache lifecycle.
+[Elide runtime issue #2751](https://github.com/elide-dev/runtime/issues/2751)
+requests compiler-owned incremental compilation or the manifests needed for a
+safe adapter. No production behavior or defaults depend on this probe.
+
 ## Production Kotlin sources
 
 `--kotlin-builder --languages kotlin` snapshots this checkout's complete
