@@ -221,3 +221,51 @@ scenario by median; that run predates the compiler input reductions.
 The [clean-and-incremental hosted comparison](COMMONS_LANG_CLEAN_RESULTS.md)
 adds 48 cases after compiler input reduction. Elide led clean rebuilds while
 stock retained the implementation-edit advantage; both outcomes are preserved.
+
+## Production Kotlin sources
+
+`--kotlin-builder --languages kotlin` snapshots this checkout's complete
+`elide/kotlin/builder` module: nine Kotlin implementation files and its two
+protobuf definitions. Protocol Java targets use the same protobuf/rules_proto
+versions as the repository. The source revision and exact source digest are
+recorded, as with Commons Lang. Copies and edits remain in the temporary workspace.
+
+```sh
+python3 benchmarks/incremental_matrix.py --kotlin-builder --languages kotlin \
+  --modes vanilla vanilla_abi elide_fused elide_hybrid \
+  --scenarios clean body internal_module_api multi_file_body --rounds 5
+```
+
+This preserves the production module's JVM 21 target and module name. Stock Kotlin
+uses a `define_kt_toolchain(jvm_target="21")` toolchain, and native targets pass
+`-jvm-target=21`. The verifier checks every class in the production output jar for
+classfile major version 65. Both use a stock `java_binary` launcher with Bazel's
+`remotejdk_21` to exercise the generated consumer graph outside timing. Assertions
+check flag parsing, routing, and plugin-rewrite messages; they do not exercise
+compiler subprocesses or replace the KotlinBuilder unit/protocol test suite.
+
+The facade, three clients by default, and application remain generated. This is
+one real small tooling module with generated consumers, not a production
+application graph. Clean builds include protocol generation/compilation and any
+compiler-tool bootstrap work; execution logs retain those additional actions.
+Shared action caches are disabled, while downloads stay warm.
+
+Supported scenarios are `clean`, `no_op`, `comment`, `body`, `private_member`,
+`internal_module_api`, `public_module_api`, and `multi_file_body`. Body edits
+rewrite equivalent predicates in `Flagfile.kt`; multi-file edits also change
+`Router.kt` and `BuiltinPlugins.kt`. API/private edits add a method. Source drift
+that prevents the intended edit fails instead of silently measuring unchanged
+code. ABI-enabled modes must keep implementation edits within the Core target;
+stock Kotlin without ABI mode is allowed to rebuild consumers.
+
+Select `workload=kotlin-builder` in the hosted workflow. It selects Kotlin,
+ignores the generated `sources` count, and runs eight modes across eight scenarios
+(64 cases and 192 measured samples at the default three rounds). The optional
+`elide_hybrid` mode remains available only through explicit CLI selection.
+
+The default matrix currently exposes a correctness failure in `elide_incremental`
+with Elide 1.6.2: after a body edit, an unchanged class is missing from the runtime
+jar. The verifier deliberately fails instead of publishing that sample as a
+speedup. See the [output-recreation regression](../e2e/ic_correctness/README.md#output_recreationpy--ic-cache-survives-output-directory-does-not).
+Use explicit non-IC modes for comparisons while this remains unresolved; a full
+hosted comparison including IC cannot pass yet.

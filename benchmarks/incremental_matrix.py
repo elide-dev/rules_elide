@@ -15,6 +15,7 @@ import tempfile
 import time
 
 import commons_lang_fixture
+import kotlin_builder_fixture
 
 REPO = Path(__file__).resolve().parents[1]
 SCENARIOS = (
@@ -163,7 +164,7 @@ def render(report):
              "| --- | --- | --- | ---: | ---: | ---: | --- |"]
     if "source_workload" in report:
         workload = report["source_workload"]
-        lines[4:4] = [f"Production sources: {workload['project']} at `{workload['revision']}`; {workload['source_files']} Java files.",
+        lines[4:4] = [f"Production sources: {workload['project']} at `{workload['revision']}`; {workload['source_files']} source files.",
                       f"Source SHA-256: `{workload['source_sha256']}`; checkout dirty: `{workload['checkout_dirty']}`.",
                       "The downstream consumer graph is generated. Runtime assertions run outside build timing.", ""]
     for row in report["results"]:
@@ -191,7 +192,9 @@ def render(report):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--commons-lang", type=Path, help="Benchmark a local Commons Lang source checkout in an isolated copy (Java only)")
+    workload_args = parser.add_mutually_exclusive_group()
+    workload_args.add_argument("--kotlin-builder", action="store_true", help="Benchmark this checkout's production KotlinBuilder module (Kotlin only)")
+    workload_args.add_argument("--commons-lang", type=Path, help="Benchmark a local Commons Lang source checkout in an isolated copy (Java only)")
     parser.add_argument("--profiles", action="store_true", help="Retain Bazel traces and summarize critical-path and sampled memory counters")
     parser.add_argument("--sources", type=positive, default=20)
     parser.add_argument("--fanout", type=positive, default=3)
@@ -206,7 +209,9 @@ def main():
     production = None
     source_metadata = None
     java = None
+    workload = None
     if args.commons_lang:
+        workload = commons_lang_fixture
         if args.languages != ["java"]:
             parser.error("--commons-lang requires --languages java")
         if args.scenarios and set(args.scenarios) - set(commons_lang_fixture.SCENARIOS):
@@ -217,9 +222,17 @@ def main():
         production, source_metadata = commons_lang_fixture.snapshot(args.commons_lang)
         args.commons_lang = str(args.commons_lang.resolve())
         args.scenarios = args.scenarios or list(commons_lang_fixture.SCENARIOS)
+    elif args.kotlin_builder:
+        workload = kotlin_builder_fixture
+        if args.languages != ["kotlin"]:
+            parser.error("--kotlin-builder requires --languages kotlin")
+        if args.scenarios and set(args.scenarios) - set(workload.SCENARIOS):
+            parser.error("KotlinBuilder supports: " + ", ".join(workload.SCENARIOS))
+        production, source_metadata = workload.snapshot(REPO)
+        args.scenarios = args.scenarios or list(workload.SCENARIOS)
     else:
         args.scenarios = args.scenarios or list(SCENARIOS)
-    if args.sources < 3:
+    if production is None and args.sources < 3:
         parser.error("--sources must be at least 3 for multi-file edits")
     output = args.output.resolve()
     output.mkdir(parents=True, exist_ok=True)
@@ -237,12 +250,20 @@ def main():
               "parameters": vars(args) | {"output": str(output)}, "results": []}
     if source_metadata:
         report["source_workload"] = source_metadata
-        report["stock_error_prone_checks"] = False
-        report["runtime_java"] = subprocess.check_output([java, "-version"], stderr=subprocess.STDOUT, text=True).strip()
+        if args.commons_lang:
+            report["stock_error_prone_checks"] = False
+            report["runtime_java"] = subprocess.check_output([java, "-version"], stderr=subprocess.STDOUT, text=True).strip()
+        else:
+            report["runtime_java"] = "Bazel remotejdk_21 via stock java_binary launcher"
     with tempfile.TemporaryDirectory(prefix="elide-incremental-") as directory:
         work = Path(directory)
         command = [bazel, "--output_base=" + str(work / "cache")]
         module = (REPO / "benchmarks/MODULE.bazel").read_text().replace('path = ".."', 'path = ' + json.dumps(str(REPO)))
+        if args.kotlin_builder:
+            module += '\nregister_toolchains("//:stock_kotlin")\n'
+            root_module = (REPO / "MODULE.bazel").read_text()
+            report["protocol_rule_versions"] = dict(re.findall(r'bazel_dep\(name = "(protobuf|rules_proto)", version = "([^"]+)"', root_module))
+            module += "\n" + "\n".join(re.findall(r'^bazel_dep\(name = "(?:rules_proto|protobuf)"[^\n]+', root_module, re.M)) + "\n"
         (work / "MODULE.bazel").write_text(module)
         (work / ".bazelversion").write_text((REPO / ".bazelversion").read_text())
         common = ["--disk_cache=", "--remote_cache=", "--remote_executor=", "--jobs=4",
@@ -266,13 +287,13 @@ def main():
                     # and warm-ups remain untimed, so measured builds stay warm.
                     run(["shutdown"], output / "shutdown.log")
                     run(["clean"], output / "clean.log")
-                    for package in ("core", "spare", "facade", "clients", "app"):
+                    for package in ("core", "spare", "facade", "clients", "app", "protocol"):
                         shutil.rmtree(work / package, ignore_errors=True)
-                    sources = fixture(work, language, mode, args.sources, args.fanout)
+                    sources = fixture(work, language, mode, 3 if production is not None else args.sources, args.fanout)
                     if production is not None:
-                        sources = commons_lang_fixture.install(work, sources, production, args.fanout)
+                        sources = workload.install(work, sources, production, args.fanout)
                     flags = list(common)
-                    if production is not None and mode == "vanilla":
+                    if args.commons_lang and mode == "vanilla":
                         # Upstream builds with javac, without Bazel's extra Error Prone policy.
                         flags.append("--javacopt=-XepDisableAllChecks")
                     if mode == "vanilla_abi":
@@ -286,14 +307,15 @@ def main():
                     if mode == "elide_incremental":
                         flags += ["--@rules_elide//config/kotlinc:incremental=true"]
                     targets = ["//core", "//spare", "//facade", "//app", *[f"//clients:client{i}" for i in range(args.fanout)]]
+                    build_targets = targets + (["//app:verify"] if args.kotlin_builder else [])
                     for scenario in args.scenarios:
                         row = {"language": language, "mode": mode, "scenario": scenario, "samples": []}
                         for index in range(args.warmups + args.rounds):
                             for path, contents in sources.items():
                                 path.write_text(contents)
-                            run(["build", *targets, *flags], output / "prepare.log")
+                            run(["build", *build_targets, *flags], output / "prepare.log")
                             if production is not None:
-                                commons_lang_fixture.mutate(sources, scenario, index + 1)
+                                workload.mutate(sources, scenario, index + 1)
                             else:
                                 mutate(sources, scenario, language, index + 1)
                             if scenario == "clean":
@@ -303,10 +325,10 @@ def main():
                             profile = output / (stem + ".profile.json.gz")
                             profile_flags = ["--profile=" + str(profile), "--generate_json_trace_profile", "--experimental_profile_include_target_label", "--experimental_collect_worker_data_in_profiler"] if args.profiles else []
                             start = time.perf_counter()
-                            run(["build", *targets, *flags, "--execution_log_json_file=" + str(execution), *profile_flags], output / (stem + ".log"))
+                            run(["build", *build_targets, *flags, "--execution_log_json_file=" + str(execution), *profile_flags], output / (stem + ".log"))
                             elapsed = time.perf_counter() - start
                             if production is not None:
-                                commons_lang_fixture.verify(work, args.fanout, mode, java, output / (stem + ".runtime.log"))
+                                workload.verify(work, args.fanout, mode, java, output / (stem + ".runtime.log"))
                             actions = list(json_entries(execution))
                             compiled = sorted({entry["targetLabel"] for entry in actions if entry.get("mnemonic") in COMPILERS})
                             if scenario == "clean":
@@ -317,7 +339,9 @@ def main():
                                 raise AssertionError(f"No-op recompiled targets: {compiled}")
                             if scenario != "no_op" and not compiled:
                                 raise AssertionError(f"Edit compiled no targets: {stem}")
-                            if production is not None and mode != "elide" and scenario in ("body", "private_member", "multi_file_body") and compiled != ["//core:core"]:
+                            if production is not None and mode not in ("elide", "vanilla") and scenario in ("body", "private_member", "multi_file_body") and compiled != ["//core:core"]:
+                                raise AssertionError(f"Implementation edit escaped the library ABI boundary: {compiled}")
+                            if args.commons_lang and mode == "vanilla" and scenario in ("body", "private_member", "multi_file_body") and compiled != ["//core:core"]:
                                 raise AssertionError(f"Implementation edit escaped the library ABI boundary: {compiled}")
                             if index >= args.warmups:
                                 row["samples"].append({"seconds": elapsed, "compile_targets": compiled,

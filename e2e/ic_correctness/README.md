@@ -43,3 +43,22 @@ ELIDE=/path/to/elide ./wl1113_regression.sh
 ```
 
 Fixed in `elide 1.3.3+15c568841`; this guard turns red if it regresses.
+
+## `output_recreation.py` — IC cache survives, output directory does not
+
+The native Bazel rule declares a classes tree as its output. Bazel clears that
+tree before rerunning the action, while the separate IC cache can survive.
+This guard compiles two independent classes, edits one source, recreates the
+output directory, and compares every output byte against a fresh-cache compile.
+
+```sh
+python3 e2e/ic_correctness/output_recreation.py --elide /path/to/elide
+```
+
+**Known failure with Elide 1.6.2:** the unchanged `B.class` is missing. The
+production KotlinBuilder benchmark also fails its runtime assertion in
+`elide_incremental` mode after a body edit (`NoClassDefFoundError: Router`).
+The earlier `run.sh` preserves both cache and outputs, so its passing results
+do not cover this Bazel lifecycle. This standalone regression is not yet a
+passing CI gate. Do not enable native Kotlin IC for production builds until
+complete outputs are restored or regenerated on every action invocation.

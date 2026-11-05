@@ -13,6 +13,9 @@ package(default_visibility = ["//visibility:public"])
 # across persistent-worker requests when unsandboxed, and degrades to a correct
 # cold compile under `--worker_sandboxing`/remote execution (where it cannot
 # persist). javac is unaffected (no IC support upstream). Experimental.
+# Known Elide 1.6.2 correctness gap: Bazel clears declared classes outputs while
+# the IC cache survives, so unchanged classes can be omitted after an edit.
+# Do not enable for production; see e2e/ic_correctness/output_recreation.py.
 bool_flag(
     name = "incremental",
     build_setting_default = False,

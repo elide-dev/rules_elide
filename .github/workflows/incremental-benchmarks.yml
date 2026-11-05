@@ -4,9 +4,9 @@ on:
   workflow_dispatch:
     inputs:
       workload:
-        description: Source workload (Commons Lang always runs Java)
+        description: Source workload (production fixtures select their language)
         type: choice
-        options: [generated, commons-lang]
+        options: [generated, commons-lang, kotlin-builder]
         default: generated
       profiles:
         description: Retain traces and sampled memory/critical-path metrics
@@ -78,6 +78,8 @@ jobs:
           if [[ "$PROFILES" == true ]]; then args+=(--profiles); fi
           if [[ "$WORKLOAD" == commons-lang ]]; then
             args+=(--languages java --commons-lang .benchmark-sources/commons-lang)
+          elif [[ "$WORKLOAD" == kotlin-builder ]]; then
+            args+=(--languages kotlin --kotlin-builder)
           elif [[ "$LANGUAGE" != both ]]; then
             args+=(--languages "$LANGUAGE")
           fi

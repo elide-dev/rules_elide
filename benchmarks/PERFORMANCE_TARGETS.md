@@ -12,7 +12,7 @@ needed; it is not a claim that every workload is already faster.
 | Internal/public API edits | Pruning reduced propagation; several Kotlin API-edit cases still lost to vanilla | Reduce compiler/worker overhead and test per-target early versus combined headers |
 | No-op builds | Small differences sit near the measurement floor | Measure Bazel analysis overhead separately from compiler work |
 | Memory and worker startup | Combined emission removes a separate compiler action and worker pool | Optional traces now record sampled worker memory and critical paths; measure true peak RSS and cold/warm startup next |
-| Incremental compiler state | Opt-in Kotlin IC was slower than ABI-only on the small graph | Larger targets, deleted/renamed files, cache lifetime, and packing cost |
+| Incremental compiler state | Production Kotlin runtime check fails after a body edit: unchanged classes disappear when Bazel recreates the output tree with Elide 1.6.2 | Fix output restoration before performance comparisons; cover deleted/renamed files, cache lifetime, and packing cost |
 | Remote execution and caching | RBE and cache correctness checks pass; JVM compiler inputs now omit LLVM and native-linking static libraries | Measure transfer/cache-hit latency with the smaller input set; execute combined-emission correctness tests remotely |
 | Correctness | Header digests, rebuild boundaries, runtime output, constants, inline code, and resource edits have checks | Broader language constructs, processors/plugins, mixed sources, and cache restoration |
 | Feature coverage and usability | Native rules, KotlinBuilder adapter, JVM tools, documentation, and Python wiring exist; stock Java consumers now inherit Kotlin stdlib | Per-target ABI selection is available; measure mixed strategies and maintain an explicit compatibility matrix |
@@ -28,8 +28,9 @@ supports changing defaults.
 
 Use real library and application code to guide optimization and default changes.
 The [Commons Lang fixture](INCREMENTAL.md#production-java-sources) compiles a real
-library with generated consumers; a real multi-module Kotlin/application workload
-is still needed. Generated graphs isolate invalidation behavior but do not establish
+library with generated consumers. The [KotlinBuilder fixture](INCREMENTAL.md#production-kotlin-sources)
+adds a real Kotlin module and protocol dependencies; real application graphs
+and additional projects are still needed. Generated graphs isolate invalidation behavior but do not establish
 application-wide performance. Very large targets containing trivial generated
 classes are stress diagnostics only. Their throughput or memory results must not
 drive compiler heap/cache defaults without confirmation on representative code.

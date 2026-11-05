@@ -101,10 +101,12 @@ must be selected explicitly with `--modes`.
    sources, compiler plugins, processors, and friends only after proving header
    completeness and downstream runtime behavior. Test cache hits and remote
    execution as well as local workers.
-3. **Incremental packaging.** Measure the cost of the classes-directory packing
-   action before pursuing direct jar output or combined packaging. The current
-   per-target IC path was slower on the 20-source benchmark; larger targets and
-   correctness after deleted/renamed sources need dedicated measurements.
+3. **Incremental output correctness.** Native IC with Elide 1.6.2 can omit
+   unchanged classes after Bazel recreates its declared output tree while the
+   IC cache survives. Do not enable it for production builds. The
+   [output-recreation regression](../e2e/ic_correctness/README.md) and production
+   Kotlin benchmark expose this failure. Restore complete outputs before
+   measuring packaging cost or optimizing deleted/renamed-source rebuilds.
 4. **Worker and classpath overhead.** Profile worker counts, memory, classpath
    hashing, and analysis cost on large graphs. Java header compilation currently
    does not use the full compiler's opt-in classpath cache; verify upstream support
