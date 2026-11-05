@@ -68,6 +68,7 @@ jobs:
       # real compile work.)
       - uses: bazel-contrib/setup-bazel@104e3eea9447cdaa4b00d0fb46191a3985d26ab3  # 0.19.1
         with:
+          bazelisk-version: 1.30.0
           bazelisk-cache: false
           disk-cache: false
           repository-cache: false
@@ -94,8 +95,9 @@ jobs:
         # The dedicated runner persists between jobs. Expunge only the Bazel
         # state selected by these two benchmark workspaces, never the home tree.
         run: |
+          bazel_bin="${BAZELISK:-$(command -v bazelisk || command -v bazel)}"
           for project in e2e/vanilla e2e/integration; do
-            (cd "$project" && bazel clean --expunge)
+            (cd "$project" && "$bazel_bin" clean --expunge)
           done
           df -h .
 

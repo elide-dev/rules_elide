@@ -28,7 +28,8 @@ retain the separate header action. Without ABI avoidance the setting has no effe
 
 Compare `elide_abi` against `elide_fused`, and `elide_pruned` against
 `elide_fused_pruned`, using the [matrix runner](../benchmarks/INCREMENTAL.md).
-Its action counts establish rebuild scope; timings require an otherwise idle
+The [hosted comparison](../benchmarks/FUSED_ABI_RESULTS.md) records improvements
+and remaining slower cases. Its action counts establish rebuild scope; timings require an otherwise idle
 machine and repeated samples. Keep cold builds and warm edits as separate metrics.
 
 ## Remaining rule-side work

@@ -42,7 +42,9 @@ not imply Java JPMS enforcement or that Bazel will automatically hide transitive
 classpath changes. The action logs reveal how far changes actually propagate.
 
 [Recorded results](INCREMENTAL_RESULTS.md) include all 99 cases and the slower paths,
-with structured sample data retained in the repository.
+with structured sample data retained in the repository. A subsequent
+[combined ABI comparison](FUSED_ABI_RESULTS.md) covers all 121 cases with the new
+Kotlin modes.
 
 ## Modes
 
