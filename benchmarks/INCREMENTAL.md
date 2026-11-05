@@ -137,3 +137,46 @@ The report records whether tracked workspace changes were present. Local experim
 with uncommitted changes must not be attributed solely to the recorded HEAD commit.
 Earlier comparisons used stock Kotlin defaults; the new `vanilla_abi` mode is needed
 before claiming superiority over stock Kotlin's optional ABI configuration.
+
+## Production Java sources
+
+Use a local [Apache Commons Lang](https://github.com/apache/commons-lang) checkout
+for a real library compilation workload:
+
+```sh
+python3 benchmarks/incremental_matrix.py --languages java \
+  --commons-lang /path/to/commons-lang --modes vanilla elide_abi elide_fused \
+  --rounds 5 --output /tmp/commons-lang-comparison
+```
+
+The harness snapshots `src/main/java` into its temporary workspace without
+modifying the checkout. It records the source revision, checkout dirty status,
+source count, and a digest of the exact source paths and contents. Maven configuration
+and tests are not copied. Stock Bazel's extra Error Prone checks are disabled
+for this fixture (`--javacopt=-XepDisableAllChecks`): the upstream sources compile
+with javac but trigger those additional checks. Elide does not run Error Prone.
+This comparison therefore does not measure static-analysis feature parity. Java 21 or newer must be on PATH for runtime assertions;
+the runtime version is recorded separately from the Bazel compilation toolchain.
+The `--sources` parameter applies only to generated fixtures and does not resize
+Commons Lang.
+
+This replaces the generated Core target with the whole production library;
+Facade, clients, and App remain generated consumers. It represents a real Java
+library behind a small consumer graph, not a real application's full build.
+Supported edits are `no_op`, `comment`, `body`, `private_member`,
+`internal_module_api`, `public_module_api`, and `multi_file_body`. The body edit
+changes `StringUtils.isEmpty` from a length comparison to `CharSequence.isEmpty`.
+The multi-file edit also rewrites equivalent predicates in `CharUtils` and
+`BooleanUtils`. API/private edits add a method. Unique comments distinguish
+repeated body edits in the action cache without changing their behavior.
+Unexpected source shapes fail the benchmark rather than silently timing a no-op.
+
+Every measured build is followed by an untimed runtime assertion through the
+consumer graph. ABI-enabled modes must compile only Core for implementation,
+private-member, and multi-file body edits. This is a smoke check, not the upstream
+Commons Lang test suite or a complete language-compatibility check.
+
+The workflow's `workload=commons-lang` option checks out Apache Commons Lang at
+`67cbf817b6af58fc168d26774186e889bb9efe50`, selects Java, and runs all six Java modes
+and seven supported edit classes. `language` and `sources` affect only the
+`generated` workload. The production checkout is isolated from the rules checkout.

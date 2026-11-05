@@ -3,6 +3,11 @@ name: Incremental benchmarks
 on:
   workflow_dispatch:
     inputs:
+      workload:
+        description: Source workload (Commons Lang always runs Java)
+        type: choice
+        options: [generated, commons-lang]
+        default: generated
       profiles:
         description: Retain traces and sampled memory/critical-path metrics
         type: boolean
@@ -40,6 +45,20 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
+      - name: Check out production library sources
+        if: inputs.workload == 'commons-lang'
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: apache/commons-lang
+          ref: 67cbf817b6af58fc168d26774186e889bb9efe50
+          path: .benchmark-sources/commons-lang
+          persist-credentials: false
+      - name: Install runtime for consumer assertions
+        if: inputs.workload == 'commons-lang'
+        uses: actions/setup-java@b843ebf9b913146b38da2eaa7aeddf76074ae1ad # v6.1.0
+        with:
+          distribution: temurin
+          java-version: "21"
       - uses: bazel-contrib/setup-bazel@104e3eea9447cdaa4b00d0fb46191a3985d26ab3 # 0.19.1
         with:
           bazelisk-cache: true
@@ -49,6 +68,7 @@ jobs:
         run: python3 -m unittest discover -s benchmarks -p "*_test.py"
       - name: Measure incremental edits and action propagation
         env:
+          WORKLOAD: ${{ inputs.workload }}
           PROFILES: ${{ inputs.profiles }}
           LANGUAGE: ${{ inputs.language }}
           SOURCES: ${{ inputs.sources }}
@@ -56,7 +76,11 @@ jobs:
         run: |
           args=()
           if [[ "$PROFILES" == true ]]; then args+=(--profiles); fi
-          if [[ "$LANGUAGE" != both ]]; then args+=(--languages "$LANGUAGE"); fi
+          if [[ "$WORKLOAD" == commons-lang ]]; then
+            args+=(--languages java --commons-lang .benchmark-sources/commons-lang)
+          elif [[ "$LANGUAGE" != both ]]; then
+            args+=(--languages "$LANGUAGE")
+          fi
           python3 benchmarks/incremental_matrix.py --sources "$SOURCES" --rounds "$ROUNDS" "${args[@]}"
       - name: Preserve timings and execution logs
         if: always()

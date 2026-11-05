@@ -14,6 +14,8 @@ import subprocess
 import tempfile
 import time
 
+import commons_lang_fixture
+
 REPO = Path(__file__).resolve().parents[1]
 SCENARIOS = (
     "no_op", "comment", "body", "private_member", "internal_module_api",
@@ -156,6 +158,11 @@ def render(report):
              "Warm-ups are discarded. Counts include full source compiler actions only; ABI/header actions are reported separately.", "",
              "| Language | Mode | Edit | Mean (s) | Median (s) | Stddev (s) | Full compile targets per sample |",
              "| --- | --- | --- | ---: | ---: | ---: | --- |"]
+    if "source_workload" in report:
+        workload = report["source_workload"]
+        lines[4:4] = [f"Production sources: {workload['project']} at `{workload['revision']}`; {workload['source_files']} Java files.",
+                      f"Source SHA-256: `{workload['source_sha256']}`; checkout dirty: `{workload['checkout_dirty']}`.",
+                      "The downstream consumer graph is generated. Runtime assertions run outside build timing.", ""]
     for row in report["results"]:
         times = [sample["seconds"] for sample in row["samples"]]
         patterns = sorted({", ".join(sample["compile_targets"]) or "none" for sample in row["samples"]})
@@ -181,6 +188,7 @@ def render(report):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--commons-lang", type=Path, help="Benchmark a local Commons Lang source checkout in an isolated copy (Java only)")
     parser.add_argument("--profiles", action="store_true", help="Retain Bazel traces and summarize critical-path and sampled memory counters")
     parser.add_argument("--sources", type=positive, default=20)
     parser.add_argument("--fanout", type=positive, default=3)
@@ -188,10 +196,26 @@ def main():
     parser.add_argument("--warmups", type=positive, default=1)
     parser.add_argument("--languages", nargs="+", choices=["java", "kotlin"], default=["java", "kotlin"])
     parser.add_argument("--modes", nargs="+", choices=MODES, default=list(MODES))
-    parser.add_argument("--scenarios", nargs="+", choices=SCENARIOS, default=list(SCENARIOS))
+    parser.add_argument("--scenarios", nargs="+", choices=SCENARIOS, default=None)
     parser.add_argument("--output", type=Path, default=REPO / "benchmarks/results/incremental")
     parser.add_argument("--distdir", action="append", default=[])
     args = parser.parse_args()
+    production = None
+    source_metadata = None
+    java = None
+    if args.commons_lang:
+        if args.languages != ["java"]:
+            parser.error("--commons-lang requires --languages java")
+        if args.scenarios and set(args.scenarios) - set(commons_lang_fixture.SCENARIOS):
+            parser.error("Commons Lang supports: " + ", ".join(commons_lang_fixture.SCENARIOS))
+        java = shutil.which("java")
+        if not java:
+            parser.error("Commons Lang runtime checks require java (JDK 21+) on PATH")
+        production, source_metadata = commons_lang_fixture.snapshot(args.commons_lang)
+        args.commons_lang = str(args.commons_lang.resolve())
+        args.scenarios = args.scenarios or list(commons_lang_fixture.SCENARIOS)
+    else:
+        args.scenarios = args.scenarios or list(SCENARIOS)
     if args.sources < 3:
         parser.error("--sources must be at least 3 for multi-file edits")
     output = args.output.resolve()
@@ -207,6 +231,10 @@ def main():
               "jvm_rule_versions": dict(re.findall(r'bazel_dep\(name = "(rules_java|rules_kotlin)", version = "([^"]+)"', (REPO / "benchmarks/MODULE.bazel").read_text())),
               "isolated_mode_servers": True,
               "parameters": vars(args) | {"output": str(output)}, "results": []}
+    if source_metadata:
+        report["source_workload"] = source_metadata
+        report["stock_error_prone_checks"] = False
+        report["runtime_java"] = subprocess.check_output([java, "-version"], stderr=subprocess.STDOUT, text=True).strip()
     with tempfile.TemporaryDirectory(prefix="elide-incremental-") as directory:
         work = Path(directory)
         command = [bazel, "--output_base=" + str(work / "cache")]
@@ -237,7 +265,12 @@ def main():
                     for package in ("core", "spare", "facade", "clients", "app"):
                         shutil.rmtree(work / package, ignore_errors=True)
                     sources = fixture(work, language, mode, args.sources, args.fanout)
+                    if production is not None:
+                        sources = commons_lang_fixture.install(work, sources, production, args.fanout)
                     flags = list(common)
+                    if production is not None and mode == "vanilla":
+                        # Upstream builds with javac, without Bazel's extra Error Prone policy.
+                        flags.append("--javacopt=-XepDisableAllChecks")
                     if mode == "vanilla_abi":
                         flags.append("--define=experimental_use_abi_jars=1")
                     if mode in ("elide_abi", "elide_pruned", "elide_incremental", "elide_fused", "elide_fused_pruned"):
@@ -255,7 +288,10 @@ def main():
                             for path, contents in sources.items():
                                 path.write_text(contents)
                             run(["build", *targets, *flags], output / "prepare.log")
-                            mutate(sources, scenario, language, index + 1)
+                            if production is not None:
+                                commons_lang_fixture.mutate(sources, scenario, index + 1)
+                            else:
+                                mutate(sources, scenario, language, index + 1)
                             stem = f"{language}-{mode}-{scenario}-{index}"
                             execution = output / (stem + ".json")
                             profile = output / (stem + ".profile.json.gz")
@@ -263,12 +299,16 @@ def main():
                             start = time.perf_counter()
                             run(["build", *targets, *flags, "--execution_log_json_file=" + str(execution), *profile_flags], output / (stem + ".log"))
                             elapsed = time.perf_counter() - start
+                            if production is not None:
+                                commons_lang_fixture.verify(work, args.fanout, mode, java, output / (stem + ".runtime.log"))
                             actions = list(json_entries(execution))
                             compiled = sorted({entry["targetLabel"] for entry in actions if entry.get("mnemonic") in COMPILERS})
                             if scenario == "no_op" and compiled:
                                 raise AssertionError(f"No-op recompiled targets: {compiled}")
                             if scenario != "no_op" and not compiled:
                                 raise AssertionError(f"Edit compiled no targets: {stem}")
+                            if production is not None and mode != "elide" and scenario in ("body", "private_member", "multi_file_body") and compiled != ["//core:core"]:
+                                raise AssertionError(f"Implementation edit escaped the library ABI boundary: {compiled}")
                             if index >= args.warmups:
                                 row["samples"].append({"seconds": elapsed, "compile_targets": compiled,
                                                        "abi_targets": sorted({e["targetLabel"] for e in actions if e.get("mnemonic") in {"Turbine", "TurbineDirect", "ElideJavacAbi", "ElideKotlincAbi"}}),
