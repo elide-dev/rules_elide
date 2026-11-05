@@ -65,4 +65,7 @@ by retaining classes and cache in worker-private scratch and publishing a comple
 jar per request. `e2e/integration/verify_incremental.py` checks body edits, class and
 source deletion, new sources, compiler failures, dependency constants, compiler
 options, and cold-worker equivalence with ordinary/sandboxed workers and one-shot
-execution. That integration guard runs in the JVM verification suite.
+execution. It also verifies an action-cache restoration followed by a new edit
+without resetting the worker; restored outputs must not confuse private IC state.
+Execution logs establish that the restore actually hit the cache and that the
+following edit actually compiled. That guard runs in the JVM verification suite.

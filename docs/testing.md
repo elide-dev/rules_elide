@@ -90,3 +90,8 @@ with persistent workers, sandboxed workers, and one-shot execution. The standalo
 `e2e/ic_correctness/output_recreation.py` intentionally remains a failing guard
 against the underlying Elide 1.6.2 behavior; native rules use the adapter to avoid
 that output/cache lifecycle.
+
+The IC integration guard also restores an older jar from Bazel's disk action
+cache while the worker retains newer private state, then edits again. Execution
+logs must prove the cache hit and subsequent compiler execution; runtime results,
+deleted nested classes, and cold-build equivalence must still match.

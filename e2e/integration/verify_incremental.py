@@ -44,12 +44,25 @@ elide_kotlin_binary(name="app", srcs=["Main.kt"], deps=[":core"], main_class="Ma
             subprocess.run(command + ["shutdown"], cwd=work, check=True)
             subprocess.run(command + ["clean"], cwd=work, check=True)
 
-            def build(expected=None, fails=False):
-                result = subprocess.run(command + ["build", ":app", *flags], cwd=work)
+            def build(expected=None, fails=False, cached=False):
+                extra = ["--disk_cache=" + str(work / f"action-cache-{workers}-{sandboxed}")] if cached else []
+                result = subprocess.run(command + ["build", ":app", *flags, *extra,
+                                                  "--execution_log_json_file=" + str(work / "execution.json")], cwd=work)
                 assert (result.returncode != 0) == fails, (workers, sandboxed, result.returncode)
                 if not fails:
                     actual = subprocess.check_output([str(work / "bazel-bin/app_launcher.sh")], cwd=work, text=True).strip()
                     assert actual == str(expected), (workers, sandboxed, actual, expected)
+
+            def core_actions():
+                decoder = json.JSONDecoder()
+                text = (work / "execution.json").read_text()
+                actions = []
+                while text.strip():
+                    entry, end = decoder.raw_decode(text.lstrip())
+                    text = text.lstrip()[end:]
+                    if entry.get("mnemonic") == "ElideKotlinc" and entry.get("targetLabel") == "//:core":
+                        actions.append(entry)
+                return actions
 
             (work / "src/A.kt").write_text("object A { fun value() = 1 + Dep.OFFSET; class Removed }\n")
             (work / "src/B.kt").write_text("object B { fun value() = 2 }\n")
@@ -77,10 +90,29 @@ elide_kotlin_binary(name="app", srcs=["Main.kt"], deps=[":core"], main_class="Ma
             build(28)
             assert "META-INF/probe.kotlin_module" not in contents(), "Old compiler-option output survived"
             assert "META-INF/probe_changed.kotlin_module" in contents()
+            # A cache hit changes Bazel outputs without notifying the resident IC
+            # worker. Its next compile must use its own last successful state.
+            cached_source = "object A { fun value() = 40 + Dep.OFFSET; class CachedOnly }\n"
+            (work / "src/A.kt").write_text(cached_source)
+            build(48, cached=True)
+            cached_output = contents()
+            (work / "src/A.kt").write_text("object A { fun value() = 50 + Dep.OFFSET; class WorkerOnly }\n")
+            build(58, cached=True)
+            assert "A$WorkerOnly.class" in contents()
+            (work / "src/A.kt").write_text(cached_source)
+            build(48, cached=True)
+            actions = core_actions()
+            assert len(actions) == 1 and actions[0].get("cacheHit"), "Core output was not restored from the action cache"
+            assert contents() == cached_output, "Cache restoration changed class output"
+            (work / "src/A.kt").write_text("object A { fun value() = 60 + Dep.OFFSET }\n")
+            build(68, cached=True)
+            actions = core_actions()
+            assert len(actions) == 1 and not actions[0].get("cacheHit"), "Post-cache edit did not execute the compiler"
+            assert "A$CachedOnly.class" not in contents() and "A$WorkerOnly.class" not in contents()
             warm = contents()
             subprocess.run(command + ["shutdown"], cwd=work, check=True)
             subprocess.run(command + ["clean"], cwd=work, check=True)
-            build(28)
+            build(68)
             assert contents() == warm, "Warm IC output differs from cold worker output"
             (work / "src/C.kt").unlink()
             print(f"Native IC complete output: workers={workers}, sandboxed={sandboxed}", flush=True)
