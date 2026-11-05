@@ -2,6 +2,7 @@
 """Measure edit propagation through a generated core -> facade -> clients -> app graph."""
 import argparse
 import gzip
+import hashlib
 from collections import Counter
 import json
 import os
@@ -19,7 +20,7 @@ import kotlin_builder_fixture
 
 REPO = Path(__file__).resolve().parents[1]
 SCENARIOS = (
-    "clean", "no_op", "comment", "body", "private_member", "internal_module_api",
+    "clean", "full_rebuild", "no_op", "comment", "body", "private_member", "internal_module_api",
     "public_module_api", "multi_file_body", "multi_module_body",
     "multi_module_api", "unused_dependency_api", "inline_or_constant",
 )
@@ -164,6 +165,8 @@ def render(report):
              "Warm-ups are discarded. Counts include full source compiler actions only; ABI/header actions are reported separately.", "",
              "| Language | Mode | Edit | Mean (s) | Median (s) | Stddev (s) | Full compile targets per sample |",
              "| --- | --- | --- | ---: | ---: | ---: | --- |"]
+    lines[4:4] = [f"Elide: `{report['elide_version']}`; binary SHA-256: `{report.get('elide_binary_sha256', 'downloaded toolchain')}`.",
+                  f"Fresh Bazel server per timed sample: `{report['parameters'].get('cold_server', False)}`; downloads and filesystem caches warm.", ""]
     if "source_workload" in report:
         workload = report["source_workload"]
         lines[4:4] = [f"Production sources: {workload['project']} at `{workload['revision']}`; {workload['source_files']} source files.",
@@ -207,6 +210,8 @@ def main():
     parser.add_argument("--scenarios", nargs="+", choices=SCENARIOS, default=None)
     parser.add_argument("--output", type=Path, default=REPO / "benchmarks/results/incremental")
     parser.add_argument("--distdir", action="append", default=[])
+    parser.add_argument("--elide-local-path", help="Existing distribution root (snapshot it before benchmarking)")
+    parser.add_argument("--cold-server", action="store_true", help="Shut down Bazel before each timed build; preserves disk outputs and downloads")
     args = parser.parse_args()
     production = None
     source_metadata = None
@@ -216,8 +221,8 @@ def main():
         workload = commons_lang_fixture
         if args.languages != ["java"]:
             parser.error("--commons-lang requires --languages java")
-        if args.scenarios and set(args.scenarios) - set(commons_lang_fixture.SCENARIOS):
-            parser.error("Commons Lang supports: " + ", ".join(commons_lang_fixture.SCENARIOS))
+        if args.scenarios and set(args.scenarios) - (set(commons_lang_fixture.SCENARIOS) | {"full_rebuild"}):
+            parser.error("Commons Lang supports: " + ", ".join((*commons_lang_fixture.SCENARIOS, "full_rebuild")))
         java = shutil.which("java")
         if not java:
             parser.error("Commons Lang runtime checks require java (JDK 21+) on PATH")
@@ -228,12 +233,14 @@ def main():
         workload = kotlin_builder_fixture
         if args.languages != ["kotlin"]:
             parser.error("--kotlin-builder requires --languages kotlin")
-        if args.scenarios and set(args.scenarios) - set(workload.SCENARIOS):
-            parser.error("KotlinBuilder supports: " + ", ".join(workload.SCENARIOS))
+        if args.scenarios and set(args.scenarios) - (set(workload.SCENARIOS) | {"full_rebuild"}):
+            parser.error("KotlinBuilder supports: " + ", ".join((*workload.SCENARIOS, "full_rebuild")))
         production, source_metadata = workload.snapshot(REPO)
         args.scenarios = args.scenarios or list(workload.SCENARIOS)
     else:
-        args.scenarios = args.scenarios or list(SCENARIOS)
+        args.scenarios = args.scenarios or [s for s in SCENARIOS if s != "full_rebuild"]
+    if "full_rebuild" in args.scenarios and any(mode in args.modes for mode in ("elide_incremental", "elide_selective")):
+        parser.error("full_rebuild measures full compilation; choose modes without native incremental compilation")
     if production is None and args.sources < 3:
         parser.error("--sources must be at least 3 for multi-file edits")
     output = args.output.resolve()
@@ -250,6 +257,19 @@ def main():
               "isolated_mode_servers": True,
               "java_release": 21,
               "parameters": vars(args) | {"output": str(output)}, "results": []}
+    report["cache_conditions"] = {
+        "downloads_and_filesystem": "warm",
+        "timed_server": "fresh" if args.cold_server else "warm",
+        "clean": "outputs removed; fresh compiler workers",
+        "edits": "disk outputs retained; compiler state lost" if args.cold_server else "disk outputs and compiler workers retained",
+        "full_rebuild": "comment appended to every Java/Kotlin source; no native IC; workers retained unless cold-server",
+    }
+    if args.elide_local_path:
+        distribution = Path(args.elide_local_path).resolve()
+        binary = distribution / "bin/elide"
+        report["elide_version"] = subprocess.check_output([str(binary), "--version"], text=True).strip()
+        report["elide_binary_sha256"] = hashlib.sha256(binary.read_bytes()).hexdigest()
+        args.elide_local_path = str(distribution)
     if source_metadata:
         report["source_workload"] = source_metadata
         if args.commons_lang:
@@ -261,6 +281,8 @@ def main():
         work = Path(directory)
         command = [bazel, "--output_base=" + str(work / "cache")]
         module = (REPO / "benchmarks/MODULE.bazel").read_text().replace('path = ".."', 'path = ' + json.dumps(str(REPO)))
+        if args.elide_local_path:
+            module = re.sub(r"elide\.install\([^)]*\)", lambda _: "elide.use(local_path = " + json.dumps(args.elide_local_path) + ")", module)
         if args.kotlin_builder:
             module += '\nregister_toolchains("//:stock_kotlin")\n'
             root_module = (REPO / "MODULE.bazel").read_text()
@@ -321,12 +343,18 @@ def main():
                             for path, contents in sources.items():
                                 path.write_text(contents)
                             run(["build", *build_targets, *flags], output / "prepare.log")
-                            if production is not None:
+                            if scenario == "full_rebuild":
+                                for path, contents in sources.items():
+                                    if path.suffix in (".java", ".kt"):
+                                        path.write_text(contents + f"\n// full rebuild {index + 1}\n")
+                            elif production is not None:
                                 workload.mutate(sources, scenario, index + 1)
                             else:
                                 mutate(sources, scenario, language, index + 1)
                             if scenario == "clean":
                                 run(["clean"], output / "clean.log")
+                            if args.cold_server:
+                                run(["shutdown"], output / "shutdown.log")
                             stem = f"{language}-{mode}-{scenario}-{index}"
                             execution = output / (stem + ".json")
                             profile = output / (stem + ".profile.json.gz")
@@ -338,10 +366,10 @@ def main():
                                 workload.verify(work, args.fanout, mode, java, output / (stem + ".runtime.log"))
                             actions = list(json_entries(execution))
                             compiled = sorted({entry["targetLabel"] for entry in actions if entry.get("mnemonic") in COMPILERS})
-                            if scenario == "clean":
+                            if scenario in ("clean", "full_rebuild"):
                                 expected = {t if ":" in t else t + ":" + t.rsplit("/", 1)[-1] for t in targets}
                                 if not expected.issubset(compiled):
-                                    raise AssertionError(f"Clean build skipped runtime compilers: {expected - set(compiled)}")
+                                    raise AssertionError(f"{scenario} skipped runtime compilers: {expected - set(compiled)}")
                             if scenario == "no_op" and compiled:
                                 raise AssertionError(f"No-op recompiled targets: {compiled}")
                             if scenario != "no_op" and not compiled:

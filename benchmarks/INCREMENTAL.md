@@ -47,6 +47,44 @@ with structured sample data retained in the repository. A subsequent
 [combined ABI comparison](FUSED_ABI_RESULTS.md) covers all 121 cases with the new
 Kotlin modes.
 
+## Local releases and cold/warm runs
+
+Use `--elide-local-path /absolute/path/to/distribution` to benchmark a locally
+built release. Snapshot the distribution first, outside `/tmp` (Bazel's sandbox
+can hide symlink targets there). The report records the actual binary version
+and SHA-256 instead of the repository's pinned download version.
+
+The harness distinguishes three conditions:
+
+- `clean`: removes build outputs and compiler workers with untimed `bazel clean`,
+  then times a full build with the Bazel server still running.
+- Ordinary edit scenarios: retain the Bazel server, compiler workers, disk
+  outputs, and native incremental state between baseline and measured builds.
+- `--cold-server`: shuts down Bazel immediately before each timed build. The
+  timing includes server/worker startup; edits retain disk outputs but lose
+  process-local incremental state. Combined with `clean`, this measures a full
+  build with a fresh server and fresh compiler workers.
+
+Downloads and OS filesystem caches remain warm in all three conditions. These
+are process-cold measurements, not measurements after reboot or empty downloads.
+
+For full compilation with warm workers, explicitly select `--scenarios
+full_rebuild`. This appends a comment to every Java/Kotlin source in the workload
+and asserts that every fixture runtime target recompiles. Protocol/generated
+sources and external dependencies stay built. Native incremental modes are
+rejected for this scenario, so compiler work cannot silently become an IC no-op.
+It is excluded from the default scenario list.
+
+```sh
+python3 benchmarks/incremental_matrix.py \
+  --elide-local-path /path/to/release-snapshot \
+  --kotlin-builder --languages kotlin \
+  --modes vanilla_abi elide_fused_pruned \
+  --scenarios clean full_rebuild body internal_module_api public_module_api \
+  --rounds 3 --warmups 1 --profiles --output /tmp/elide-warm
+# Repeat with --cold-server and a different output directory for process-cold results.
+```
+
 ## Modes
 
 - `vanilla`: stock `java_library` / `kt_jvm_library` with their default ABI behavior.
