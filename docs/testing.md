@@ -60,10 +60,20 @@ and Python adapter fixtures currently select Linux x86_64 explicitly.
 
 Keep this distinction when changing support claims or publishing benchmarks.
 
-The JVM integration runner also checks experimental combined Kotlin ABI emission.
-It builds and executes a two-target graph in worker and one-shot modes: body edits
+The JVM integration runner also checks experimental combined Java and Kotlin ABI emission.
+It builds and executes three-target graphs in worker and one-shot modes, with
+pruning both enabled and disabled: body edits
 preserve the header and skip the consumer, constants/inline bodies/public methods
 invalidate it, and no-op builds execute no compiler actions. Every case checks
 runtime output, including reuse of a previously compiled consumer after a body
 edit. Analysis tests cover conservative fallback for mixed sources, resources,
 plugins, exported processors, friends, and incremental compilation.
+
+The Java combined-emission graph packages a resource that the executable reads.
+A resource-only edit changes runtime output while executing no compiler actions.
+Java analysis tests cover library/binary/test providers, worker/one-shot argv,
+ignored combined emission when ABI avoidance is off, and conservative fallbacks.
+
+A separate consumer uses only Java constants or Kotlin constants/inline functions,
+leaving no runtime reference to the dependency. Its compiled output and execution
+must still update after compile-time values change, including with pruning enabled.

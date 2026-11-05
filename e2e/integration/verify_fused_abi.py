@@ -1,4 +1,4 @@
-"""Verify fused Kotlin headers, cached edit propagation, and runtime results."""
+"""Verify fused Java/Kotlin headers, cached edit propagation, and runtime results."""
 import hashlib
 import json
 from pathlib import Path
@@ -30,44 +30,75 @@ elide.install(version = "1.6.2")
 use_repo(elide, "elide_toolchains")
 register_toolchains("@elide_toolchains//:all")
 ''' % json.dumps(str(repo)))
-    (work / "BUILD.bazel").write_text('''load("@rules_elide//elide:defs.bzl", "elide_kotlin_library", "elide_kotlin_binary")
-elide_kotlin_library(name = "core", srcs = ["Core.kt"])
-elide_kotlin_binary(name = "app", srcs = ["Main.kt"], deps = [":core"], main_class = "MainKt")
-''')
-    (work / "Main.kt").write_text("fun main() { System.out.println(Core.value() + Core.MAGIC + Core.inlineValue()) }\n")
     try:
-        for workers in ("true", "false"):
-            previous = None
-            # Each row follows the previous edit. An additive public API change
-            # must invalidate the consumer even when its runtime value is unchanged.
-            cases = [("initial", 1, 2, 3, "", True),
-                     ("body", 10, 2, 3, "", False),
-                     ("constant", 10, 20, 3, "", True),
-                     ("inline", 10, 20, 30, "", True),
-                     ("signature", 10, 20, 30, "fun added(): Int = 0", True),
-                     ("no_op", 10, 20, 30, "fun added(): Int = 0", False)]
-            for name, body, constant, inline, extra, changed in cases:
-                (work / "Core.kt").write_text(f"object Core {{ fun value(): Int = {body}; const val MAGIC = {constant}; inline fun inlineValue(): Int = {inline}; {extra} }}\n")
-                log = work / f"{workers}-{name}.json"
-                subprocess.run(bazel + ["build", "//:core", "//:app", *sys.argv[1:],
-                    "--@rules_elide//config/kotlinc:abi_compile_avoidance=true",
-                    "--@rules_elide//config/kotlinc:abi_from_compile=true",
-                    "--@rules_elide//elide:use_workers=" + workers,
-                    "--java_runtime_version=remotejdk_21", "--tool_java_runtime_version=remotejdk_21",
-                    "--disk_cache=", "--remote_cache=", "--remote_executor=",
-                    "--execution_log_json_file=" + str(log)], cwd=work, check=True)
-                actions = list(entries(log))
-                assert not any(a.get("mnemonic") == "ElideKotlincAbi" for a in actions), actions
-                rebuilt = {a.get("targetLabel") for a in actions if a.get("mnemonic") == "ElideKotlinc"}
-                digest = hashlib.sha256((work / "bazel-bin/core_abi.jar").read_bytes()).digest()
-                if previous is not None:
-                    assert (digest != previous) == changed, (workers, name, "header")
-                    assert ("//:app" in rebuilt) == changed, (workers, name, rebuilt)
-                if name == "no_op":
-                    assert not rebuilt, rebuilt
-                previous = digest
-                result = subprocess.check_output([str(work / "bazel-bin/app_launcher.sh")], cwd=work, text=True).strip()
-                assert result == str(body + constant + inline), (workers, name, result)
+        for language in ("kotlin", "java"):
+            kotlin = language == "kotlin"
+            compiler = "ElideKotlinc" if kotlin else "ElideJavac"
+            config = "kotlinc" if kotlin else "javac"
+            (work / "BUILD.bazel").write_text('''load("@rules_elide//elide:defs.bzl", "elide_%s_library", "elide_%s_binary")
+elide_%s_library(name = "core", srcs = ["Core.%s"], %s)
+elide_%s_binary(name = "app", srcs = ["Main.%s"], deps = [":core"], main_class = "%s")
+''' % (language, language, language, "kt" if kotlin else "java",
+       "" if kotlin else 'resources = ["resource.txt"]', language,
+       "kt" if kotlin else "java", "MainKt" if kotlin else "Main"))
+            if kotlin:
+                (work / "Main.kt").write_text("fun main() { System.out.println(Core.value() + Core.MAGIC + Core.inlineValue()) }\n")
+            else:
+                (work / "Main.java").write_text('public class Main { public static void main(String[] args) throws Exception { System.out.println((Core.value() + Core.MAGIC + Core.other()) + ":" + Core.class.getResourceAsStream("/resource.txt").read()); } }\n')
+            # This consumer has no runtime reference to Core after inlining.
+            # Pruning must still retain its compile-time dependency on Core.
+            with (work / "BUILD.bazel").open("a") as build:
+                build.write('elide_%s_binary(name = "inlined", srcs = ["Inlined.%s"], deps = [":core"], main_class = "%s")\n' % (language, "kt" if kotlin else "java", "InlinedKt" if kotlin else "Inlined"))
+            if kotlin:
+                (work / "Inlined.kt").write_text("fun main() { System.out.println(Core.MAGIC + Core.inlineValue()) }\n")
+            else:
+                (work / "Inlined.java").write_text("public class Inlined { public static void main(String[] args) { System.out.println(Core.MAGIC); } }\n")
+            for workers, pruning in [("true", "false"), ("false", "false"), ("true", "true"), ("false", "true")]:
+                previous = None
+                resource = "A"
+                cases = [("initial", 1, 2, 3, "", True),
+                         ("body", 10, 2, 3, "", False),
+                         ("constant", 10, 20, 3, "", True),
+                         ("inline" if kotlin else "second_body", 10, 20, 30, "", kotlin),
+                         ("signature", 10, 20, 30, "fun added(): Int = 0" if kotlin else "public static int added() { return 0; }", True)]
+                cases.append(("no_op", *cases[-1][1:-1], False))
+                if not kotlin:
+                    cases.append(("resource", *cases[-1][1:-1], False))
+                for name, body, constant, inline, extra, changed in cases:
+                    if kotlin:
+                        (work / "Core.kt").write_text(f"object Core {{ fun value(): Int = {body}; const val MAGIC = {constant}; inline fun inlineValue(): Int = {inline}; {extra} }}\n")
+                    else:
+                        (work / "Core.java").write_text(f"public class Core {{ public static int value() {{ return {body}; }} public static final int MAGIC = {constant}; public static int other() {{ return {inline}; }} {extra} }}\n")
+                        if name == "resource":
+                            resource = "B"
+                        (work / "resource.txt").write_text(resource)
+                    log = work / f"{language}-{workers}-{pruning}-{name}.json"
+                    subprocess.run(bazel + ["build", "//:core", "//:app", "//:inlined", *sys.argv[1:],
+                        f"--@rules_elide//config/{config}:abi_compile_avoidance=true",
+                        f"--@rules_elide//config/{config}:abi_from_compile=true",
+                        "--@rules_elide//elide:use_workers=" + workers,
+                        "--@rules_elide//elide:prune_unused_inputs=" + pruning,
+                        "--java_runtime_version=remotejdk_21", "--tool_java_runtime_version=remotejdk_21",
+                        "--disk_cache=", "--remote_cache=", "--remote_executor=",
+                        "--execution_log_json_file=" + str(log)], cwd=work, check=True)
+                    actions = list(entries(log))
+                    assert not any(a.get("mnemonic") == compiler + "Abi" for a in actions), actions
+                    rebuilt = {a.get("targetLabel") for a in actions if a.get("mnemonic") == compiler}
+                    digest = hashlib.sha256((work / "bazel-bin/core_abi.jar").read_bytes()).digest()
+                    context = (language, workers, pruning, name)
+                    if previous is not None:
+                        assert (digest != previous) == changed, (context, "header")
+                        assert ("//:app" in rebuilt) == changed, (context, rebuilt)
+                        assert ("//:inlined" in rebuilt) == changed, (context, rebuilt)
+                    if name in ("no_op", "resource"):
+                        assert not rebuilt, (context, rebuilt)
+                    previous = digest
+                    result = subprocess.check_output([str(work / "bazel-bin/app_launcher.sh")], cwd=work, text=True).strip()
+                    expected = str(body + constant + inline) + ("" if kotlin else ":" + str(ord(resource)))
+                    assert result == expected, (context, result, expected)
+                    result = subprocess.check_output([str(work / "bazel-bin/inlined_launcher.sh")], cwd=work, text=True).strip()
+                    expected = str(constant + (inline if kotlin else 0))
+                    assert result == expected, (context, "inlined", result, expected)
     finally:
         subprocess.run(bazel + ["shutdown"], cwd=work, check=False)
-print("Fused ABI headers preserve body avoidance and propagate constants, inline bodies, and public signatures; runtime outputs match in both worker modes.")
+print("Java/Kotlin fused ABI headers, edit propagation, and runtime outputs pass in both worker modes with pruning on/off; Java resource edits preserve compile caches.")

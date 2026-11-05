@@ -29,3 +29,11 @@ bool_flag(
     name = "abi_compile_avoidance",
     build_setting_default = False,
 )
+
+# Experimental: emit the ABI alongside full compilation, saving a compiler action.
+# Requires abi_compile_avoidance. Processor/plugin and resource_jar configurations
+# retain their full-compile ijar fallback. Consumers wait for the full compile.
+bool_flag(
+    name = "abi_from_compile",
+    build_setting_default = False,
+)

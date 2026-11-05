@@ -183,6 +183,11 @@ with compiler plugins, annotation-processing options, or `resource_jars` retain
 and one-shot compilation are supported. Leave the settings off for older Elide
 versions that do not support these ABI options.
 
+Java also supports experimental combined header emission with
+`--@rules_elide//config/javac:abi_from_compile=true` alongside Java ABI avoidance.
+It declares the full jar and ABI jar as outputs of one compiler action. Processor,
+plugin, and `resource_jars` configurations retain their existing `ijar` fallback.
+
 For pure Kotlin targets, experimental
 `--@rules_elide//config/kotlinc:abi_from_compile=true` additionally emits the header
 from the full compile, saving the separate ABI compiler pass. It requires Kotlin

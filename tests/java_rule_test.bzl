@@ -118,6 +118,34 @@ _abi_fallback_test = analysistest.make(
     config_settings = {"@@//config/javac:abi_compile_avoidance": True},  # buildifier: disable=canonical-repository
 )
 
+def _fused_abi_test_impl(ctx):
+    env = analysistest.begin(ctx)
+    actions = analysistest.target_actions(env)
+    asserts.false(env, any([a.mnemonic == "ElideJavacAbi" for a in actions]))
+    compile = [a for a in actions if a.mnemonic == "ElideJavac"][0]
+    asserts.true(env, compile.argv.index("--emit-abi") < compile.argv.index("--"))
+    headers = [f for f in compile.outputs.to_list() if f.basename.endswith("_abi.jar")]
+    asserts.equals(env, 1, len(headers))
+    info = analysistest.target_under_test(env)[JavaInfo]
+    asserts.equals(env, headers, info.compile_jars.to_list())
+    asserts.false(env, any([f in headers for f in info.transitive_runtime_jars.to_list()]))
+    return analysistest.end(env)
+
+_FUSED_SETTINGS = {
+    "@@//config/javac:abi_compile_avoidance": True,  # buildifier: disable=canonical-repository
+    "@@//config/javac:abi_from_compile": True,  # buildifier: disable=canonical-repository
+}
+_fused_abi_test = analysistest.make(_fused_abi_test_impl, config_settings = _FUSED_SETTINGS)
+_fused_no_worker_test = analysistest.make(
+    _fused_abi_test_impl,
+    config_settings = dict(_FUSED_SETTINGS, **{"@@//elide:use_workers": False}),  # buildifier: disable=canonical-repository
+)
+_fused_fallback_test = analysistest.make(_abi_fallback_test_impl, config_settings = _FUSED_SETTINGS)
+_fused_disabled_test = analysistest.make(
+    _abi_fallback_test_impl,
+    config_settings = {"@@//config/javac:abi_from_compile": True},  # buildifier: disable=canonical-repository
+)
+
 def _classpath_cache_test_impl(ctx):
     env = analysistest.begin(ctx)
     actions = analysistest.target_actions(env)
@@ -261,6 +289,7 @@ def java_rule_test_suite(name):
         target_under_test = ":_test_fixture",
     )
     for kind in ["lib", "bin", "test"]:
+        _fused_abi_test(name = "java_fused_" + kind + "_test", target_under_test = ":_" + kind + "_fixture")
         _abi_test(
             name = "java_abi_" + kind + "_test",
             target_under_test = ":_" + kind + "_fixture",
@@ -295,9 +324,22 @@ def java_rule_test_suite(name):
             name = "java_abi_" + kind + "_fallback_test",
             target_under_test = ":_abi_" + kind + "_fixture",
         )
+    _fused_no_worker_test(name = "java_fused_no_worker_test", target_under_test = ":_lib_fixture")
+    _fused_disabled_test(name = "java_fused_disabled_test", target_under_test = ":_lib_fixture")
+    _fused_fallback_test(name = "java_fused_processor_fallback_test", target_under_test = ":_processor_fixture")
+    for kind in ["plugin", "resource_jar"]:
+        _fused_fallback_test(name = "java_fused_" + kind + "_fallback_test", target_under_test = ":_abi_" + kind + "_fixture")
     native.test_suite(
         name = name,
         tests = [
+            ":java_fused_lib_test",
+            ":java_fused_bin_test",
+            ":java_fused_test_test",
+            ":java_fused_no_worker_test",
+            ":java_fused_disabled_test",
+            ":java_fused_processor_fallback_test",
+            ":java_fused_plugin_fallback_test",
+            ":java_fused_resource_jar_fallback_test",
             ":java_abi_lib_test",
             ":java_abi_plugin_fallback_test",
             ":java_abi_resource_jar_fallback_test",

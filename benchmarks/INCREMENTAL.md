@@ -52,9 +52,9 @@ Kotlin modes.
 - `elide`: native Elide rules, default worker mode and flags.
 - `elide_abi`: Elide with language-specific `abi_compile_avoidance=true`.
 - `elide_pruned`: ABI mode plus dependency reporting and unused-input pruning.
-- `elide_fused`: Kotlin ABI mode with `abi_from_compile=true`; emits full and
+- `elide_fused`: language-specific ABI mode with `abi_from_compile=true`; emits full and
   header jars in one compiler action. Consumers wait for that action to finish.
-- `elide_fused_pruned`: combined emission plus unused-input pruning.
+- `elide_fused_pruned`: Java/Kotlin combined emission plus unused-input pruning.
 - `elide_incremental`: Kotlin only, ABI mode plus experimental per-target
   incremental compilation. Pruning is deliberately off because IC is an opaque
   compile path. Compiler-action counts cannot show how many files IC recompiles
@@ -92,3 +92,8 @@ Outputs default to `benchmarks/results/incremental/` (ignored by Git).
 Use a different `--output` directory to retain multiple runs. These measurements
 show recompilation behavior, not a proof of ABI soundness; runtime-result and
 cache-invalidation tests remain necessary.
+
+The workflow's `language` input selects `both`, `java`, or `kotlin`. This allows
+focused comparisons without rerunning the other language. Java now includes
+combined-emission modes; a full default run contains 143 cases and 429 measured
+samples. Earlier recorded reports retain their original mode counts.

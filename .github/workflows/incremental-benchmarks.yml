@@ -3,6 +3,11 @@ name: Incremental benchmarks
 on:
   workflow_dispatch:
     inputs:
+      language:
+        description: Language comparison to run
+        type: choice
+        options: [both, java, kotlin]
+        default: both
       sources:
         description: Sources in the core module (at least 3)
         type: number
@@ -38,9 +43,13 @@ jobs:
           repository-cache: true
       - name: Measure incremental edits and action propagation
         env:
+          LANGUAGE: ${{ inputs.language }}
           SOURCES: ${{ inputs.sources }}
           ROUNDS: ${{ inputs.rounds }}
-        run: python3 benchmarks/incremental_matrix.py --sources "$SOURCES" --rounds "$ROUNDS"
+        run: |
+          args=()
+          if [[ "$LANGUAGE" != both ]]; then args+=(--languages "$LANGUAGE"); fi
+          python3 benchmarks/incremental_matrix.py --sources "$SOURCES" --rounds "$ROUNDS" "${args[@]}"
       - name: Preserve timings and execution logs
         if: always()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2

@@ -178,7 +178,7 @@ def main():
         try:
             for language in args.languages:
                 for mode in args.modes:
-                    if language == "java" and mode in ("elide_incremental", "elide_fused", "elide_fused_pruned"):
+                    if language == "java" and mode == "elide_incremental":
                         continue
                     run(["clean"], output / "clean.log")
                     for package in ("core", "spare", "facade", "clients", "app"):
@@ -190,7 +190,7 @@ def main():
                     if mode in ("elide_pruned", "elide_fused_pruned"):
                         flags += ["--@rules_elide//elide:emit_jdeps=true", "--@rules_elide//elide:prune_unused_inputs=true"]
                     if mode in ("elide_fused", "elide_fused_pruned"):
-                        flags.append("--@rules_elide//config/kotlinc:abi_from_compile=true")
+                        flags.append(f"--@rules_elide//config/{'javac' if language == 'java' else 'kotlinc'}:abi_from_compile=true")
                     if mode == "elide_incremental":
                         flags += ["--@rules_elide//config/kotlinc:incremental=true"]
                     targets = ["//core", "//spare", "//facade", "//app", *[f"//clients:client{i}" for i in range(args.fanout)]]

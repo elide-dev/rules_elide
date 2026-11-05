@@ -250,9 +250,23 @@ def run_javac(ctx, output_jar):
     has_res = _has_packaged_resources(ctx)
     class_jar = ctx.actions.declare_file(ctx.label.name + "_classes.jar") if has_res else output_jar
 
+    # Header compilation cannot reproduce arbitrary annotation processors or
+    # classes supplied through resource_jars. Keep the full-compile ijar there.
+    processors = bool(ctx.attr.plugins) or _has_exported_processors(ctx.attr.deps)
+    processor_opts = any([
+        o.startswith(prefix)
+        for o in ctx.attr.javac_opts
+        for prefix in ["-processor", "--processor", "-proc:", "-A", "-Xplugin"]
+    ])
+    abi_avoidance = ctx.attr._java_abi_compile_avoidance[BuildSettingInfo].value and ctx.files.srcs and not processors and not processor_opts and not ctx.files.resource_jars
+    abi_jar = ctx.actions.declare_file(ctx.label.name + "_abi.jar") if abi_avoidance else None
+    fused_abi = abi_avoidance and ctx.attr._java_abi_from_compile[BuildSettingInfo].value
+
     # `elide javac --jar <class_jar> [--classpath-cache] -- -classpath <cp> <javac_opts> <srcs>`.
     javac_args = _tool_args(ctx, class_jar)
     javac_args.add("--jar", class_jar)
+    if fused_abi:
+        javac_args.add("--emit-abi", abi_jar)
     if ctx.attr._classpath_cache[BuildSettingInfo].value:
         javac_args.add("--classpath-cache")
     javac_args.add("--")
@@ -268,24 +282,14 @@ def run_javac(ctx, output_jar):
         subcommand = "javac",
         tool_args = javac_args,
         inputs = depset(direct = ctx.files.srcs, transitive = [classpath, plugin_cp, elide.compile_tool_files]),
-        outputs = [class_jar],
+        outputs = [class_jar, abi_jar] if fused_abi else [class_jar],
         progress_message = "Compiling %{label} (elide javac)",
     )
 
     if has_res:
         _merge_resources(ctx, [class_jar], output_jar)
 
-    # Header compilation cannot reproduce arbitrary annotation processors or
-    # classes supplied through resource_jars. Keep the full-compile ijar there.
-    abi_jar = None
-    processors = bool(ctx.attr.plugins) or _has_exported_processors(ctx.attr.deps)
-    processor_opts = any([
-        o.startswith(prefix)
-        for o in ctx.attr.javac_opts
-        for prefix in ["-processor", "--processor", "-proc:", "-A", "-Xplugin"]
-    ])
-    if ctx.attr._java_abi_compile_avoidance[BuildSettingInfo].value and ctx.files.srcs and not processors and not processor_opts and not ctx.files.resource_jars:
-        abi_jar = ctx.actions.declare_file(ctx.label.name + "_abi.jar")
+    if abi_avoidance and not fused_abi:
         abi_args = _tool_args(ctx, abi_jar)
         abi_args.add("--abi-only")
         abi_args.add("--jar", abi_jar)
@@ -938,6 +942,7 @@ COMMON_LIBRARY_ATTRS = {
         default = Label("//config/javac:abi_compile_avoidance"),
         providers = [BuildSettingInfo],
     ),
+    "_java_abi_from_compile": attr.label(default = Label("//config/javac:abi_from_compile"), providers = [BuildSettingInfo]),
     "_prune_unused_inputs": attr.label(
         default = Label("//elide:prune_unused_inputs"),
         providers = [BuildSettingInfo],

@@ -1,9 +1,31 @@
 # Compilation performance
 
 Use the [incremental results](../benchmarks/INCREMENTAL_RESULTS.md) to select
-optimizations for your dependency graph. The measured small graph favors Kotlin
+optimizations for your dependency graph. The [target ledger](../benchmarks/PERFORMANCE_TARGETS.md)
+tracks measured wins and remaining gaps against stock rules. The measured small graph favors Kotlin
 ABI avoidance for implementation edits; pruning limits propagation through unused
 transitive dependencies. Neither setting guarantees faster builds for every edit.
+
+## Combined Java ABI emission
+
+With Elide 1.6.2, compare the default Java rules against separate and combined
+headers on your workload:
+
+```sh
+bazel build //... \
+  --@rules_elide//config/javac:abi_compile_avoidance=true \
+  --@rules_elide//config/javac:abi_from_compile=true
+```
+
+The full `ElideJavac` action writes both jars using `--emit-abi`, eliminating the
+separate `ElideJavacAbi` action. Runtime jars retain implementations and resources;
+compile consumers use the header. Processor/plugin options and `resource_jars`
+retain the existing ijar fallback. Ordinary packaged resources are supported;
+resource-only edits do not recompile the library or its consumers.
+
+This is opt-in and requires Java ABI avoidance. Consumers wait for full
+compilation, so saving an action can trade away useful graph parallelism.
+Use the Java `elide_fused` and `elide_fused_pruned` benchmark modes to compare.
 
 ## Combined Kotlin ABI emission
 
