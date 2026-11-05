@@ -33,3 +33,9 @@ real `elide` binary, so it runs locally / on main-push CI rather than on PRs.
 The harness also checks Java `javac --abi-only --jar`: body edits preserve the
 header, constant/signature edits change it, and downstream javac accepts it.
 Use Elide 1.6.2 or later for the complete harness.
+
+Set `ABI_MODE=fused` to exercise the same Kotlin digest assertions through
+`--emit-abi` alongside full compilation. Mixed-source and Java checks still use
+separate headers. For actual Bazel action-cache and runtime checks in both worker
+modes, run `python3 ../integration/verify_fused_abi.py`; this is included in
+`tools/verify_integrations.sh jvm` on main CI.

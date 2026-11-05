@@ -59,3 +59,11 @@ and Python adapter fixtures currently select Linux x86_64 explicitly.
   separate experiments; they are not silently counted as passing CI checks.
 
 Keep this distinction when changing support claims or publishing benchmarks.
+
+The JVM integration runner also checks experimental combined Kotlin ABI emission.
+It builds and executes a two-target graph in worker and one-shot modes: body edits
+preserve the header and skip the consumer, constants/inline bodies/public methods
+invalidate it, and no-op builds execute no compiler actions. Every case checks
+runtime output, including reuse of a previously compiled consumer after a body
+edit. Analysis tests cover conservative fallback for mixed sources, resources,
+plugins, exported processors, friends, and incremental compilation.

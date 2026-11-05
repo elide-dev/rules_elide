@@ -357,10 +357,17 @@ def run_kotlinc(ctx, output_jar):
     # so it covers mixed kt+java targets as well as kt-only ones.
     abi_avoidance = ctx.attr._abi_compile_avoidance[BuildSettingInfo].value and has_kt
 
+    # Combined emission saves a compiler pass, but delays downstream compilation
+    # until code generation finishes. Keep unvalidated configurations separate.
+    fused_abi = abi_avoidance and ctx.attr._abi_from_compile[BuildSettingInfo].value
+    fused_abi = fused_abi and single_kt_only and not incremental
+    fused_abi = fused_abi and not ctx.attr.plugins and not friend_path_strs
+    fused_abi = fused_abi and not getattr(ctx.attr, "builtin_plugins", []) and not _has_exported_processors(ctx.attr.deps)
+    fused_abi = fused_abi and not any([o.startswith(p) for o in ctx.attr.kotlinc_opts for p in ["-Xplugin", "-P"]])
+
     reports = []
-    abi_jar = None
-    if abi_avoidance:
-        abi_jar = ctx.actions.declare_file(ctx.label.name + "_abi.jar")
+    abi_jar = ctx.actions.declare_file(ctx.label.name + "_abi.jar") if abi_avoidance else None
+    if abi_avoidance and not fused_abi:
         abi_args = _tool_args(ctx, abi_jar)
         abi_builtin_plugins = getattr(ctx.attr, "builtin_plugins", [])
         if abi_builtin_plugins:
@@ -422,6 +429,8 @@ def run_kotlinc(ctx, output_jar):
 
         # A directory output must be passed as a plain path (Args#add rejects
         # directory Files); a jar output is a regular File.
+        if fused_abi:
+            args.add("--emit-abi", abi_jar)
         args.add("-d", compile_out.path if incremental else compile_out)
         full_cp = depset(transitive = [classpath, plugin_cp, friend_jars])
         args.add_joined("-classpath", full_cp, join_with = sep)
@@ -448,7 +457,7 @@ def run_kotlinc(ctx, output_jar):
                 direct = ctx.files.srcs,
                 transitive = [classpath, plugin_cp, friend_jars, elide.compile_tool_files],
             ),
-            outputs = [compile_out],
+            outputs = [compile_out, abi_jar] if fused_abi else [compile_out],
             progress_message = "Compiling %{label} (elide kotlinc)",
         )
 
@@ -908,6 +917,7 @@ COMMON_LIBRARY_ATTRS = {
               "dedicated `elide kotlinc --abi-only` header action (body-stable " +
               "ABI) instead of run_ijar. See //config/kotlinc:abi_compile_avoidance.",
     ),
+    "_abi_from_compile": attr.label(default = Label("//config/kotlinc:abi_from_compile"), providers = [BuildSettingInfo]),
     "_classpath_cache": attr.label(
         default = Label("//config/javac:classpath_cache"),
         providers = [BuildSettingInfo],

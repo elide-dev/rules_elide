@@ -29,13 +29,20 @@ command -v "$ELIDE" >/dev/null 2>&1 || { echo "elide not found (set ELIDE=...): 
 
 WORK="$(mktemp -d "${TMPDIR:-/tmp}/abi-avoid.XXXXXX")"; trap 'rm -rf "$WORK"' EXIT
 rc=0
+ABI_MODE="${ABI_MODE:-separate}"
+case "$ABI_MODE" in separate|fused) ;; *) echo "Invalid ABI_MODE: $ABI_MODE" >&2; exit 2 ;; esac
 echo "elide: $("$ELIDE" --version 2>/dev/null | head -1)"
 
 # abi_digest <srcfile> -> stable digest of the emitted ABI .class bytes.
 # Compiles to a dir (class bytes are deterministic; jar wrappers carry mtimes).
 abi_digest() {
   local src="$1" out; out="$(mktemp -d "$WORK/o.XXXXXX")"
-  "$ELIDE" kotlinc --abi-only -- -d "$out" -cp . "$src" >/dev/null 2>&1 || { echo "COMPILE-FAIL"; return; }
+  if [ "$ABI_MODE" = fused ]; then
+    "$ELIDE" kotlinc -- --emit-abi "$out/header.jar" -d "$out/full.jar" -cp . "$src" >"$out/compile.log" 2>&1 || { cat "$out/compile.log" >&2; echo "COMPILE-FAIL"; return; }
+    unzip -q "$out/header.jar" -d "$out/header" || { echo "COMPILE-FAIL"; return; }
+  else
+    "$ELIDE" kotlinc --abi-only -- -d "$out" -cp . "$src" >/dev/null 2>&1 || { echo "COMPILE-FAIL"; return; }
+  fi
   (cd "$out" && find . -name '*.class' | LC_ALL=C sort | xargs cat 2>/dev/null | sha256sum | cut -d' ' -f1)
 }
 

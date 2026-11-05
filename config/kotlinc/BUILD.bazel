@@ -55,3 +55,12 @@ config_setting(
     name = "warn_builtin_plugin_rewrite_disabled",
     flag_values = {":warn_builtin_plugin_rewrite": "False"},
 )
+
+# Experimental: emit the ABI alongside full compilation, saving a compiler pass.
+# Requires abi_compile_avoidance. Pure Kotlin without resources, plugins, friends,
+# or incremental compilation only; other targets retain the separate header pass.
+# Dependents wait for the full compile, so benchmark your graph before enabling.
+bool_flag(
+    name = "abi_from_compile",
+    build_setting_default = False,
+)

@@ -22,6 +22,7 @@ if [[ "$suite" == jvm || "$suite" == all ]]; then
       --@rules_elide//config/kotlinc:abi_compile_avoidance=true "$@"
     bazel test :HelloTest "$@"
     python3 verify_pruning.py "$@"
+    python3 verify_fused_abi.py "$@"
   )
 fi
 if [[ "$suite" == kotlin || "$suite" == all ]]; then

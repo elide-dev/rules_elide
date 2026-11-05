@@ -19,7 +19,7 @@ SCENARIOS = (
     "public_module_api", "multi_file_body", "multi_module_body",
     "multi_module_api", "unused_dependency_api", "inline_or_constant",
 )
-MODES = ("vanilla", "elide", "elide_abi", "elide_pruned", "elide_incremental")
+MODES = ("vanilla", "elide", "elide_abi", "elide_pruned", "elide_incremental", "elide_fused", "elide_fused_pruned")
 COMPILERS = {"Javac", "KotlinCompile", "ElideJavac", "ElideKotlinc"}
 
 
@@ -178,17 +178,19 @@ def main():
         try:
             for language in args.languages:
                 for mode in args.modes:
-                    if language == "java" and mode == "elide_incremental":
+                    if language == "java" and mode in ("elide_incremental", "elide_fused", "elide_fused_pruned"):
                         continue
                     run(["clean"], output / "clean.log")
                     for package in ("core", "spare", "facade", "clients", "app"):
                         shutil.rmtree(work / package, ignore_errors=True)
                     sources = fixture(work, language, mode, args.sources, args.fanout)
                     flags = list(common)
-                    if mode in ("elide_abi", "elide_pruned", "elide_incremental"):
+                    if mode in ("elide_abi", "elide_pruned", "elide_incremental", "elide_fused", "elide_fused_pruned"):
                         flags.append(f"--@rules_elide//config/{'javac' if language == 'java' else 'kotlinc'}:abi_compile_avoidance=true")
-                    if mode == "elide_pruned":
+                    if mode in ("elide_pruned", "elide_fused_pruned"):
                         flags += ["--@rules_elide//elide:emit_jdeps=true", "--@rules_elide//elide:prune_unused_inputs=true"]
+                    if mode in ("elide_fused", "elide_fused_pruned"):
+                        flags.append("--@rules_elide//config/kotlinc:abi_from_compile=true")
                     if mode == "elide_incremental":
                         flags += ["--@rules_elide//config/kotlinc:incremental=true"]
                     targets = ["//core", "//spare", "//facade", "//app", *[f"//clients:client{i}" for i in range(args.fanout)]]

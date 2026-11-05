@@ -50,6 +50,9 @@ with structured sample data retained in the repository.
 - `elide`: native Elide rules, default worker mode and flags.
 - `elide_abi`: Elide with language-specific `abi_compile_avoidance=true`.
 - `elide_pruned`: ABI mode plus dependency reporting and unused-input pruning.
+- `elide_fused`: Kotlin ABI mode with `abi_from_compile=true`; emits full and
+  header jars in one compiler action. Consumers wait for that action to finish.
+- `elide_fused_pruned`: combined emission plus unused-input pruning.
 - `elide_incremental`: Kotlin only, ABI mode plus experimental per-target
   incremental compilation. Pruning is deliberately off because IC is an opaque
   compile path. Compiler-action counts cannot show how many files IC recompiles

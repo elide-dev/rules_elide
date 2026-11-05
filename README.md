@@ -183,6 +183,15 @@ with compiler plugins, annotation-processing options, or `resource_jars` retain
 and one-shot compilation are supported. Leave the settings off for older Elide
 versions that do not support these ABI options.
 
+For pure Kotlin targets, experimental
+`--@rules_elide//config/kotlinc:abi_from_compile=true` additionally emits the header
+from the full compile, saving the separate ABI compiler pass. It requires Kotlin
+ABI avoidance and Elide 1.6.2. Mixed sources, resources, plugins/processors, friend
+modules, and incremental compilation retain the separate pass. Dependents wait
+for full code generation, so compare both modes on your graph before adopting it.
+See the [performance guide](docs/performance.md) and
+[incremental benchmark modes](benchmarks/INCREMENTAL.md).
+
 ## JVM documentation and tooling
 
 Load these rules from `@rules_elide//elide:defs.bzl`:

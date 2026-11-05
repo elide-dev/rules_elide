@@ -98,6 +98,28 @@ _abi_avoidance_test = analysistest.make(
     config_settings = {"@@//config/kotlinc:abi_compile_avoidance": True},  # buildifier: disable=canonical-repository
 )
 
+def _fused_abi_test_impl(ctx):
+    env = analysistest.begin(ctx)
+    actions = analysistest.target_actions(env)
+    asserts.equals(env, 0, len([a for a in actions if a.mnemonic == "ElideKotlincAbi"]))
+    compile = [a for a in actions if a.mnemonic == "ElideKotlinc"][0]
+    asserts.true(env, compile.argv.index("--emit-abi") > compile.argv.index("--"))
+    headers = [f for f in compile.outputs.to_list() if f.basename.endswith("_abi.jar")]
+    asserts.equals(env, 1, len(headers))
+    asserts.equals(env, headers, analysistest.target_under_test(env)[JavaInfo].compile_jars.to_list())
+    return analysistest.end(env)
+
+_FUSED_SETTINGS = {
+    "@@//config/kotlinc:abi_compile_avoidance": True,  # buildifier: disable=canonical-repository
+    "@@//config/kotlinc:abi_from_compile": True,  # buildifier: disable=canonical-repository
+}
+_fused_abi_test = analysistest.make(_fused_abi_test_impl, config_settings = _FUSED_SETTINGS)
+_fused_fallback_test = analysistest.make(_abi_avoidance_test_impl, config_settings = _FUSED_SETTINGS)
+_fused_ic_fallback_test = analysistest.make(
+    _abi_avoidance_test_impl,
+    config_settings = dict(_FUSED_SETTINGS, **{"@@//config/kotlinc:incremental": True}),  # buildifier: disable=canonical-repository
+)
+
 def _abi_avoidance_mixed_test_impl(ctx):
     # With avoidance on, a mixed kt+java target also emits the `--abi-only` header
     # action: `--abi-only` now emits both the Kotlin and Java ABI, so the header
@@ -483,9 +505,20 @@ def kotlin_rule_test_suite(name):
         name = "kt_abi_avoidance_mixed_test",
         target_under_test = ":_kt_mixed_fixture",
     )
+    _fused_abi_test(name = "kt_fused_abi_test", target_under_test = ":_kt_lib_fixture")
+    _fused_ic_fallback_test(name = "kt_fused_ic_fallback_test", target_under_test = ":_kt_lib_fixture")
+    for suffix in ["mixed", "plugins", "resources", "associate", "ap"]:
+        _fused_fallback_test(name = "kt_fused_" + suffix + "_fallback_test", target_under_test = ":_kt_" + suffix + "_fixture")
     native.test_suite(
         name = name,
         tests = [
+            ":kt_fused_abi_test",
+            ":kt_fused_ic_fallback_test",
+            ":kt_fused_mixed_fallback_test",
+            ":kt_fused_plugins_fallback_test",
+            ":kt_fused_resources_fallback_test",
+            ":kt_fused_associate_fallback_test",
+            ":kt_fused_ap_fallback_test",
             ":kt_library_providers_test",
             ":kt_library_action_test",
             ":kt_builtin_plugins_test",
