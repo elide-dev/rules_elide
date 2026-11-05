@@ -80,3 +80,13 @@ ignored combined emission when ABI avoidance is off, and conservative fallbacks.
 A separate consumer uses only Java constants or Kotlin constants/inline functions,
 leaving no runtime reference to the dependency. Its compiled output and execution
 must still update after compile-time values change, including with pruning enabled.
+
+Native Kotlin IC has a real-toolchain regression in
+`e2e/integration/verify_incremental.py`, run by the JVM integration suite. It
+checks complete output after body edits, deleted nested classes, added/deleted
+sources, failed compilation and recovery, dependency constant changes, compiler
+option changes, and worker restart. Runtime assertions and jar-content checks run
+with persistent workers, sandboxed workers, and one-shot execution. The standalone
+`e2e/ic_correctness/output_recreation.py` intentionally remains a failing guard
+against the underlying Elide 1.6.2 behavior; native rules use the adapter to avoid
+that output/cache lifecycle.

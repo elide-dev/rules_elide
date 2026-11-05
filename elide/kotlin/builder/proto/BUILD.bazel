@@ -18,6 +18,10 @@ proto_library(
 
 java_proto_library(
     name = "worker_protocol_java_proto",
+    visibility = [
+        "//elide:__subpackages__",
+        "//tests/kotlin_builder:__pkg__",
+    ],
     deps = [":worker_protocol_proto"],
 )
 

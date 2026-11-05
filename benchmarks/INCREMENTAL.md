@@ -263,9 +263,10 @@ ignores the generated `sources` count, and runs eight modes across eight scenari
 (64 cases and 192 measured samples at the default three rounds). The optional
 `elide_hybrid` mode remains available only through explicit CLI selection.
 
-The default matrix currently exposes a correctness failure in `elide_incremental`
-with Elide 1.6.2: after a body edit, an unchanged class is missing from the runtime
-jar. The verifier deliberately fails instead of publishing that sample as a
-speedup. See the [output-recreation regression](../e2e/ic_correctness/README.md#output_recreationpy--ic-cache-survives-output-directory-does-not).
-Use explicit non-IC modes for comparisons while this remains unresolved; a full
-hosted comparison including IC cannot pass yet.
+The production fixture exposed missing unchanged classes in the former native
+IC wiring with Elide 1.6.2. Native IC now retains classes and cache together in a
+worker adapter and publishes complete jars; the standalone Elide
+[output-recreation regression](../e2e/ic_correctness/README.md#output_recreationpy--ic-cache-survives-output-directory-does-not)
+still documents the upstream behavior. The matrix keeps runtime checks enabled
+for every mode, including IC. Clean IC builds also include compiling the adapter;
+its JVM and resident compiler contribute to worker memory and startup costs.

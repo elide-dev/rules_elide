@@ -58,3 +58,12 @@ Native Kotlin rules publish the toolchain's Kotlin standard library as a
 `JavaInfo` compile/runtime dependency. Stock Java consumers, including consumers
 through intermediate exports or `runtime_deps`, therefore receive it without
 relying on an Elide-specific launcher. Pure Java targets do not add Kotlin stdlib.
+
+Native incremental Kotlin compilation uses `elide/private/ic_worker`, a stock-Java
+worker adapter independent of the KotlinBuilder bootstrap. It forwards input
+digests to a resident Elide compiler, retains classes and IC state together in
+private temporary storage, and packages the complete jar before responding.
+Declared Bazel outputs are never used as persistent compiler state. Argument or
+non-source input changes invalidate the target state; compile/transport failures
+and worker restarts cannot reuse incomplete output. The adapter is singleplex;
+ordinary native compilation still uses Elide's direct multiplex worker protocol.

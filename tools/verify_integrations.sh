@@ -24,6 +24,7 @@ if [[ "$suite" == jvm || "$suite" == all ]]; then
     python3 verify_pruning.py "$@"
     python3 verify_fused_abi.py "$@"
     python3 verify_kotlin_interop.py "$@"
+    python3 verify_incremental.py "$@"
   )
 fi
 if [[ "$suite" == kotlin || "$suite" == all ]]; then

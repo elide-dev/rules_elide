@@ -207,3 +207,6 @@ jobs:
         # Full remote: cache + execution + BES. Bazel prints the BuildBuddy
         # invocation URL (from --bes_results_url) at the top of the run.
         run: bazel test //... --config=remote --config=ci
+      - name: Native Kotlin IC compile and runtime over RBE
+        working-directory: e2e/rbe
+        run: bazel test //:KotlinTest --config=remote --config=ci --@rules_elide//config/kotlinc:incremental=true

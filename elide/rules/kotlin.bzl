@@ -45,6 +45,11 @@ def _elide_kotlin_library_impl(ctx):
 
 _LIBRARY_ATTRS = dict(COMMON_LIBRARY_ATTRS)
 _LIBRARY_ATTRS.update(_KOTLIN_SRCS_ATTR)
+_LIBRARY_ATTRS["_ic_worker"] = attr.label(
+    default = Label("//elide/private/ic_worker:ic_worker"),
+    executable = True,
+    cfg = "exec",
+)
 _LIBRARY_ATTRS["associates"] = attr.label_list(
     doc = "Targets whose compile jars become Kotlin friend-paths (grants internal visibility).",
     providers = [[JavaInfo]],

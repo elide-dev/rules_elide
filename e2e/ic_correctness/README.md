@@ -56,9 +56,13 @@ python3 e2e/ic_correctness/output_recreation.py --elide /path/to/elide
 ```
 
 **Known failure with Elide 1.6.2:** the unchanged `B.class` is missing. The
-production KotlinBuilder benchmark also fails its runtime assertion in
-`elide_incremental` mode after a body edit (`NoClassDefFoundError: Router`).
+production KotlinBuilder benchmark exposed the same failure in the former native
+IC wiring after a body edit (`NoClassDefFoundError: Router`).
 The earlier `run.sh` preserves both cache and outputs, so its passing results
 do not cover this Bazel lifecycle. This standalone regression is not yet a
-passing CI gate. Do not enable native Kotlin IC for production builds until
-complete outputs are restored or regenerated on every action invocation.
+passing CI gate for the standalone compiler. Native rules now avoid this lifecycle
+by retaining classes and cache in worker-private scratch and publishing a complete
+jar per request. `e2e/integration/verify_incremental.py` checks body edits, class and
+source deletion, new sources, compiler failures, dependency constants, compiler
+options, and cold-worker equivalence with ordinary/sandboxed workers and one-shot
+execution. That integration guard runs in the JVM verification suite.

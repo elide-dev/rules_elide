@@ -4,6 +4,7 @@ load(
     "elide_java_test",
     "elide_kotlin_binary",
     "elide_kotlin_library",
+    "elide_kotlin_test",
 )
 
 package(default_visibility = ["//visibility:public"])
@@ -52,6 +53,17 @@ elide_java_test(
     runtime_deps = ["@maven//:org_junit_platform_junit_platform_console_standalone"],
     deps = [
         ":lib",
+        "@maven//:org_junit_jupiter_junit_jupiter_api",
+    ],
+)
+
+elide_kotlin_test(
+    name = "KotlinTest",
+    srcs = ["sample/KotlinTest.kt"],
+    test_class = "sample.KotlinTest",
+    runtime_deps = ["@maven//:org_junit_platform_junit_platform_console_standalone"],
+    deps = [
+        ":kt_lib",
         "@maven//:org_junit_jupiter_junit_jupiter_api",
     ],
 )

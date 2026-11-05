@@ -162,7 +162,7 @@ def compile_output_groups(compilation):
         unused_inputs = depset([f for f in compilation.reports if f.extension == "unused"]),
     )
 
-def _run_elide_compile(ctx, mnemonic, subcommand, tool_args, inputs, outputs, progress_message):
+def _run_elide_compile(ctx, mnemonic, subcommand, tool_args, inputs, outputs, progress_message, incremental = False):
     """Runs `elide <subcommand>` to compile, as a worker or a one-shot process.
 
     Both modes use the same arg form: `elide <subcommand> <tool_args>`, where
@@ -189,33 +189,45 @@ def _run_elide_compile(ctx, mnemonic, subcommand, tool_args, inputs, outputs, pr
         inputs: depset[File]. Action inputs.
         outputs: list[File]. Declared action outputs.
         progress_message: str. Bazel progress message.
+        incremental: bool. Preserve Kotlin IC state and publish a complete jar.
     """
     metadata = _metadata(ctx, outputs[0])
     outputs = outputs + metadata.files
     elide = ctx.toolchains[TOOLCHAIN_TYPE].elide_info
     lead = ctx.actions.args()
-    lead.add(subcommand)
+    executable = elide.binary
+    requirements = _WORKER_EXEC_REQUIREMENTS
+    if incremental:
+        executable = ctx.attr._ic_worker[DefaultInfo].files_to_run
+        lead.add("--elide=" + elide.binary.path)
+        requirements = {"requires-worker-protocol": "proto", "supports-workers": "1"}
+    else:
+        lead.add(subcommand)
 
     if ctx.attr._use_workers[BuildSettingInfo].value:
         tool_args.use_param_file("@%s", use_always = True)
         tool_args.set_param_file_format("multiline")
         ctx.actions.run(
             mnemonic = mnemonic,
-            executable = elide.binary,
+            executable = executable,
             arguments = [lead, tool_args],
             inputs = inputs,
+            # Compiler changes must restart the adapter's resident subprocess.
+            tools = elide.compile_tool_files if incremental else [],
             outputs = outputs,
             unused_inputs_list = metadata.unused,
             progress_message = progress_message,
-            execution_requirements = _WORKER_EXEC_REQUIREMENTS,
+            execution_requirements = requirements,
             env = _ELIDE_BAZEL_ENV,
         )
     else:
         ctx.actions.run(
             mnemonic = mnemonic,
-            executable = elide.binary,
+            executable = executable,
             arguments = [lead, tool_args],
             inputs = inputs,
+            # Compiler changes must restart the adapter's resident subprocess.
+            tools = elide.compile_tool_files if incremental else [],
             outputs = outputs,
             unused_inputs_list = metadata.unused,
             progress_message = progress_message,
@@ -417,19 +429,10 @@ def run_kotlinc(ctx, output_jar):
     if has_kt:
         kt_jar = output_jar if single_kt_only else ctx.actions.declare_file(ctx.label.name + "_kotlin_classes.jar")
 
-        # In IC mode kotlinc writes classes here and `kt_jar` is produced by a
-        # follow-on pack action; otherwise kotlinc writes `kt_jar` directly.
-        kt_classes = ctx.actions.declare_directory(ctx.label.name + "_kt_classes") if incremental else None
-        compile_out = kt_classes if incremental else kt_jar
-
+        # The IC adapter retains its classes alongside its cache and publishes a
+        # complete jar. Bazel may delete any declared output before an action.
+        compile_out = kt_jar
         args = _tool_args(ctx, compile_out)
-        if incremental:
-            # Undeclared worker-scoped scratch (sibling of the classes dir);
-            # relative to the worker cwd (exec root), so it persists across
-            # persistent-worker requests when unsandboxed. Elide options precede
-            # the `--` separator (same slot as --report-used-deps).
-            args.add("--incremental")
-            args.add("--incremental-cache-dir", kt_classes.path + "_iccache")
 
         # Builtin compiler plugins enabled by name (elide option, before `--`).
         # Forces the named plugins on — robust for plugins the classpath
@@ -440,11 +443,9 @@ def run_kotlinc(ctx, output_jar):
             args.add_joined(builtin_plugins, join_with = ",", format_joined = "--plugins=%s")
         args.add("--")
 
-        # A directory output must be passed as a plain path (Args#add rejects
-        # directory Files); a jar output is a regular File.
         if fused_abi:
             args.add("--emit-abi", abi_jar)
-        args.add("-d", compile_out.path if incremental else compile_out)
+        args.add("-d", compile_out)
         full_cp = depset(transitive = [classpath, plugin_cp, friend_jars])
         args.add_joined("-classpath", full_cp, join_with = sep)
         if ctx.attr.module_name:
@@ -472,28 +473,8 @@ def run_kotlinc(ctx, output_jar):
             ),
             outputs = [compile_out, abi_jar] if fused_abi else [compile_out],
             progress_message = "Compiling %{label} (elide kotlinc)",
+            incremental = incremental,
         )
-
-        # IC compiled to a directory; pack it into `kt_jar` (the form the rest of
-        # the pipeline — resource merge, JavaInfo — expects). One-shot, not a
-        # worker: `elide jar -- --create --file <jar> -C <classesdir> .`.
-        if incremental:
-            pack = ctx.actions.args()
-            pack.add("jar")
-            pack.add("--")
-            pack.add("--create")
-            pack.add("--file", kt_jar)
-            pack.add("-C", kt_classes.path)
-            pack.add(".")
-            ctx.actions.run(
-                mnemonic = "ElideKotlincPack",
-                executable = elide.binary,
-                arguments = [pack],
-                inputs = depset(direct = [kt_classes], transitive = [elide.compile_tool_files]),
-                outputs = [kt_jar],
-                progress_message = "Packing %{label} (elide jar)",
-                env = _ELIDE_BAZEL_ENV,
-            )
 
     if single_kt_only:
         return struct(abi_jar = abi_jar, reports = reports)
@@ -959,7 +940,7 @@ COMMON_LIBRARY_ATTRS = {
         default = Label("//config/kotlinc:incremental"),
         providers = [BuildSettingInfo],
         doc = "Build setting opting kotlinc compiles into incremental " +
-              "compilation (compile-to-dir + cache-dir + pack-to-jar).",
+              "compilation with worker-private classes/cache and complete jar output.",
     ),
     "_java_abi_compile_avoidance": attr.label(
         default = Label("//config/javac:abi_compile_avoidance"),

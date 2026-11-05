@@ -1,0 +1,9 @@
+load("@rules_java//java:java_binary.bzl", "java_binary")
+
+java_binary(
+    name = "ic_worker",
+    srcs = ["IncrementalWorker.java"],
+    main_class = "dev.elide.bazel.IncrementalWorker",
+    visibility = ["//elide:__subpackages__"],
+    deps = ["//elide/kotlin/builder/proto:worker_protocol_java_proto"],
+)

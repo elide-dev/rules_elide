@@ -101,12 +101,14 @@ must be selected explicitly with `--modes`.
    sources, compiler plugins, processors, and friends only after proving header
    completeness and downstream runtime behavior. Test cache hits and remote
    execution as well as local workers.
-3. **Incremental output correctness.** Native IC with Elide 1.6.2 can omit
-   unchanged classes after Bazel recreates its declared output tree while the
-   IC cache survives. Do not enable it for production builds. The
-   [output-recreation regression](../e2e/ic_correctness/README.md) and production
-   Kotlin benchmark expose this failure. Restore complete outputs before
-   measuring packaging cost or optimizing deleted/renamed-source rebuilds.
+3. **Incremental worker costs.** Native IC uses a singleplex Java adapter to keep
+   compiled classes and cache together across edits, then writes the complete jar
+   in the same action. This avoids Elide 1.6.2's missing-class behavior when Bazel
+   deletes declared outputs. The adapter adds JVM startup and memory costs;
+   measure those against the removed jar-pack process before recommending IC.
+   Worker restarts and changed arguments/non-source inputs discard the state.
+   One-shot execution is cold. The [IC guards](../e2e/ic_correctness/README.md)
+   distinguish the underlying compiler behavior from the Bazel integration.
 4. **Worker and classpath overhead.** Profile worker counts, memory, classpath
    hashing, and analysis cost on large graphs. Java header compilation currently
    does not use the full compiler's opt-in classpath cache; verify upstream support
