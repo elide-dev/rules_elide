@@ -43,6 +43,7 @@ def _library_action_test_impl(ctx):
     actions = analysistest.target_actions(env)
     javacs = [a for a in actions if a.mnemonic == "ElideJavac"]
     asserts.equals(env, 1, len(javacs), "expected one ElideJavac action")
+    asserts.false(env, any(["/lib/llvm/" in f.path for f in javacs[0].inputs.to_list()]), "JVM compilation must not carry the LLVM toolchain")
     argv = javacs[0].argv
     asserts.true(env, "javac" in argv, "expected `javac` subcommand in argv")
 

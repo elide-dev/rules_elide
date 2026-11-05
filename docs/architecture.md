@@ -39,3 +39,17 @@ inferred from class usage.
 
 See [testing](testing.md) for contract and execution coverage and
 [the security model](security-model.md) for trust boundaries.
+
+## Tool input boundaries
+
+Downloaded and local Elide toolchains expose separate input sets. JVM compilation,
+archive operations, and Java inspection/documentation omit `lib/llvm`, native-image
+support, Python resources, and Maven tools. C binding generation adds LLVM back
+through `jextract_tool_files`; native-image keeps its full native tool input set.
+This reduces compiler action input discovery and the blobs required by a cold
+remote cache without stripping files from the downloaded distribution.
+
+Custom `elide_toolchain` declarations may supply additional C binding inputs via
+`jextract_tool_files`. It always includes `compile_tool_files`; omitting the new
+attribute preserves the previous custom-toolchain input behavior. Python runtime
+inputs remain separate and unchanged.

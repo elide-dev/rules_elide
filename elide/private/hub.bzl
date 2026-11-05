@@ -18,6 +18,7 @@ elide_toolchain(
     name = "{name}_impl",
     binary = "@{repo}//:bin/elide{bin_ext}",
     compile_tool_files = ["@{repo}//:elide_compile_files"],
+    jextract_tool_files = ["@{repo}//:elide_jextract_files"],
     kotlin_stdlib = ["@{repo}//:kotlin_stdlib_jars"],
     python_tool_files = ["@{repo}//:elide_python_files"],
     tool_files = ["@{repo}//:elide_native_image_files"],

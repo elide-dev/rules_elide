@@ -18,6 +18,7 @@ def _elide_toolchain_impl(ctx):
         elide_info = ElideToolchainInfo(
             binary = ctx.executable.binary,
             compile_tool_files = compile_tool_files,
+            jextract_tool_files = depset(ctx.files.jextract_tool_files, transitive = [compile_tool_files]),
             kotlin_stdlib_jars = kotlin_stdlib_jars,
             version = ctx.attr.version,
             tool_files = tool_files,
@@ -38,6 +39,12 @@ elide_toolchain = rule(
         "compile_tool_files": attr.label_list(
             doc = "Inputs for JVM compile actions (javac, kotlinc, jar). " +
                   "Should reference the elide_compile_files filegroup.",
+            allow_files = True,
+            cfg = "exec",
+        ),
+        "jextract_tool_files": attr.label_list(
+            doc = "Additional inputs for C binding generation, including LLVM. " +
+                  "Combined with compile_tool_files; downloaded toolchains use elide_jextract_files.",
             allow_files = True,
             cfg = "exec",
         ),

@@ -22,18 +22,25 @@ exports_files(["{binary_path}"])
 
 # Minimal input set for JVM compile actions (elide javac, kotlinc, jar).
 # Excludes: doc/ (HTML docs), lib/svm/ + lib/truffle/ (native-image only),
-#           lib/resources/python/ (Python runtime), lib/maven/ (Maven tools).
+#           lib/llvm/ (C tools), lib/resources/python/ (Python runtime), lib/maven/.
 filegroup(
     name = "elide_compile_files",
     srcs = glob(
         ["bin/**", "lib/**"],
         exclude = [
+            "lib/llvm/**",
             "lib/svm/**",
             "lib/truffle/**",
             "lib/resources/python/**",
             "lib/maven/**",
         ],
     ),
+)
+
+# C binding generation retains LLVM without burdening every JVM compiler action.
+filegroup(
+    name = "elide_jextract_files",
+    srcs = [":elide_compile_files"] + glob(["lib/llvm/**"]),
 )
 
 # Full tool set for elide native-image: compile files + GraalVM SVM + C headers.

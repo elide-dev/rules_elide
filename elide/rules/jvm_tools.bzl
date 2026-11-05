@@ -13,12 +13,12 @@ def _args(ctx, command):
     args.add_all(["--no-env", "--no-properties", command])
     return args
 
-def _run(ctx, mnemonic, args, inputs, outputs):
+def _run(ctx, mnemonic, args, inputs, outputs, needs_llvm = False):
     elide = ctx.toolchains[TOOLCHAIN_TYPE].elide_info
     ctx.actions.run(
         executable = elide.binary,
         arguments = [args],
-        inputs = depset(inputs, transitive = [elide.compile_tool_files]),
+        inputs = depset(inputs, transitive = [getattr(elide, "jextract_tool_files", elide.compile_tool_files) if needs_llvm else elide.compile_tool_files]),
         outputs = outputs,
         mnemonic = mnemonic,
         env = _ENV,
@@ -177,7 +177,7 @@ def _jextract_impl(ctx):
         args.add("-D", define)
     args.add_all(ctx.attr.opts)
     args.add_all(ctx.files.srcs)
-    _run(ctx, "ElideJextract", args, ctx.files.srcs + ctx.files.hdrs + ctx.files.data, [sources])
+    _run(ctx, "ElideJextract", args, ctx.files.srcs + ctx.files.hdrs + ctx.files.data, [sources], needs_llvm = True)
     _pack_tree(ctx, sources, srcjar)
     return [DefaultInfo(files = depset([srcjar])), OutputGroupInfo(sources = depset([sources]))]
 
