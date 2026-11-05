@@ -70,6 +70,7 @@ def _library_action_test_impl(ctx):
     jars = [a for a in actions if a.mnemonic == "ElideJavacJar"]
     asserts.equals(env, 0, len(jars), "no separate ElideJavacJar action (collapsed into --jar)")
     asserts.false(env, "--classpath-cache" in argv, "--classpath-cache must be off by default")
+    asserts.false(env, "-proc:none" in argv, "default processing behavior must remain unchanged")
     asserts.equals(
         env,
         "1",
@@ -167,7 +168,21 @@ def _classpath_cache_test_impl(ctx):
         argv.index("--classpath-cache") < argv.index("--"),
         "--classpath-cache must come before the `--` separator",
     )
+    asserts.true(env, "-proc:none" in argv, "processor-free cache requests must be eligible for reuse")
+    asserts.true(env, argv.index("-proc:none") > argv.index("--"))
     return analysistest.end(env)
+
+def _classpath_cache_processor_test_impl(ctx):
+    env = analysistest.begin(ctx)
+    javac = [a for a in analysistest.target_actions(env) if a.mnemonic == "ElideJavac"][0]
+    asserts.true(env, "--classpath-cache" in javac.argv)
+    asserts.false(env, "-proc:none" in javac.argv, "cache opt-in must not suppress configured processors")
+    return analysistest.end(env)
+
+_classpath_cache_processor_test = analysistest.make(
+    _classpath_cache_processor_test_impl,
+    config_settings = {"@@//config/javac:classpath_cache": True},  # buildifier: disable=canonical-repository
+)
 
 _classpath_cache_test = analysistest.make(
     _classpath_cache_test_impl,
@@ -332,6 +347,8 @@ def java_rule_test_suite(name):
     _fused_fallback_test(name = "java_fused_processor_fallback_test", target_under_test = ":_processor_fixture")
     for kind in ["plugin", "resource_jar"]:
         _fused_fallback_test(name = "java_fused_" + kind + "_fallback_test", target_under_test = ":_abi_" + kind + "_fixture")
+    for kind, target in [("explicit", ":_processor_fixture"), ("plugin", ":_abi_plugin_fixture")]:
+        _classpath_cache_processor_test(name = "java_cache_" + kind + "_test", target_under_test = target)
     native.test_suite(
         name = name,
         tests = [
@@ -354,6 +371,8 @@ def java_rule_test_suite(name):
             ":library_action_test",
             ":library_action_no_worker_test",
             ":library_classpath_cache_test",
+            ":java_cache_explicit_test",
+            ":java_cache_plugin_test",
             ":binary_executable_test",
             ":test_rule_executable_test",
         ],

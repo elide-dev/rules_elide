@@ -6,13 +6,11 @@
 # reuse parsed classpath state across warm compiles instead of re-reading and
 # re-indexing every dependency jar each request.
 #
-# IMPORTANT — what this shows: the cache's saving is dominated by *cold*
-# classpath I/O (re-reading jars from disk). Once the OS page cache holds the
-# classpath — the normal repeated-build case — re-indexing is cheap and the
-# warm-steady-state delta measured here is near zero. The cache's real payoff is
-# on cold / page-cache-evicted classpaths (large dep sets, memory-pressured CI),
-# which this warm benchmark deliberately does not fake. Treat a ~parity result
-# as expected on a warm box; measure the cold case by dropping the page cache.
+# This isolates repeated compilation against the distribution's jars. It does
+# not predict application performance or cold-disk behavior. Both cache modes
+# disable annotation processing and provide input digests, as required for reuse.
+# Older versions of this benchmark omitted both prerequisites, so their claimed
+# cache comparisons did not establish cache behavior.
 #
 # Workload: a trivial source compiled against a large, real classpath — the
 # elide distribution's own `lib/*.jar` (derived from $ELIDE, ~180 jars / ~100MB;
@@ -24,6 +22,7 @@
 #   cache ON    persistent worker, N requests, --classpath-cache (index once)
 # warm/compile is the marginal (t[K]-t[1])/(K-1); the cache gain is off - on.
 #
+# Set RESULT_JSON to retain hyperfine raw samples after the temporary workspace is removed.
 # Usage: ELIDE=/abs/path/to/elide benchmarks/javac_cache.sh [RUNS] [WARMUP] [K]
 
 set -euo pipefail
@@ -33,6 +32,7 @@ command -v "$ELIDE" >/dev/null 2>&1 || { echo "elide not found: $ELIDE" >&2; exi
 command -v hyperfine >/dev/null 2>&1 || { echo "hyperfine required" >&2; exit 2; }
 RUNS="${1:-10}"; WARMUP="${2:-2}"; K="${3:-8}"
 GEN="$HERE/pgo/gen_workrequest.py"
+(( K > 1 )) || { echo "K must be greater than 1" >&2; exit 2; }
 
 DIST="$(dirname "$(dirname "$(readlink -f "$ELIDE")")")"
 CP="$(find "$DIST/lib" -name '*.jar' 2>/dev/null | paste -sd:)"
@@ -40,32 +40,55 @@ CP="$(find "$DIST/lib" -name '*.jar' 2>/dev/null | paste -sd:)"
 NJARS="$(echo "$CP" | tr ':' '\n' | grep -c .)"
 
 WORK="$(mktemp -d "${TMPDIR:-/tmp}/javac-cache.XXXXXX")"; trap 'rm -rf "$WORK"' EXIT
+RESULT_JSON="${RESULT_JSON:-$WORK/r.json}"
 mkdir -p "$WORK/out"
-printf 'public class Hello { public static void main(String[] a) {} }\n' > "$WORK/Hello.java"
+printf 'public class Hello { public kotlin.Unit value() { return kotlin.Unit.INSTANCE; } }\n' > "$WORK/Hello.java"
+
+# Attach content digests using exactly the paths spelled in the compiler argv.
+python3 - "$CP" "$WORK/Hello.java" "$WORK/inputs.json" <<'PYINPUTS'
+import json, os, pathlib, sys
+pathlib.Path(sys.argv[3]).write_text(json.dumps(sys.argv[1].split(os.pathsep) + [sys.argv[2]]))
+PYINPUTS
 
 # Worker request streams: 1 and K requests, cache off and on (rotating outputs).
 emit() { # $1=cache(0/1) $2=count $3=outfile
   : > "$3"
   local i extra=(); [ "$1" = 1 ] && extra=("--classpath-cache")
   for ((i = 1; i <= $2; i++)); do
-    python3 "$GEN" "--jar" "$WORK/out/c$1_$i.jar" "${extra[@]}" "--" \
-      -classpath "$CP" "$WORK/Hello.java" >> "$3"
+    python3 "$GEN" --inputs-json "$WORK/inputs.json" -- "--jar" "$WORK/out/c$1_$i.jar" "${extra[@]}" "--" \
+      -proc:none -classpath "$CP" "$WORK/Hello.java" >> "$3"
   done
 }
 emit 0 1 "$WORK/off_1.bin"; emit 0 "$K" "$WORK/off_K.bin"
 emit 1 1 "$WORK/on_1.bin";  emit 1 "$K" "$WORK/on_K.bin"
 
+# Worker process exit zero does not imply individual compile requests succeeded.
+# Check every response in each stream before accepting timing results.
+python3 - "$HERE/pgo" "$ELIDE" "$WORK" "$K" <<'PYCHECK'
+import os, pathlib, subprocess, sys
+sys.path.insert(0, sys.argv[1])
+from gen_workrequest import check_responses
+work = pathlib.Path(sys.argv[3])
+for mode in ("off", "on"):
+    for count in ("1", "K"):
+        result = subprocess.run([sys.argv[2], "--safe-close", "javac", "--persistent_worker"],
+            input=(work / f"{mode}_{count}.bin").read_bytes(), capture_output=True,
+            env=dict(os.environ, ELIDE_BAZEL="1"), check=True)
+        check_responses(result.stdout, 1 if count == "1" else int(sys.argv[4]))
+PYCHECK
+export ELIDE_BAZEL=1
+
 echo "elide: $("$ELIDE" --version 2>/dev/null | head -1)  |  classpath: $NJARS jars  |  RUNS=$RUNS K=$K"
-hyperfine --warmup "$WARMUP" --runs "$RUNS" --export-json "$WORK/r.json" \
-  -n "one-shot (cold)"          "$ELIDE javac --jar $WORK/out/os.jar -- -classpath $CP $WORK/Hello.java" \
-  -n "worker cache OFF (1-req)" "$ELIDE javac --persistent_worker < $WORK/off_1.bin" \
-  -n "worker cache OFF (${K}-req)" "$ELIDE javac --persistent_worker < $WORK/off_K.bin" \
-  -n "worker cache ON  (1-req)" "$ELIDE javac --persistent_worker < $WORK/on_1.bin" \
-  -n "worker cache ON  (${K}-req)" "$ELIDE javac --persistent_worker < $WORK/on_K.bin"
+hyperfine --warmup "$WARMUP" --runs "$RUNS" --export-json "$RESULT_JSON" \
+  -n "one-shot (cold)"          "$ELIDE javac --jar $WORK/out/os.jar -- -proc:none -classpath $CP $WORK/Hello.java" \
+  -n "worker cache OFF (1-req)" "$ELIDE --safe-close javac --persistent_worker < $WORK/off_1.bin" \
+  -n "worker cache OFF (${K}-req)" "$ELIDE --safe-close javac --persistent_worker < $WORK/off_K.bin" \
+  -n "worker cache ON  (1-req)" "$ELIDE --safe-close javac --persistent_worker < $WORK/on_1.bin" \
+  -n "worker cache ON  (${K}-req)" "$ELIDE --safe-close javac --persistent_worker < $WORK/on_K.bin"
 
 echo
 echo "=== warm per-compile (marginal) — the --classpath-cache gain ==="
-python3 - "$WORK/r.json" "$K" <<'PY'
+python3 - "$RESULT_JSON" "$K" <<'PY'
 import json, sys
 res = {r["command"]: r["mean"] * 1000 for r in json.load(open(sys.argv[1]))["results"]}
 K = int(sys.argv[2])

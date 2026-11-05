@@ -10,7 +10,11 @@ package(default_visibility = ["//visibility:public"])
 # classpath state across warm compiles, keyed by input digests — unchanged
 # dependency jars are not re-indexed on every request. Worker-only (no effect
 # without persistent workers); honored for every request as a constant-per-worker
-# setting, so it participates in the Bazel worker key.
+# setting, so it participates in the Bazel worker key. Processor-free targets
+# also receive -proc:none, which upstream requires for reuse. Declared plugins
+# and explicit processor options are preserved and may make requests ineligible.
+# Classpath-only processor discovery is disabled by this opt-in; declare processors
+# explicitly when needed. Empty classpaths and missing digests bypass the cache.
 bool_flag(
     name = "classpath_cache",
     build_setting_default = False,

@@ -287,9 +287,15 @@ def run_javac(ctx, output_jar):
     javac_args.add("--jar", class_jar)
     if fused_abi:
         javac_args.add("--emit-abi", abi_jar)
-    if ctx.attr._classpath_cache[BuildSettingInfo].value:
+    classpath_cache = ctx.attr._classpath_cache[BuildSettingInfo].value
+    if classpath_cache:
         javac_args.add("--classpath-cache")
     javac_args.add("--")
+
+    # Cached file managers require processing to be explicitly disabled. Keep
+    # declared processors and explicit processing/plugin options authoritative.
+    if classpath_cache and not processors and not processor_opts:
+        javac_args.add("-proc:none")
     full_cp = depset(transitive = [classpath, plugin_cp])
     javac_args.add_joined("-classpath", full_cp, join_with = sep)
     for o in ctx.attr.javac_opts:

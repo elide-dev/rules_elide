@@ -120,3 +120,24 @@ must be selected explicitly with `--modes`.
 Do not narrow transitive compile classpaths merely to suppress invalidation:
 exposed signatures, inline code, processors, and Kotlin metadata may need those
 inputs. Dependency pruning must remain conservative when reads are opaque.
+
+## Java classpath cache eligibility
+
+`--@rules_elide//config/javac:classpath_cache=true` opts persistent Java workers
+into digest-keyed classpath reuse. Processor-free targets receive `-proc:none`,
+which the compiler requires before reusing file managers. Explicit processing
+options and declared plugins remain authoritative and can make a request
+ineligible. This opt-in disables implicit discovery of processors found only on
+the classpath; configure processors explicitly when needed. The default remains
+off. Empty classpaths, one-shot compilation, and unsupported compiler options do
+not benefit from this cache.
+
+`benchmarks/javac_cache.sh` isolates repeated compilation against the distribution's
+jars. It now supplies dependency digests, disables processing in both modes, and
+checks individual worker responses before timing. Earlier versions omitted both
+eligibility requirements; their cache comparisons and explanations of negligible
+benefit were unsupported. Set `RESULT_JSON=/path/to/results.json` to retain raw
+hyperfine samples. This diagnostic is not a stock Java comparison, and a trivial
+source with many dependencies cannot establish a production application speedup.
+The Commons Lang core benchmark has no external dependency classpath, so this
+optimization does not address its warm compilation regression.

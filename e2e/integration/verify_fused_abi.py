@@ -53,6 +53,8 @@ elide_%s_binary(name = "app", srcs = ["Main.%s"], deps = [":core"], main_class =
                 (work / "Inlined.kt").write_text("fun main() { System.out.println(Core.MAGIC + Core.inlineValue()) }\n")
             else:
                 (work / "Inlined.java").write_text("public class Inlined { public static void main(String[] args) { System.out.println(Core.MAGIC); } }\n")
+            main_path = work / ("Main.kt" if kotlin else "Main.java")
+            main_template = main_path.read_text()
             build_template = (work / "BUILD.bazel").read_text()
             configurations = [(workers, pruning, "false", "inherit") for workers, pruning in
                               [("true", "false"), ("false", "false"), ("true", "true"), ("false", "true")]]
@@ -64,6 +66,8 @@ elide_%s_binary(name = "app", srcs = ["Main.%s"], deps = [":core"], main_class =
                 global_abi = "false" if abi_mode == "combined" else "true"
                 previous = None
                 resource = "A"
+                consumer_offset = 0
+                main_path.write_text(main_template)
                 cases = [("initial", 1, 2, 3, "", True),
                          ("body", 10, 2, 3, "", False),
                          ("constant", 10, 20, 3, "", True),
@@ -71,6 +75,7 @@ elide_%s_binary(name = "app", srcs = ["Main.%s"], deps = [":core"], main_class =
                          ("signature", 10, 20, 30, "fun added(): Int = 0" if kotlin else "public static int added() { return 0; }", True)]
                 cases.append(("no_op", *cases[-1][1:-1], False))
                 if not kotlin:
+                    cases.append(("consumer_body", *cases[-1][1:-1], False))
                     cases.append(("resource", *cases[-1][1:-1], False))
                 for name, body, constant, inline, extra, changed in cases:
                     if kotlin:
@@ -80,6 +85,9 @@ elide_%s_binary(name = "app", srcs = ["Main.%s"], deps = [":core"], main_class =
                         if name == "resource":
                             resource = "B"
                         (work / "resource.txt").write_text(resource)
+                    if name == "consumer_body":
+                        consumer_offset = 7
+                        main_path.write_text(main_template.replace("System.out.println(", "System.out.println(7 + "))
                     log = work / f"{language}-{workers}-{pruning}-{classpath_cache}-{abi_mode}-{name}.json"
                     subprocess.run(bazel + ["build", "//:core", "//:app", "//:inlined", *sys.argv[1:],
                         f"--@rules_elide//config/{config}:abi_compile_avoidance={global_abi}",
@@ -97,13 +105,13 @@ elide_%s_binary(name = "app", srcs = ["Main.%s"], deps = [":core"], main_class =
                     context = (language, workers, pruning, classpath_cache, abi_mode, name)
                     if previous is not None:
                         assert (digest != previous) == changed, (context, "header")
-                        assert ("//:app" in rebuilt) == changed, (context, rebuilt)
+                        assert ("//:app" in rebuilt) == (changed or name == "consumer_body"), (context, rebuilt)
                         assert ("//:inlined" in rebuilt) == changed, (context, rebuilt)
                     if name in ("no_op", "resource"):
                         assert not rebuilt, (context, rebuilt)
                     previous = digest
                     result = subprocess.check_output([str(work / "bazel-bin/app_launcher.sh")], cwd=work, text=True).strip()
-                    expected = str(body + constant + inline) + ("" if kotlin else ":" + str(ord(resource)))
+                    expected = str(body + constant + inline + consumer_offset) + ("" if kotlin else ":" + str(ord(resource)))
                     assert result == expected, (context, result, expected)
                     result = subprocess.check_output([str(work / "bazel-bin/inlined_launcher.sh")], cwd=work, text=True).strip()
                     expected = str(constant + (inline if kotlin else 0))
