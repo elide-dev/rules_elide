@@ -16,6 +16,9 @@ def _library_providers_test_impl(ctx):
     asserts.true(env, JavaInfo in target, "must emit JavaInfo")
     asserts.true(env, ElideInfo in target, "must emit ElideInfo")
     java_info = target[JavaInfo]
+    asserts.true(env, any([f.basename == "kotlin-stdlib.jar" for f in java_info.transitive_compile_time_jars.to_list()]), "Kotlin stdlib must reach JVM compile consumers")
+    asserts.true(env, any([f.basename == "kotlin-stdlib.jar" for f in java_info.transitive_runtime_jars.to_list()]), "Kotlin stdlib must reach JVM runtime consumers")
+    asserts.false(env, any([f.basename == "kotlin-stdlib.jar" for f in java_info.runtime_output_jars]), "stdlib is a dependency, not this rule's output")
     asserts.true(env, len(java_info.source_jars) > 0, "JavaInfo.source_jars must be non-empty")
     asserts.true(
         env,

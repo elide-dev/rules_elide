@@ -47,9 +47,16 @@ native_binary(
     out = "_test_stub_elide_bin",
 )
 
+write_file(
+    name = "_test_kotlin_stdlib",
+    out = "stub/kotlin-stdlib.jar",
+    content = ["Analysis-only Kotlin stdlib fixture"],
+)
+
 elide_toolchain(
     name = "_test_elide_impl",
     binary = ":_test_stub_elide",
+    kotlin_stdlib = [":_test_kotlin_stdlib"],
     version = "0.0.0-test",
 )
 

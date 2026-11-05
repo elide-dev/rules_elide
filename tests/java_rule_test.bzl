@@ -17,6 +17,7 @@ def _library_providers_test_impl(ctx):
     asserts.equals(env, 1, len(files), "expected exactly one output jar")
     asserts.true(env, files[0].path.endswith(".jar"), "output must be a .jar")
     java_info = target[JavaInfo]
+    asserts.false(env, any([f.basename == "kotlin-stdlib.jar" for f in java_info.transitive_runtime_jars.to_list()]), "Pure Java targets must not acquire Kotlin stdlib")
     source_jars = java_info.source_jars
     asserts.true(env, len(source_jars) > 0, "JavaInfo.source_jars must be non-empty")
     asserts.true(

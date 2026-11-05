@@ -23,6 +23,7 @@ if [[ "$suite" == jvm || "$suite" == all ]]; then
     bazel test :HelloTest "$@"
     python3 verify_pruning.py "$@"
     python3 verify_fused_abi.py "$@"
+    python3 verify_kotlin_interop.py "$@"
   )
 fi
 if [[ "$suite" == kotlin || "$suite" == all ]]; then

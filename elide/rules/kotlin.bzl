@@ -37,7 +37,7 @@ def _elide_kotlin_library_impl(ctx):
     compilation = run_kotlinc(ctx, output_jar)
     source_jar = pack_source_jar(ctx)
     return [
-        make_java_info(ctx, output_jar, source_jar = source_jar, compile_jar_override = compilation.abi_jar, reports = compilation.reports),
+        make_java_info(ctx, output_jar, source_jar = source_jar, compile_jar_override = compilation.abi_jar, reports = compilation.reports, include_kotlin_stdlib = True),
         make_elide_info(ctx),
         compile_output_groups(compilation),
         DefaultInfo(files = depset([output_jar])),
@@ -80,7 +80,7 @@ def _elide_kotlin_binary_impl(ctx):
     source_jar = pack_source_jar(ctx)
     launcher, runfiles = build_launcher(ctx, output_jar)
     return [
-        make_java_info(ctx, output_jar, source_jar = source_jar, compile_jar_override = compilation.abi_jar, reports = compilation.reports),
+        make_java_info(ctx, output_jar, source_jar = source_jar, compile_jar_override = compilation.abi_jar, reports = compilation.reports, include_kotlin_stdlib = True),
         make_elide_info(ctx),
         compile_output_groups(compilation),
         DefaultInfo(executable = launcher, runfiles = runfiles, files = depset([launcher])),
@@ -104,7 +104,7 @@ def _elide_kotlin_test_impl(ctx):
     source_jar = pack_source_jar(ctx)
     launcher, runfiles = build_test_launcher(ctx, output_jar)
     return [
-        make_java_info(ctx, output_jar, source_jar = source_jar, compile_jar_override = compilation.abi_jar, reports = compilation.reports),
+        make_java_info(ctx, output_jar, source_jar = source_jar, compile_jar_override = compilation.abi_jar, reports = compilation.reports, include_kotlin_stdlib = True),
         make_elide_info(ctx),
         compile_output_groups(compilation),
         DefaultInfo(executable = launcher, runfiles = runfiles, files = depset([launcher])),

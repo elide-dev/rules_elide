@@ -12,6 +12,7 @@ is not the same as checking the generated artifacts.
 | Compiler metadata | Reports, labels, output groups, pruning disabled around processors/plugins | `tests/compile_metadata_test.bzl` |
 | KotlinBuilder | Flag parsing, native/legacy routing, ABI/jdeps plans, strict-deps classifications, worker protocol | `tests/kotlin_builder/` |
 | Python adapter | Runtime identity/version, launcher and stdlib/helper input closure | `tests/python_toolchain_test.bzl` |
+| Kotlin/Java interoperability | Stock Java compile and runtime consumers inherit Kotlin stdlib through JavaInfo, including transitive exports, across worker and ABI modes | `e2e/integration/verify_kotlin_interop.py` |
 | JVM execution | Javadoc HTML, fixed archive timestamps, binding symbols, bytecode/dependency text, unused-vs-used reports in worker and one-shot modes | `e2e/integration/verify_jvm_tools.py` |
 | ABI strategy selection | Per-target overrides of enabled/disabled global settings, compile/runtime jar separation, and eligibility fallbacks in both languages | `tests/abi_mode_test.bzl` |
 | Combined ABI emission | Header digests, runtime outputs, body/API/constant/inline/resource edits, worker and one-shot modes, pruning, per-target combined mode with global ABI flags disabled, and Java classpath-cache invalidation | `e2e/integration/verify_fused_abi.py` |

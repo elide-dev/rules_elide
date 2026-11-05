@@ -53,3 +53,8 @@ Custom `elide_toolchain` declarations may supply additional C binding inputs via
 `jextract_tool_files`. It always includes `compile_tool_files`; omitting the new
 attribute preserves the previous custom-toolchain input behavior. Python runtime
 inputs remain separate and unchanged.
+
+Native Kotlin rules publish the toolchain's Kotlin standard library as a
+`JavaInfo` compile/runtime dependency. Stock Java consumers, including consumers
+through intermediate exports or `runtime_deps`, therefore receive it without
+relying on an Elide-specific launcher. Pure Java targets do not add Kotlin stdlib.

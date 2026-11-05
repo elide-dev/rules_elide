@@ -567,7 +567,7 @@ def _compile_java_processed(ctx, java_srcs, kt_jar):
     )
     return java_jar
 
-def make_java_info(ctx, output_jar, source_jar = None, compile_jar_override = None, reports = []):
+def make_java_info(ctx, output_jar, source_jar = None, compile_jar_override = None, reports = [], include_kotlin_stdlib = False):
     """Builds the JavaInfo emitted by elide compile rules.
 
     Args:
@@ -575,6 +575,7 @@ def make_java_info(ctx, output_jar, source_jar = None, compile_jar_override = No
         output_jar: File. Compiled classes jar.
         source_jar: File or None. Optional sources jar (sets JavaInfo.source_jar).
         reports: Per-action compiler dependency reports.
+        include_kotlin_stdlib: Propagate bundled Kotlin standard libraries to JVM consumers.
         compile_jar_override: File or None. When set (the Karbine `--abi-only`
             header jar from run_kotlinc, under ABI compile-avoidance), it is used
             verbatim as `compile_jar` instead of deriving one with run_ijar. The
@@ -599,13 +600,17 @@ def make_java_info(ctx, output_jar, source_jar = None, compile_jar_override = No
     # groups rather than advertising an incomplete combined dependency proto.
     header_reports = [f for f in reports if compile_jar_override != None and f.path == compile_jar_override.path + ".jdeps"]
     implementation_reports = [f for f in reports if f.extension == "jdeps" and f not in header_reports]
+    stdlib_deps = []
+    if include_kotlin_stdlib:
+        elide = ctx.toolchains[TOOLCHAIN_TYPE].elide_info
+        stdlib_deps = [JavaInfo(output_jar = jar, compile_jar = jar) for jar in elide.kotlin_stdlib_jars.to_list()]
     return JavaInfo(
         output_jar = output_jar,
         compile_jar = compile_jar,
         jdeps = implementation_reports[0] if len(implementation_reports) == 1 else None,
         compile_jdeps = header_reports[0] if header_reports else None,
         source_jar = source_jar,
-        deps = _merge_java_infos(ctx.attr.deps),
+        deps = _merge_java_infos(ctx.attr.deps) + stdlib_deps,
         runtime_deps = _merge_java_infos(ctx.attr.runtime_deps),
         exports = _merge_java_infos(ctx.attr.exports),
         neverlink = getattr(ctx.attr, "neverlink", False),

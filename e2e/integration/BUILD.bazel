@@ -13,6 +13,7 @@ load(
     "elide_kotlin_library",
     "elide_native_image",
 )
+load("@rules_java//java:defs.bzl", "java_binary", "java_library")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -147,4 +148,29 @@ genrule(
     outs = ["uses_one_dep.unused.txt"],
     cmd = "cp $(SRCS) $@",
     tags = ["manual"],
+)
+
+# Stock launchers must receive the stdlib through JavaInfo, including through
+# another Java target. Elide's own launchers must not mask missing dependencies.
+elide_kotlin_library(
+    name = "interop_library",
+    srcs = ["sample/KotlinInterop.kt"],
+)
+
+java_library(
+    name = "interop_bridge",
+    exports = [":interop_library"],
+)
+
+java_binary(
+    name = "stock_java_consumer",
+    srcs = ["sample/KotlinConsumer.java"],
+    main_class = "sample.KotlinConsumer",
+    deps = [":interop_bridge"],
+)
+
+java_binary(
+    name = "stock_runtime_consumer",
+    main_class = "sample.KotlinInterop",
+    runtime_deps = [":interop_library"],
 )
