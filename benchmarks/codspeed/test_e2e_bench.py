@@ -29,9 +29,11 @@ Measured:     under CodSpeedHQ/action (walltime); see .github/workflows/benchmar
 """
 
 import itertools
+import json
 import os
 import shutil
 import subprocess
+import tempfile
 from pathlib import Path
 
 import pytest
@@ -42,11 +44,9 @@ E2E = Path(__file__).resolve().parents[2] / "e2e"
 # same project through the Elide toolchain.
 PROJECTS = {"vanilla": E2E / "vanilla", "integration": E2E / "integration"}
 
-# The large generated fixture (200 .kt + 200 .java, identical in both
-# workspaces) — real compile volume so the timing reflects compiler throughput,
-# not fixed Bazel/toolchain overhead. The small sample/ demo targets are left
-# out: on a 1-file workload the gain collapses to a fixed startup delta (~1.6x);
-# at volume it reflects the true compiler gain (cf. benchmarks/bench_suite.sh).
+# A controlled generated fixture (200 .kt + 200 .java, identical in both
+# workspaces). This isolates compiler/build behavior; it is not a real application
+# and does not establish representative throughput or justify default changes.
 TARGETS = ["//:gen_kt", "//:gen_java"]
 
 # Force honest compile work: no remote cache/exec, no local disk action cache.
@@ -72,7 +72,10 @@ def _bazel_bin():
 
 
 def _run(bazel, wd, *args):
-    proc = subprocess.run([bazel, *args], cwd=str(wd), capture_output=True, text=True)
+    # A job-owned output base avoids runner-global startup rc overrides and
+    # lets cleanup reclaim only this benchmark's generated state.
+    output_base = wd.parent / ("bazel-" + wd.name)
+    proc = subprocess.run([bazel, "--output_base=" + str(output_base), *args], cwd=str(wd), capture_output=True, text=True)
     if proc.returncode != 0:
         # A failed build must fail the benchmark, not report a misleadingly fast time.
         raise AssertionError(
@@ -90,16 +93,29 @@ def bazel():
 
 @pytest.fixture(scope="session", params=list(PROJECTS))
 def project(request, bazel):
-    wd = PROJECTS[request.param]
-    if not (wd / "MODULE.bazel").is_file():
-        pytest.skip(f"workspace not found: {wd}")
-    try:
-        _run(bazel, wd, *_BUILD)  # untimed fetch/analysis; cleanup also covers setup failure
-        yield bazel, wd
-    finally:
-        # Persistent runners otherwise retain a full distribution per workspace
-        # and eventually fail extraction with ENOSPC. This also stops the server.
-        _run(bazel, wd, "clean", "--expunge")
+    source = PROJECTS[request.param]
+    if not (source / "MODULE.bazel").is_file():
+        pytest.skip(f"workspace not found: {source}")
+    with tempfile.TemporaryDirectory(prefix="elide-codspeed-") as directory:
+        wd = Path(directory) / source.name
+        shutil.copytree(source, wd, ignore=shutil.ignore_patterns("bazel-*"))
+        module = wd / "MODULE.bazel"
+        contents = module.read_text()
+        if request.param == "integration":
+            # The fixture moved; resolve its rules checkout independently of cwd.
+            contents = contents.replace('path = "../.."', 'path = ' + json.dumps(str(E2E.parent)))
+            distribution = os.environ.get("ELIDE_DIST")
+            if distribution:
+                distribution = Path(distribution).resolve()
+                if not (distribution / "bin/elide").is_file():
+                    raise AssertionError(f"Invalid ELIDE_DIST: {distribution}")
+                contents += "\nelide.use(local_path = " + json.dumps(str(distribution)) + ")\n"
+            module.write_text(contents)
+        try:
+            _run(bazel, wd, *_BUILD)  # untimed fetch/analysis; cleanup covers setup failure
+            yield bazel, wd
+        finally:
+            _run(bazel, wd, "clean", "--expunge")
 
 
 def test_cold(benchmark, project):

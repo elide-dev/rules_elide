@@ -26,8 +26,7 @@ and `KOTLINC` (each benchmark skips if its tool is absent); CI provides stock
 `javac` via `actions/setup-java` and stock `kotlinc 2.4.0` via the npm
 `kotlin-compiler` package installed with bun.
 
-`test_e2e_bench.py` shows the **build-speed gain of Elide over a no-Elide
-baseline** by building two sibling workspaces with identical sources/targets and
+`test_e2e_bench.py` compares **Elide with a stock-rules baseline** by building two sibling workspaces with identical sources/targets and
 comparing them: `e2e/vanilla` (stock rules_java/rules_kotlin) vs `e2e/integration`
 (the Elide toolchain). Each is built in two regimes, so CodSpeed reports four
 benchmarks — the gain is the gap between `vanilla` and `integration` per regime:
@@ -39,11 +38,10 @@ benchmarks — the gain is the gap between `vanilla` and `integration` per regim
 | `test_incremental[vanilla]`     | baseline, rebuild after a 1-file edit           |
 | `test_incremental[integration]` | Elide, rebuild after a 1-file edit              |
 
-Both build a large committed generated fixture — `gen_kt` (200 `.kt`) + `gen_java`
-(200 `.java`), identical in both workspaces, from `e2e/gen_fixture.py` — so timings
-reflect real compiler throughput, not fixed overhead (on the tiny `sample/` demo
-the cold gain collapses to ~1.6×; at volume it is ~4.2×, matching
-`bench_suite.sh`). Builds run with `--disk_cache= --remote_cache=
+Both build a committed generated fixture — `gen_kt` (200 `.kt`) + `gen_java`
+(200 `.java`), identical in both workspaces, from `e2e/gen_fixture.py`. This
+isolates build/compiler behavior; it does not represent a real application's
+source complexity. Builds run with `--disk_cache= --remote_cache=
 --remote_executor= --noremote_accept_cached` (no action-result cache); the
 repository cache is kept so downloads are reused. `clean`/edit/restore run in
 untimed `pedantic` setup/teardown, and a warm-up build (untimed) keeps one-time
@@ -76,7 +74,7 @@ ELIDE=/abs/path/to/elide pytest benchmarks/codspeed --codspeed
 
 The **Benchmarks** workflow (`.github/workflows/benchmarks.yml`) runs its
 `walltime` job on every PR and on `main` pushes, on the self-hosted
-**`linux-amd64-cipool`** pool. Walltime needs an exclusive, unshared machine to
+**`linux-amd64-bench`** runner. Walltime needs an exclusive, unshared machine to
 be reliable; that pool provides it on x86_64. (CodSpeed's managed
 `codspeed-macro` runners are ARM64-only, so we use the self-hosted AMD64 pool
 instead.) Dependencies are provisioned with `uv` from `requirements.txt`. The
@@ -91,7 +89,7 @@ whole-build hyperfine suite on a schedule.)
    `rules_elide` repo (this is what posts the PR performance report). *(Done.)*
 2. Authentication is via **OIDC** — the `walltime` job grants `id-token: write`,
    so no upload token/secret is needed.
-3. Ensure the `linux-amd64-cipool` self-hosted runners have `curl`, `tar`, and
+3. Ensure the `linux-amd64-bench` self-hosted runner have `curl`, `tar`, and
    `sha256sum` available. Python and the benchmark deps are provisioned by `uv`
    (installed by `astral-sh/setup-uv`), so no system Python is required.
 
@@ -102,3 +100,16 @@ Those are harder to express faithfully as repeated-callable benchmarks (warm
 state and real edits between runs), so they are intentionally left out of the
 first cut. Add them as separate benchmark modules when the measurement model is
 worked out.
+
+## Distribution reuse and isolation
+
+The e2e fixtures run from temporary copies with explicit, separate Bazel output
+bases. Source edits and local toolchain overrides never modify the checked-out
+consumer modules. Each output base is expunged when its fixture finishes.
+
+CI sets `ELIDE_DIST` to the checksum-verified distribution already downloaded for
+the direct compiler benchmarks. The integration copy uses `elide.use(local_path)`
+to avoid extracting a second full distribution on the persistent runner. The
+archive is removed after verification and extraction. Without `ELIDE_DIST`, local
+runs retain the fixture's pinned download behavior. Local overrides must point to
+the matching release when comparing against CI results.

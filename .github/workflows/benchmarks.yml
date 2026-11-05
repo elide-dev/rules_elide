@@ -118,7 +118,9 @@ jobs:
           echo "$(awk '{print $1}' elide.tgz.sha256)  elide.tgz" | sha256sum -c -
           mkdir -p "$RUNNER_TEMP/elide"
           tar -xzf elide.tgz -C "$RUNNER_TEMP/elide"
+          rm elide.tgz elide.tgz.sha256
           echo "ELIDE=$RUNNER_TEMP/elide/bin/elide" >> "$GITHUB_ENV"
+          echo "ELIDE_DIST=$RUNNER_TEMP/elide" >> "$GITHUB_ENV"
           "$RUNNER_TEMP/elide/bin/elide" --version || true
 
       - name: Run walltime benchmarks
