@@ -97,3 +97,9 @@ The IC integration guard also restores an older jar from Bazel's disk action
 cache while the worker retains newer private state, then edits again. Execution
 logs must prove the cache hit and subsequent compiler execution; runtime results,
 deleted nested classes, and cold-build equivalence must still match.
+
+The native IC wire codec is tested against generated protobuf messages by
+`//elide/private/ic_worker:worker_protocol_test`, also run in hosted integration.
+It checks input digests, argument rewriting, request IDs, diagnostics, cancellation
+fields, unknown fields/groups, concatenated frames, and rejection of malformed or
+truncated streams. Generated protobuf classes are test dependencies only.

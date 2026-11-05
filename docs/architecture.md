@@ -65,7 +65,10 @@ through intermediate exports or `runtime_deps`, therefore receive it without
 relying on an Elide-specific launcher. Pure Java targets do not add Kotlin stdlib.
 
 Native incremental Kotlin compilation uses `elide/private/ic_worker`, a stock-Java
-worker adapter independent of the KotlinBuilder bootstrap. It forwards input
+worker adapter independent of the KotlinBuilder bootstrap. Its production binary
+uses only the JDK; a small worker wire codec preserves unknown protocol fields
+and is checked against generated protobuf classes in tests. Frames are limited
+to 64 MiB, and malformed or truncated messages fail explicitly. It forwards input
 digests to a resident Elide compiler, retains classes and IC state together in
 private temporary storage, and packages the complete jar before responding.
 Declared Bazel outputs are never used as persistent compiler state. Argument or

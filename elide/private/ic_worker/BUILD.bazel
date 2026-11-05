@@ -1,9 +1,24 @@
 load("@rules_java//java:java_binary.bzl", "java_binary")
+load("@rules_java//java:java_test.bzl", "java_test")
 
 java_binary(
     name = "ic_worker",
-    srcs = ["IncrementalWorker.java"],
+    srcs = [
+        "IncrementalWorker.java",
+        "WorkerProtocol.java",
+    ],
     main_class = "dev.elide.bazel.IncrementalWorker",
     visibility = ["//elide:__subpackages__"],
-    deps = ["//elide/kotlin/builder/proto:worker_protocol_java_proto"],
+)
+
+java_test(
+    name = "worker_protocol_test",
+    srcs = ["WorkerProtocolTest.java"],
+    main_class = "dev.elide.bazel.WorkerProtocolTest",
+    use_testrunner = False,
+    deps = [
+        ":ic_worker",
+        "//elide/kotlin/builder/proto:worker_protocol_java_proto",
+        "@protobuf//java/core",
+    ],
 )

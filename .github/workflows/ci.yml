@@ -133,8 +133,8 @@ jobs:
           bazelisk-cache: true
           disk-cache: ci-integration
           repository-cache: true
-      - name: KotlinBuilder unit and protocol tests
-        run: bazel test //tests/kotlin_builder:all --java_runtime_version=remotejdk_21 --tool_java_runtime_version=remotejdk_21
+      - name: KotlinBuilder and native worker protocol tests
+        run: bazel test //tests/kotlin_builder:all //elide/private/ic_worker:worker_protocol_test --java_runtime_version=remotejdk_21 --tool_java_runtime_version=remotejdk_21
       - name: JVM tools, metadata, and pruning
         run: ./tools/verify_integrations.sh jvm
       - name: Python runtime adapter

@@ -1,8 +1,8 @@
 package dev.elide.bazel;
 
-import com.google.devtools.build.lib.worker.WorkerProtocol.Input;
-import com.google.devtools.build.lib.worker.WorkerProtocol.WorkRequest;
-import com.google.devtools.build.lib.worker.WorkerProtocol.WorkResponse;
+import dev.elide.bazel.WorkerProtocol.Input;
+import dev.elide.bazel.WorkerProtocol.WorkRequest;
+import dev.elide.bazel.WorkerProtocol.WorkResponse;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -64,7 +64,7 @@ public final class IncrementalWorker implements AutoCloseable {
         .sorted(Comparator.comparing(Input::getPath)).collect(Collectors.toList())) {
       if (input.getPath().endsWith(".kt") || input.getPath().endsWith(".java")) continue;
       hash(hash, input.getPath().getBytes(java.nio.charset.StandardCharsets.UTF_8));
-      hash(hash, input.getDigest().toByteArray());
+      hash(hash, input.getDigest());
     }
     return Base64.getEncoder().encodeToString(hash.digest());
   }
@@ -118,7 +118,7 @@ public final class IncrementalWorker implements AutoCloseable {
     args.addAll(separator, List.of("--incremental", "--incremental-cache-dir",
         state.root.resolve("cache").toString()));
     try {
-      WorkResponse response = compile(request.toBuilder().clearArguments().addAllArguments(args).build());
+      WorkResponse response = compile(request.withArguments(args));
       if (response.getExitCode() == 0) {
         pack(classes, output);
       } else {
@@ -177,8 +177,7 @@ public final class IncrementalWorker implements AutoCloseable {
           try {
             response = worker.handle(request);
           } catch (Exception failure) {
-            response = WorkResponse.newBuilder().setExitCode(1)
-                .setRequestId(request.getRequestId()).setOutput(failure.toString()).build();
+            response = WorkResponse.error(request.getRequestId(), failure.toString());
           }
           response.writeDelimitedTo(System.out);
           System.out.flush();
@@ -189,7 +188,7 @@ public final class IncrementalWorker implements AutoCloseable {
           if (arg.startsWith("@")) expanded.addAll(Files.readAllLines(Path.of(arg.substring(1))));
           else expanded.add(arg);
         }
-        WorkResponse response = worker.handle(WorkRequest.newBuilder().addAllArguments(expanded).build());
+        WorkResponse response = worker.handle(WorkRequest.create(expanded));
         System.err.print(response.getOutput());
         if (response.getExitCode() != 0) throw new IOException("Kotlin compilation failed");
       }
