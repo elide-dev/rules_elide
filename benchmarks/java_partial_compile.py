@@ -41,6 +41,56 @@ def compile_request(worker, arguments, inputs):
     check_responses(prefix + worker.stdout.read(size), 1)
 
 
+
+def boundary_probes(worker, work):
+    """Check compile-time dependencies and expose the filename ownership limit."""
+    source = work / "Api.java"
+    options = ["--", "--release", "21", "-proc:none"]
+    cases = (
+        ("package_constant", "static final int K = 1;", "static final int K = 2;", True),
+        ("package_method", "static int value() {return 1;}",
+         "static long value() {return 1;}", True),
+        ("private_constant", "private static final int K = 1;",
+         "private static final int K = 2;", False),
+        ("private_nested_delete", "private static class Hidden {}", "", False),
+    )
+    report = []
+    for name, before, after, expected in cases:
+        headers = []
+        for index, body in enumerate((before, after)):
+            source.write_text("package probe; public class Api {" + body + "}")
+            jar = work / f"{name}-{index}.jar"
+            compile_request(worker, ["--abi-only", "--jar", str(jar), *options,
+                                    str(source)], [source])
+            headers.append(classes(jar))
+        changed = headers[0] != headers[1]
+        if changed != expected:
+            raise AssertionError(f"Unexpected ABI boundary for {name}: {changed}")
+        report.append({"scenario": name, "abi_changed": changed})
+
+    # Api.java also owns Helper and Helper$Hidden. Removing only Api and Api$*
+    # leaves a stale class even though the whole-module header is unchanged.
+    outputs, headers = [], []
+    for index, body in enumerate(("private static class Hidden {}", "")):
+        source.write_text("package probe; public class Api {} class Helper {" + body + "}")
+        jar, header = work / f"ownership-{index}.jar", work / f"ownership-{index}-abi.jar"
+        compile_request(worker, ["--jar", str(jar), "--emit-abi", str(header),
+                                *options, str(source)], [source])
+        outputs.append(classes(jar))
+        headers.append(classes(header))
+    if headers[0] != headers[1]:
+        raise AssertionError("Private secondary-class deletion unexpectedly changed ABI")
+    naive = {name: value for name, value in outputs[0].items()
+             if name != "probe/Api.class" and not name.startswith("probe/Api$")}
+    naive.update(outputs[1])
+    stale = sorted(naive.keys() - outputs[1].keys())
+    if stale != ["probe/Helper$Hidden.class"]:
+        raise AssertionError(f"Expected secondary-class ownership counterexample: {stale}")
+    report.append({"scenario": "secondary_nested_delete", "abi_changed": False,
+                   "filename_merge_stale_classes": stale})
+    return report
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--commons-lang", type=Path, required=True)
@@ -102,6 +152,8 @@ def main():
                         row["verified_class_files"] = len(reference)
                     report["cases"].append(row)
                     print(json.dumps(row), flush=True)
+                report["boundary_cases"] = boundary_probes(worker, work)
+                print(json.dumps({"boundary_cases": report["boundary_cases"]}), flush=True)
             finally:
                 worker.stdin.close()
                 try:

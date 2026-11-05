@@ -246,6 +246,14 @@ With Elide 1.6.2, body, private-member, and three-file body edits each matched a
 and was excluded from partial compilation. The JSON records the source revision
 and digest. Annotation processing is disabled and both paths target Java 21.
 
+Five small boundary cases also check package-private constants and method
+signatures, private constants, and nested-class deletion. They demonstrate a
+specific unsafe merge: when `Api.java` owns a secondary `Helper` class, deleting
+`Helper`'s private nested `Hidden` class leaves the header unchanged. Removing
+only `Api.class` and `Api$*.class` before merging retains stale
+`Helper$Hidden.class`. The probe asserts this counterexample, rather than treating
+an unchanged ABI as sufficient evidence for correct output ownership.
+
 This is a manual experiment, not a supported incremental Java rule. Its output
 ownership mapping applies only to the edited fixture classes. General support
 requires tracking secondary top-level and generated classes, deleted outputs,
