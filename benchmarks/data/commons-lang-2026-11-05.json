@@ -1,0 +1,5145 @@
+{
+  "commit": "0f5d8960d1b50c23058794de6c87a43174f3f91a",
+  "tracked_changes": false,
+  "host": "Linux-7.0.0-1017-azure-x86_64-with-glibc2.39",
+  "cpus": 4,
+  "jobs": 4,
+  "bazel_version": "9.3.1",
+  "elide_version": "1.6.2",
+  "jvm_rule_versions": {
+    "rules_java": "9.9.0",
+    "rules_kotlin": "2.4.21"
+  },
+  "isolated_mode_servers": true,
+  "java_release": 21,
+  "parameters": {
+    "commons_lang": "/home/runner/work/rules_elide/rules_elide/.benchmark-sources/commons-lang",
+    "profiles": true,
+    "sources": 20,
+    "fanout": 3,
+    "rounds": 5,
+    "warmups": 1,
+    "languages": [
+      "java"
+    ],
+    "modes": [
+      "vanilla",
+      "vanilla_abi",
+      "elide",
+      "elide_abi",
+      "elide_pruned",
+      "elide_incremental",
+      "elide_fused",
+      "elide_fused_pruned"
+    ],
+    "scenarios": [
+      "no_op",
+      "comment",
+      "body",
+      "private_member",
+      "internal_module_api",
+      "public_module_api",
+      "multi_file_body"
+    ],
+    "output": "/home/runner/work/rules_elide/rules_elide/benchmarks/results/incremental",
+    "distdir": []
+  },
+  "results": [
+    {
+      "language": "java",
+      "mode": "vanilla",
+      "scenario": "no_op",
+      "samples": [
+        {
+          "seconds": 0.23217850700000042,
+          "compile_targets": [],
+          "abi_targets": [],
+          "actions": {},
+          "execution_log": "java-vanilla-no_op-1.json",
+          "profile": {
+            "critical_path_action_seconds": 0.001358,
+            "critical_path_span_seconds": 0.001358,
+            "worker_memory_mib_max_sample": null,
+            "bazel_heap_nonheap_mib_max_sample": null,
+            "worker_memory_mib_by_mnemonic_max_sample": {}
+          },
+          "profile_file": "java-vanilla-no_op-1.profile.json.gz"
+        },
+        {
+          "seconds": 0.19402670399999522,
+          "compile_targets": [],
+          "abi_targets": [],
+          "actions": {},
+          "execution_log": "java-vanilla-no_op-2.json",
+          "profile": {
+            "critical_path_action_seconds": 0.001356,
+            "critical_path_span_seconds": 0.001356,
+            "worker_memory_mib_max_sample": null,
+            "bazel_heap_nonheap_mib_max_sample": null,
+            "worker_memory_mib_by_mnemonic_max_sample": {}
+          },
+          "profile_file": "java-vanilla-no_op-2.profile.json.gz"
+        },
+        {
+          "seconds": 0.1993418850000097,
+          "compile_targets": [],
+          "abi_targets": [],
+          "actions": {},
+          "execution_log": "java-vanilla-no_op-3.json",
+          "profile": {
+            "critical_path_action_seconds": 0.001272,
+            "critical_path_span_seconds": 0.001272,
+            "worker_memory_mib_max_sample": null,
+            "bazel_heap_nonheap_mib_max_sample": null,
+            "worker_memory_mib_by_mnemonic_max_sample": {}
+          },
+          "profile_file": "java-vanilla-no_op-3.profile.json.gz"
+        },
+        {
+          "seconds": 0.22707983300000478,
+          "compile_targets": [],
+          "abi_targets": [],
+          "actions": {},
+          "execution_log": "java-vanilla-no_op-4.json",
+          "profile": {
+            "critical_path_action_seconds": 0.001754,
+            "critical_path_span_seconds": 0.001754,
+            "worker_memory_mib_max_sample": null,
+            "bazel_heap_nonheap_mib_max_sample": null,
+            "worker_memory_mib_by_mnemonic_max_sample": {}
+          },
+          "profile_file": "java-vanilla-no_op-4.profile.json.gz"
+        },
+        {
+          "seconds": 0.1593060849999972,
+          "compile_targets": [],
+          "abi_targets": [],
+          "actions": {},
+          "execution_log": "java-vanilla-no_op-5.json",
+          "profile": {
+            "critical_path_action_seconds": 0.001325,
+            "critical_path_span_seconds": 0.001325,
+            "worker_memory_mib_max_sample": null,
+            "bazel_heap_nonheap_mib_max_sample": null,
+            "worker_memory_mib_by_mnemonic_max_sample": {}
+          },
+          "profile_file": "java-vanilla-no_op-5.profile.json.gz"
+        }
+      ]
+    },
+    {
+      "language": "java",
+      "mode": "vanilla",
+      "scenario": "comment",
+      "samples": [
+        {
+          "seconds": 1.5385262720000128,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "Turbine": 1,
+            "Javac": 1
+          },
+          "execution_log": "java-vanilla-comment-1.json",
+          "profile": {
+            "critical_path_action_seconds": 1.338896,
+            "critical_path_span_seconds": 1.338896,
+            "worker_memory_mib_max_sample": 372.096,
+            "bazel_heap_nonheap_mib_max_sample": 294.196,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "Javac": 372.25660937500004
+            }
+          },
+          "profile_file": "java-vanilla-comment-1.profile.json.gz"
+        },
+        {
+          "seconds": 1.3000121080000042,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "Turbine": 1,
+            "Javac": 1
+          },
+          "execution_log": "java-vanilla-comment-2.json",
+          "profile": {
+            "critical_path_action_seconds": 1.112099,
+            "critical_path_span_seconds": 1.112099,
+            "worker_memory_mib_max_sample": 520.3820000000001,
+            "bazel_heap_nonheap_mib_max_sample": 223.60000000000002,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "Javac": 520.569734375
+            }
+          },
+          "profile_file": "java-vanilla-comment-2.profile.json.gz"
+        },
+        {
+          "seconds": 1.2555376289999884,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "Turbine": 1,
+            "Javac": 1
+          },
+          "execution_log": "java-vanilla-comment-3.json",
+          "profile": {
+            "critical_path_action_seconds": 1.10958,
+            "critical_path_span_seconds": 1.10958,
+            "worker_memory_mib_max_sample": 475.677,
+            "bazel_heap_nonheap_mib_max_sample": 316.766,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "Javac": 475.9613007812501
+            }
+          },
+          "profile_file": "java-vanilla-comment-3.profile.json.gz"
+        },
+        {
+          "seconds": 1.2027103470000071,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "Turbine": 1,
+            "Javac": 1
+          },
+          "execution_log": "java-vanilla-comment-4.json",
+          "profile": {
+            "critical_path_action_seconds": 1.071253,
+            "critical_path_span_seconds": 1.071253,
+            "worker_memory_mib_max_sample": 717.5440000000001,
+            "bazel_heap_nonheap_mib_max_sample": 257.00000000000006,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "Javac": 718.4298632812502
+            }
+          },
+          "profile_file": "java-vanilla-comment-4.profile.json.gz"
+        },
+        {
+          "seconds": 1.214667728000009,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "Turbine": 1,
+            "Javac": 1
+          },
+          "execution_log": "java-vanilla-comment-5.json",
+          "profile": {
+            "critical_path_action_seconds": 1.079784,
+            "critical_path_span_seconds": 1.079784,
+            "worker_memory_mib_max_sample": 483.872,
+            "bazel_heap_nonheap_mib_max_sample": 361.77400000000006,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "Javac": 484.27040625000006
+            }
+          },
+          "profile_file": "java-vanilla-comment-5.profile.json.gz"
+        }
+      ]
+    },
+    {
+      "language": "java",
+      "mode": "vanilla",
+      "scenario": "body",
+      "samples": [
+        {
+          "seconds": 1.0583241110000046,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "Turbine": 1,
+            "Javac": 1
+          },
+          "execution_log": "java-vanilla-body-1.json",
+          "profile": {
+            "critical_path_action_seconds": 0.917073,
+            "critical_path_span_seconds": 0.917073,
+            "worker_memory_mib_max_sample": null,
+            "bazel_heap_nonheap_mib_max_sample": null,
+            "worker_memory_mib_by_mnemonic_max_sample": {}
+          },
+          "profile_file": "java-vanilla-body-1.profile.json.gz"
+        },
+        {
+          "seconds": 1.176074390000025,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "Turbine": 1,
+            "Javac": 1
+          },
+          "execution_log": "java-vanilla-body-2.json",
+          "profile": {
+            "critical_path_action_seconds": 1.032001,
+            "critical_path_span_seconds": 1.032001,
+            "worker_memory_mib_max_sample": 553.8750000000001,
+            "bazel_heap_nonheap_mib_max_sample": 300.6,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "Javac": 554.4114804687501
+            }
+          },
+          "profile_file": "java-vanilla-body-2.profile.json.gz"
+        },
+        {
+          "seconds": 1.1458345979999933,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "Turbine": 1,
+            "Javac": 1
+          },
+          "execution_log": "java-vanilla-body-3.json",
+          "profile": {
+            "critical_path_action_seconds": 1.016958,
+            "critical_path_span_seconds": 1.016958,
+            "worker_memory_mib_max_sample": 454.48,
+            "bazel_heap_nonheap_mib_max_sample": 373.6,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "Javac": 454.62700000000007
+            }
+          },
+          "profile_file": "java-vanilla-body-3.profile.json.gz"
+        },
+        {
+          "seconds": 1.1159380880000072,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "Turbine": 1,
+            "Javac": 1
+          },
+          "execution_log": "java-vanilla-body-4.json",
+          "profile": {
+            "critical_path_action_seconds": 0.989205,
+            "critical_path_span_seconds": 0.989205,
+            "worker_memory_mib_max_sample": 541.658,
+            "bazel_heap_nonheap_mib_max_sample": 287.372,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "Javac": 542.483859375
+            }
+          },
+          "profile_file": "java-vanilla-body-4.profile.json.gz"
+        },
+        {
+          "seconds": 0.9892202770000154,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "Turbine": 1,
+            "Javac": 1
+          },
+          "execution_log": "java-vanilla-body-5.json",
+          "profile": {
+            "critical_path_action_seconds": 0.86072,
+            "critical_path_span_seconds": 0.86072,
+            "worker_memory_mib_max_sample": null,
+            "bazel_heap_nonheap_mib_max_sample": null,
+            "worker_memory_mib_by_mnemonic_max_sample": {}
+          },
+          "profile_file": "java-vanilla-body-5.profile.json.gz"
+        }
+      ]
+    },
+    {
+      "language": "java",
+      "mode": "vanilla",
+      "scenario": "private_member",
+      "samples": [
+        {
+          "seconds": 1.0616539040000248,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "Turbine": 1,
+            "Javac": 1
+          },
+          "execution_log": "java-vanilla-private_member-1.json",
+          "profile": {
+            "critical_path_action_seconds": 0.942219,
+            "critical_path_span_seconds": 0.942219,
+            "worker_memory_mib_max_sample": null,
+            "bazel_heap_nonheap_mib_max_sample": null,
+            "worker_memory_mib_by_mnemonic_max_sample": {}
+          },
+          "profile_file": "java-vanilla-private_member-1.profile.json.gz"
+        },
+        {
+          "seconds": 1.041726600000004,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "Turbine": 1,
+            "Javac": 1
+          },
+          "execution_log": "java-vanilla-private_member-2.json",
+          "profile": {
+            "critical_path_action_seconds": 0.900471,
+            "critical_path_span_seconds": 0.900471,
+            "worker_memory_mib_max_sample": null,
+            "bazel_heap_nonheap_mib_max_sample": null,
+            "worker_memory_mib_by_mnemonic_max_sample": {}
+          },
+          "profile_file": "java-vanilla-private_member-2.profile.json.gz"
+        },
+        {
+          "seconds": 1.1271849750000058,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "Turbine": 1,
+            "Javac": 1
+          },
+          "execution_log": "java-vanilla-private_member-3.json",
+          "profile": {
+            "critical_path_action_seconds": 0.995875,
+            "critical_path_span_seconds": 0.995875,
+            "worker_memory_mib_max_sample": 431.724,
+            "bazel_heap_nonheap_mib_max_sample": 341.6,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "Javac": 432.4257851562501
+            }
+          },
+          "profile_file": "java-vanilla-private_member-3.profile.json.gz"
+        },
+        {
+          "seconds": 1.0515692900000033,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "Turbine": 1,
+            "Javac": 1
+          },
+          "execution_log": "java-vanilla-private_member-4.json",
+          "profile": {
+            "critical_path_action_seconds": 0.923897,
+            "critical_path_span_seconds": 0.923897,
+            "worker_memory_mib_max_sample": null,
+            "bazel_heap_nonheap_mib_max_sample": null,
+            "worker_memory_mib_by_mnemonic_max_sample": {}
+          },
+          "profile_file": "java-vanilla-private_member-4.profile.json.gz"
+        },
+        {
+          "seconds": 1.058035235999995,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "Turbine": 1,
+            "Javac": 1
+          },
+          "execution_log": "java-vanilla-private_member-5.json",
+          "profile": {
+            "critical_path_action_seconds": 0.930877,
+            "critical_path_span_seconds": 0.930877,
+            "worker_memory_mib_max_sample": null,
+            "bazel_heap_nonheap_mib_max_sample": null,
+            "worker_memory_mib_by_mnemonic_max_sample": {}
+          },
+          "profile_file": "java-vanilla-private_member-5.profile.json.gz"
+        }
+      ]
+    },
+    {
+      "language": "java",
+      "mode": "vanilla",
+      "scenario": "internal_module_api",
+      "samples": [
+        {
+          "seconds": 1.1848562360000017,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "Javac": 6,
+            "Turbine": 1
+          },
+          "execution_log": "java-vanilla-internal_module_api-1.json",
+          "profile": {
+            "critical_path_action_seconds": 1.064571,
+            "critical_path_span_seconds": 1.064571,
+            "worker_memory_mib_max_sample": 622.9180000000001,
+            "bazel_heap_nonheap_mib_max_sample": 294.76800000000003,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "Javac": 623.438515625
+            }
+          },
+          "profile_file": "java-vanilla-internal_module_api-1.profile.json.gz"
+        },
+        {
+          "seconds": 1.147405668999994,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "Javac": 6,
+            "Turbine": 1
+          },
+          "execution_log": "java-vanilla-internal_module_api-2.json",
+          "profile": {
+            "critical_path_action_seconds": 1.017993,
+            "critical_path_span_seconds": 1.017993,
+            "worker_memory_mib_max_sample": 735.529,
+            "bazel_heap_nonheap_mib_max_sample": 373.79,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "Javac": 736.0917109375
+            }
+          },
+          "profile_file": "java-vanilla-internal_module_api-2.profile.json.gz"
+        },
+        {
+          "seconds": 1.233839740999997,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "Javac": 6,
+            "Turbine": 1
+          },
+          "execution_log": "java-vanilla-internal_module_api-3.json",
+          "profile": {
+            "critical_path_action_seconds": 1.11003,
+            "critical_path_span_seconds": 1.11003,
+            "worker_memory_mib_max_sample": 504.544,
+            "bazel_heap_nonheap_mib_max_sample": 304.196,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "Javac": 504.80086718750005
+            }
+          },
+          "profile_file": "java-vanilla-internal_module_api-3.profile.json.gz"
+        },
+        {
+          "seconds": 1.1777004850000026,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "Javac": 6,
+            "Turbine": 1
+          },
+          "execution_log": "java-vanilla-internal_module_api-4.json",
+          "profile": {
+            "critical_path_action_seconds": 1.047056,
+            "critical_path_span_seconds": 1.047056,
+            "worker_memory_mib_max_sample": 778.9409999999999,
+            "bazel_heap_nonheap_mib_max_sample": 234.2,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "Javac": 779.4019960937501
+            }
+          },
+          "profile_file": "java-vanilla-internal_module_api-4.profile.json.gz"
+        },
+        {
+          "seconds": 1.2277915210000003,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "Javac": 6,
+            "Turbine": 1
+          },
+          "execution_log": "java-vanilla-internal_module_api-5.json",
+          "profile": {
+            "critical_path_action_seconds": 1.098239,
+            "critical_path_span_seconds": 1.098239,
+            "worker_memory_mib_max_sample": 1208.08,
+            "bazel_heap_nonheap_mib_max_sample": 328.98400000000004,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "Javac": 1208.3093437500002
+            }
+          },
+          "profile_file": "java-vanilla-internal_module_api-5.profile.json.gz"
+        }
+      ]
+    },
+    {
+      "language": "java",
+      "mode": "vanilla",
+      "scenario": "public_module_api",
+      "samples": [
+        {
+          "seconds": 0.3111886199999958,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//facade:facade"
+          ],
+          "abi_targets": [
+            "//facade:facade"
+          ],
+          "actions": {
+            "Javac": 5,
+            "Turbine": 1
+          },
+          "execution_log": "java-vanilla-public_module_api-1.json",
+          "profile": {
+            "critical_path_action_seconds": 0.155493,
+            "critical_path_span_seconds": 0.156038,
+            "worker_memory_mib_max_sample": null,
+            "bazel_heap_nonheap_mib_max_sample": null,
+            "worker_memory_mib_by_mnemonic_max_sample": {}
+          },
+          "profile_file": "java-vanilla-public_module_api-1.profile.json.gz"
+        },
+        {
+          "seconds": 0.31297086699999,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//facade:facade"
+          ],
+          "abi_targets": [
+            "//facade:facade"
+          ],
+          "actions": {
+            "Javac": 5,
+            "Turbine": 1
+          },
+          "execution_log": "java-vanilla-public_module_api-2.json",
+          "profile": {
+            "critical_path_action_seconds": 0.157698,
+            "critical_path_span_seconds": 0.158789,
+            "worker_memory_mib_max_sample": null,
+            "bazel_heap_nonheap_mib_max_sample": null,
+            "worker_memory_mib_by_mnemonic_max_sample": {}
+          },
+          "profile_file": "java-vanilla-public_module_api-2.profile.json.gz"
+        },
+        {
+          "seconds": 0.305444743999999,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//facade:facade"
+          ],
+          "abi_targets": [
+            "//facade:facade"
+          ],
+          "actions": {
+            "Javac": 5,
+            "Turbine": 1
+          },
+          "execution_log": "java-vanilla-public_module_api-3.json",
+          "profile": {
+            "critical_path_action_seconds": 0.156206,
+            "critical_path_span_seconds": 0.156898,
+            "worker_memory_mib_max_sample": null,
+            "bazel_heap_nonheap_mib_max_sample": null,
+            "worker_memory_mib_by_mnemonic_max_sample": {}
+          },
+          "profile_file": "java-vanilla-public_module_api-3.profile.json.gz"
+        },
+        {
+          "seconds": 0.27485421899999096,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//facade:facade"
+          ],
+          "abi_targets": [
+            "//facade:facade"
+          ],
+          "actions": {
+            "Javac": 5,
+            "Turbine": 1
+          },
+          "execution_log": "java-vanilla-public_module_api-4.json",
+          "profile": {
+            "critical_path_action_seconds": 0.143856,
+            "critical_path_span_seconds": 0.144344,
+            "worker_memory_mib_max_sample": null,
+            "bazel_heap_nonheap_mib_max_sample": null,
+            "worker_memory_mib_by_mnemonic_max_sample": {}
+          },
+          "profile_file": "java-vanilla-public_module_api-4.profile.json.gz"
+        },
+        {
+          "seconds": 0.2969682760000012,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//facade:facade"
+          ],
+          "abi_targets": [
+            "//facade:facade"
+          ],
+          "actions": {
+            "Javac": 5,
+            "Turbine": 1
+          },
+          "execution_log": "java-vanilla-public_module_api-5.json",
+          "profile": {
+            "critical_path_action_seconds": 0.157886,
+            "critical_path_span_seconds": 0.15831,
+            "worker_memory_mib_max_sample": null,
+            "bazel_heap_nonheap_mib_max_sample": null,
+            "worker_memory_mib_by_mnemonic_max_sample": {}
+          },
+          "profile_file": "java-vanilla-public_module_api-5.profile.json.gz"
+        }
+      ]
+    },
+    {
+      "language": "java",
+      "mode": "vanilla",
+      "scenario": "multi_file_body",
+      "samples": [
+        {
+          "seconds": 1.0767826910000053,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "Turbine": 1,
+            "Javac": 1
+          },
+          "execution_log": "java-vanilla-multi_file_body-1.json",
+          "profile": {
+            "critical_path_action_seconds": 0.956568,
+            "critical_path_span_seconds": 0.956568,
+            "worker_memory_mib_max_sample": null,
+            "bazel_heap_nonheap_mib_max_sample": null,
+            "worker_memory_mib_by_mnemonic_max_sample": {}
+          },
+          "profile_file": "java-vanilla-multi_file_body-1.profile.json.gz"
+        },
+        {
+          "seconds": 1.0429634420000014,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "Turbine": 1,
+            "Javac": 1
+          },
+          "execution_log": "java-vanilla-multi_file_body-2.json",
+          "profile": {
+            "critical_path_action_seconds": 0.919902,
+            "critical_path_span_seconds": 0.919902,
+            "worker_memory_mib_max_sample": null,
+            "bazel_heap_nonheap_mib_max_sample": null,
+            "worker_memory_mib_by_mnemonic_max_sample": {}
+          },
+          "profile_file": "java-vanilla-multi_file_body-2.profile.json.gz"
+        },
+        {
+          "seconds": 1.0397247769999751,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "Turbine": 1,
+            "Javac": 1
+          },
+          "execution_log": "java-vanilla-multi_file_body-3.json",
+          "profile": {
+            "critical_path_action_seconds": 0.922231,
+            "critical_path_span_seconds": 0.922231,
+            "worker_memory_mib_max_sample": null,
+            "bazel_heap_nonheap_mib_max_sample": null,
+            "worker_memory_mib_by_mnemonic_max_sample": {}
+          },
+          "profile_file": "java-vanilla-multi_file_body-3.profile.json.gz"
+        },
+        {
+          "seconds": 1.0907915479999986,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "Turbine": 1,
+            "Javac": 1
+          },
+          "execution_log": "java-vanilla-multi_file_body-4.json",
+          "profile": {
+            "critical_path_action_seconds": 0.975885,
+            "critical_path_span_seconds": 0.975885,
+            "worker_memory_mib_max_sample": 527.761,
+            "bazel_heap_nonheap_mib_max_sample": 341.59999999999997,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "Javac": 528.5347617187499
+            }
+          },
+          "profile_file": "java-vanilla-multi_file_body-4.profile.json.gz"
+        },
+        {
+          "seconds": 1.131813376999986,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "Turbine": 1,
+            "Javac": 1
+          },
+          "execution_log": "java-vanilla-multi_file_body-5.json",
+          "profile": {
+            "critical_path_action_seconds": 1.008394,
+            "critical_path_span_seconds": 1.008394,
+            "worker_memory_mib_max_sample": 618.376,
+            "bazel_heap_nonheap_mib_max_sample": 244.0,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "Javac": 618.9932265625
+            }
+          },
+          "profile_file": "java-vanilla-multi_file_body-5.profile.json.gz"
+        }
+      ]
+    },
+    {
+      "language": "java",
+      "mode": "elide",
+      "scenario": "no_op",
+      "samples": [
+        {
+          "seconds": 0.3684072909999827,
+          "compile_targets": [],
+          "abi_targets": [],
+          "actions": {},
+          "execution_log": "java-elide-no_op-1.json",
+          "profile": {
+            "critical_path_action_seconds": 0.002495,
+            "critical_path_span_seconds": 0.002495,
+            "worker_memory_mib_max_sample": null,
+            "bazel_heap_nonheap_mib_max_sample": null,
+            "worker_memory_mib_by_mnemonic_max_sample": {}
+          },
+          "profile_file": "java-elide-no_op-1.profile.json.gz"
+        },
+        {
+          "seconds": 0.25697229700000435,
+          "compile_targets": [],
+          "abi_targets": [],
+          "actions": {},
+          "execution_log": "java-elide-no_op-2.json",
+          "profile": {
+            "critical_path_action_seconds": 0.001076,
+            "critical_path_span_seconds": 0.001076,
+            "worker_memory_mib_max_sample": null,
+            "bazel_heap_nonheap_mib_max_sample": null,
+            "worker_memory_mib_by_mnemonic_max_sample": {}
+          },
+          "profile_file": "java-elide-no_op-2.profile.json.gz"
+        },
+        {
+          "seconds": 0.24717939800001432,
+          "compile_targets": [],
+          "abi_targets": [],
+          "actions": {},
+          "execution_log": "java-elide-no_op-3.json",
+          "profile": {
+            "critical_path_action_seconds": 0.000944,
+            "critical_path_span_seconds": 0.000944,
+            "worker_memory_mib_max_sample": null,
+            "bazel_heap_nonheap_mib_max_sample": null,
+            "worker_memory_mib_by_mnemonic_max_sample": {}
+          },
+          "profile_file": "java-elide-no_op-3.profile.json.gz"
+        },
+        {
+          "seconds": 0.28239562699999965,
+          "compile_targets": [],
+          "abi_targets": [],
+          "actions": {},
+          "execution_log": "java-elide-no_op-4.json",
+          "profile": {
+            "critical_path_action_seconds": 0.001487,
+            "critical_path_span_seconds": 0.001487,
+            "worker_memory_mib_max_sample": null,
+            "bazel_heap_nonheap_mib_max_sample": null,
+            "worker_memory_mib_by_mnemonic_max_sample": {}
+          },
+          "profile_file": "java-elide-no_op-4.profile.json.gz"
+        },
+        {
+          "seconds": 0.23908393700000374,
+          "compile_targets": [],
+          "abi_targets": [],
+          "actions": {},
+          "execution_log": "java-elide-no_op-5.json",
+          "profile": {
+            "critical_path_action_seconds": 0.000934,
+            "critical_path_span_seconds": 0.000934,
+            "worker_memory_mib_max_sample": null,
+            "bazel_heap_nonheap_mib_max_sample": null,
+            "worker_memory_mib_by_mnemonic_max_sample": {}
+          },
+          "profile_file": "java-elide-no_op-5.profile.json.gz"
+        }
+      ]
+    },
+    {
+      "language": "java",
+      "mode": "elide",
+      "scenario": "comment",
+      "samples": [
+        {
+          "seconds": 1.4642596829999945,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 1,
+            "JavaIjar": 1
+          },
+          "execution_log": "java-elide-comment-1.json",
+          "profile": {
+            "critical_path_action_seconds": 1.238643,
+            "critical_path_span_seconds": 1.24832,
+            "worker_memory_mib_max_sample": 316.29599999999994,
+            "bazel_heap_nonheap_mib_max_sample": 218.376,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "ElideJavac": 316.608140625
+            }
+          },
+          "profile_file": "java-elide-comment-1.profile.json.gz"
+        },
+        {
+          "seconds": 1.4943775420000236,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 1,
+            "JavaIjar": 1
+          },
+          "execution_log": "java-elide-comment-2.json",
+          "profile": {
+            "critical_path_action_seconds": 1.284399,
+            "critical_path_span_seconds": 1.292334,
+            "worker_memory_mib_max_sample": 334.08799999999997,
+            "bazel_heap_nonheap_mib_max_sample": 258.198,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "ElideJavac": 334.57371875
+            }
+          },
+          "profile_file": "java-elide-comment-2.profile.json.gz"
+        },
+        {
+          "seconds": 1.6947055760000183,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 1,
+            "JavaIjar": 1
+          },
+          "execution_log": "java-elide-comment-3.json",
+          "profile": {
+            "critical_path_action_seconds": 1.504494,
+            "critical_path_span_seconds": 1.512296,
+            "worker_memory_mib_max_sample": 359.57399999999996,
+            "bazel_heap_nonheap_mib_max_sample": 211.37599999999998,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "ElideJavac": 359.77946484374996
+            }
+          },
+          "profile_file": "java-elide-comment-3.profile.json.gz"
+        },
+        {
+          "seconds": 1.5279518420000215,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 1,
+            "JavaIjar": 1
+          },
+          "execution_log": "java-elide-comment-4.json",
+          "profile": {
+            "critical_path_action_seconds": 1.254356,
+            "critical_path_span_seconds": 1.261859,
+            "worker_memory_mib_max_sample": 341.812,
+            "bazel_heap_nonheap_mib_max_sample": 265.198,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "ElideJavac": 342.61171484375
+            }
+          },
+          "profile_file": "java-elide-comment-4.profile.json.gz"
+        },
+        {
+          "seconds": 1.470947074999998,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 1,
+            "JavaIjar": 1
+          },
+          "execution_log": "java-elide-comment-5.json",
+          "profile": {
+            "critical_path_action_seconds": 1.271426,
+            "critical_path_span_seconds": 1.280222,
+            "worker_memory_mib_max_sample": 343.01000000000005,
+            "bazel_heap_nonheap_mib_max_sample": 232.0,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "ElideJavac": 343.73528125000007
+            }
+          },
+          "profile_file": "java-elide-comment-5.profile.json.gz"
+        }
+      ]
+    },
+    {
+      "language": "java",
+      "mode": "elide",
+      "scenario": "body",
+      "samples": [
+        {
+          "seconds": 1.4307841989999872,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 1,
+            "JavaIjar": 1
+          },
+          "execution_log": "java-elide-body-1.json",
+          "profile": {
+            "critical_path_action_seconds": 1.245856,
+            "critical_path_span_seconds": 1.255109,
+            "worker_memory_mib_max_sample": 348.01,
+            "bazel_heap_nonheap_mib_max_sample": 202.99999999999997,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "ElideJavac": 348.6279921875
+            }
+          },
+          "profile_file": "java-elide-body-1.profile.json.gz"
+        },
+        {
+          "seconds": 1.4253170850000174,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 1,
+            "JavaIjar": 1
+          },
+          "execution_log": "java-elide-body-2.json",
+          "profile": {
+            "critical_path_action_seconds": 1.233742,
+            "critical_path_span_seconds": 1.240703,
+            "worker_memory_mib_max_sample": 350.60900000000004,
+            "bazel_heap_nonheap_mib_max_sample": 225.37599999999998,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "ElideJavac": 351.45292578125003
+            }
+          },
+          "profile_file": "java-elide-body-2.profile.json.gz"
+        },
+        {
+          "seconds": 1.4086532910000074,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 1,
+            "JavaIjar": 1
+          },
+          "execution_log": "java-elide-body-3.json",
+          "profile": {
+            "critical_path_action_seconds": 1.229846,
+            "critical_path_span_seconds": 1.237205,
+            "worker_memory_mib_max_sample": 353.6089999999999,
+            "bazel_heap_nonheap_mib_max_sample": 200.376,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "ElideJavac": 353.9067265625
+            }
+          },
+          "profile_file": "java-elide-body-3.profile.json.gz"
+        },
+        {
+          "seconds": 1.4986379489999706,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 1,
+            "JavaIjar": 1
+          },
+          "execution_log": "java-elide-body-4.json",
+          "profile": {
+            "critical_path_action_seconds": 1.297924,
+            "critical_path_span_seconds": 1.307352,
+            "worker_memory_mib_max_sample": 355.609,
+            "bazel_heap_nonheap_mib_max_sample": 224.00000000000003,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "ElideJavac": 356.2524453125
+            }
+          },
+          "profile_file": "java-elide-body-4.profile.json.gz"
+        },
+        {
+          "seconds": 1.4088109040000063,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 1,
+            "JavaIjar": 1
+          },
+          "execution_log": "java-elide-body-5.json",
+          "profile": {
+            "critical_path_action_seconds": 1.230702,
+            "critical_path_span_seconds": 1.239081,
+            "worker_memory_mib_max_sample": 322.507,
+            "bazel_heap_nonheap_mib_max_sample": 198.0,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "ElideJavac": 322.85821875
+            }
+          },
+          "profile_file": "java-elide-body-5.profile.json.gz"
+        }
+      ]
+    },
+    {
+      "language": "java",
+      "mode": "elide",
+      "scenario": "private_member",
+      "samples": [
+        {
+          "seconds": 1.3979746750000004,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 1,
+            "JavaIjar": 1
+          },
+          "execution_log": "java-elide-private_member-1.json",
+          "profile": {
+            "critical_path_action_seconds": 1.219743,
+            "critical_path_span_seconds": 1.226552,
+            "worker_memory_mib_max_sample": 327.50700000000006,
+            "bazel_heap_nonheap_mib_max_sample": 203.18,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "ElideJavac": 327.7488125
+            }
+          },
+          "profile_file": "java-elide-private_member-1.profile.json.gz"
+        },
+        {
+          "seconds": 1.435004221999975,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 1,
+            "JavaIjar": 1
+          },
+          "execution_log": "java-elide-private_member-2.json",
+          "profile": {
+            "critical_path_action_seconds": 1.220353,
+            "critical_path_span_seconds": 1.22712,
+            "worker_memory_mib_max_sample": 327.15500000000003,
+            "bazel_heap_nonheap_mib_max_sample": 234.00000000000006,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "ElideJavac": 327.3857968750001
+            }
+          },
+          "profile_file": "java-elide-private_member-2.profile.json.gz"
+        },
+        {
+          "seconds": 1.3977659810000205,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 1,
+            "JavaIjar": 1
+          },
+          "execution_log": "java-elide-private_member-3.json",
+          "profile": {
+            "critical_path_action_seconds": 1.219033,
+            "critical_path_span_seconds": 1.226106,
+            "worker_memory_mib_max_sample": 331.896,
+            "bazel_heap_nonheap_mib_max_sample": 204.60000000000002,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "ElideJavac": 332.56659375000004
+            }
+          },
+          "profile_file": "java-elide-private_member-3.profile.json.gz"
+        },
+        {
+          "seconds": 1.400846874000024,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 1,
+            "JavaIjar": 1
+          },
+          "execution_log": "java-elide-private_member-4.json",
+          "profile": {
+            "critical_path_action_seconds": 1.219102,
+            "critical_path_span_seconds": 1.226091,
+            "worker_memory_mib_max_sample": 334.832,
+            "bazel_heap_nonheap_mib_max_sample": 225.776,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "ElideJavac": 335.09940625
+            }
+          },
+          "profile_file": "java-elide-private_member-4.profile.json.gz"
+        },
+        {
+          "seconds": 1.4199079280000433,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 1,
+            "JavaIjar": 1
+          },
+          "execution_log": "java-elide-private_member-5.json",
+          "profile": {
+            "critical_path_action_seconds": 1.246011,
+            "critical_path_span_seconds": 1.252732,
+            "worker_memory_mib_max_sample": 305.35,
+            "bazel_heap_nonheap_mib_max_sample": 201.60000000000002,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "ElideJavac": 306.314453125
+            }
+          },
+          "profile_file": "java-elide-private_member-5.profile.json.gz"
+        }
+      ]
+    },
+    {
+      "language": "java",
+      "mode": "elide",
+      "scenario": "internal_module_api",
+      "samples": [
+        {
+          "seconds": 1.9650425149999933,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 6,
+            "JavaIjar": 5
+          },
+          "execution_log": "java-elide-internal_module_api-1.json",
+          "profile": {
+            "critical_path_action_seconds": 1.63372,
+            "critical_path_span_seconds": 1.652053,
+            "worker_memory_mib_max_sample": 290.17999999999995,
+            "bazel_heap_nonheap_mib_max_sample": 257.6,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "ElideJavac": 290.7811328125
+            }
+          },
+          "profile_file": "java-elide-internal_module_api-1.profile.json.gz"
+        },
+        {
+          "seconds": 1.8626134630000024,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 6,
+            "JavaIjar": 5
+          },
+          "execution_log": "java-elide-internal_module_api-2.json",
+          "profile": {
+            "critical_path_action_seconds": 1.556249,
+            "critical_path_span_seconds": 1.572446,
+            "worker_memory_mib_max_sample": 306.84000000000003,
+            "bazel_heap_nonheap_mib_max_sample": 309.8,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "ElideJavac": 307.05625000000003
+            }
+          },
+          "profile_file": "java-elide-internal_module_api-2.profile.json.gz"
+        },
+        {
+          "seconds": 1.8419492350000155,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 6,
+            "JavaIjar": 5
+          },
+          "execution_log": "java-elide-internal_module_api-3.json",
+          "profile": {
+            "critical_path_action_seconds": 1.56348,
+            "critical_path_span_seconds": 1.57855,
+            "worker_memory_mib_max_sample": 303.50700000000006,
+            "bazel_heap_nonheap_mib_max_sample": 335.00000000000006,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "ElideJavac": 303.92330468750004
+            }
+          },
+          "profile_file": "java-elide-internal_module_api-3.profile.json.gz"
+        },
+        {
+          "seconds": 1.8491466190000097,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 6,
+            "JavaIjar": 5
+          },
+          "execution_log": "java-elide-internal_module_api-4.json",
+          "profile": {
+            "critical_path_action_seconds": 1.564367,
+            "critical_path_span_seconds": 1.579643,
+            "worker_memory_mib_max_sample": 347.648,
+            "bazel_heap_nonheap_mib_max_sample": 330.99999999999994,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "ElideJavac": 348.03768359374993
+            }
+          },
+          "profile_file": "java-elide-internal_module_api-4.profile.json.gz"
+        },
+        {
+          "seconds": 1.8944175259999838,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 6,
+            "JavaIjar": 5
+          },
+          "execution_log": "java-elide-internal_module_api-5.json",
+          "profile": {
+            "critical_path_action_seconds": 1.626476,
+            "critical_path_span_seconds": 1.642924,
+            "worker_memory_mib_max_sample": 350.837,
+            "bazel_heap_nonheap_mib_max_sample": 330.378,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "ElideJavac": 351.53732031249996
+            }
+          },
+          "profile_file": "java-elide-internal_module_api-5.profile.json.gz"
+        }
+      ]
+    },
+    {
+      "language": "java",
+      "mode": "elide",
+      "scenario": "public_module_api",
+      "samples": [
+        {
+          "seconds": 0.533181777999971,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//facade:facade"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 5,
+            "JavaIjar": 4
+          },
+          "execution_log": "java-elide-public_module_api-1.json",
+          "profile": {
+            "critical_path_action_seconds": 0.266162,
+            "critical_path_span_seconds": 0.275535,
+            "worker_memory_mib_max_sample": null,
+            "bazel_heap_nonheap_mib_max_sample": null,
+            "worker_memory_mib_by_mnemonic_max_sample": {}
+          },
+          "profile_file": "java-elide-public_module_api-1.profile.json.gz"
+        },
+        {
+          "seconds": 0.45141820399999233,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//facade:facade"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 5,
+            "JavaIjar": 1
+          },
+          "execution_log": "java-elide-public_module_api-2.json",
+          "profile": {
+            "critical_path_action_seconds": 0.212151,
+            "critical_path_span_seconds": 0.221234,
+            "worker_memory_mib_max_sample": null,
+            "bazel_heap_nonheap_mib_max_sample": null,
+            "worker_memory_mib_by_mnemonic_max_sample": {}
+          },
+          "profile_file": "java-elide-public_module_api-2.profile.json.gz"
+        },
+        {
+          "seconds": 0.48824482800000624,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//facade:facade"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 5,
+            "JavaIjar": 4
+          },
+          "execution_log": "java-elide-public_module_api-3.json",
+          "profile": {
+            "critical_path_action_seconds": 0.237533,
+            "critical_path_span_seconds": 0.247022,
+            "worker_memory_mib_max_sample": null,
+            "bazel_heap_nonheap_mib_max_sample": null,
+            "worker_memory_mib_by_mnemonic_max_sample": {}
+          },
+          "profile_file": "java-elide-public_module_api-3.profile.json.gz"
+        },
+        {
+          "seconds": 0.46967115899997225,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//facade:facade"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 5,
+            "JavaIjar": 1
+          },
+          "execution_log": "java-elide-public_module_api-4.json",
+          "profile": {
+            "critical_path_action_seconds": 0.212383,
+            "critical_path_span_seconds": 0.225949,
+            "worker_memory_mib_max_sample": null,
+            "bazel_heap_nonheap_mib_max_sample": null,
+            "worker_memory_mib_by_mnemonic_max_sample": {}
+          },
+          "profile_file": "java-elide-public_module_api-4.profile.json.gz"
+        },
+        {
+          "seconds": 0.49227650000000267,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//facade:facade"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 5,
+            "JavaIjar": 4
+          },
+          "execution_log": "java-elide-public_module_api-5.json",
+          "profile": {
+            "critical_path_action_seconds": 0.2303,
+            "critical_path_span_seconds": 0.238996,
+            "worker_memory_mib_max_sample": null,
+            "bazel_heap_nonheap_mib_max_sample": null,
+            "worker_memory_mib_by_mnemonic_max_sample": {}
+          },
+          "profile_file": "java-elide-public_module_api-5.profile.json.gz"
+        }
+      ]
+    },
+    {
+      "language": "java",
+      "mode": "elide",
+      "scenario": "multi_file_body",
+      "samples": [
+        {
+          "seconds": 1.5986799990000122,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 1,
+            "JavaIjar": 1
+          },
+          "execution_log": "java-elide-multi_file_body-1.json",
+          "profile": {
+            "critical_path_action_seconds": 1.430155,
+            "critical_path_span_seconds": 1.437154,
+            "worker_memory_mib_max_sample": 364.41599999999994,
+            "bazel_heap_nonheap_mib_max_sample": 322.99999999999994,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "ElideJavac": 364.85596875
+            }
+          },
+          "profile_file": "java-elide-multi_file_body-1.profile.json.gz"
+        },
+        {
+          "seconds": 1.8493885969999724,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 1,
+            "JavaIjar": 1
+          },
+          "execution_log": "java-elide-multi_file_body-2.json",
+          "profile": {
+            "critical_path_action_seconds": 1.690763,
+            "critical_path_span_seconds": 1.697354,
+            "worker_memory_mib_max_sample": 293.404,
+            "bazel_heap_nonheap_mib_max_sample": 359.99999999999994,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "ElideJavac": 293.8991796875
+            }
+          },
+          "profile_file": "java-elide-multi_file_body-2.profile.json.gz"
+        },
+        {
+          "seconds": 1.6354228650000096,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 1,
+            "JavaIjar": 1
+          },
+          "execution_log": "java-elide-multi_file_body-3.json",
+          "profile": {
+            "critical_path_action_seconds": 1.467478,
+            "critical_path_span_seconds": 1.473998,
+            "worker_memory_mib_max_sample": 309.752,
+            "bazel_heap_nonheap_mib_max_sample": 356.0,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "ElideJavac": 310.214109375
+            }
+          },
+          "profile_file": "java-elide-multi_file_body-3.profile.json.gz"
+        },
+        {
+          "seconds": 1.8569259849999753,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 1,
+            "JavaIjar": 1
+          },
+          "execution_log": "java-elide-multi_file_body-4.json",
+          "profile": {
+            "critical_path_action_seconds": 1.697535,
+            "critical_path_span_seconds": 1.704963,
+            "worker_memory_mib_max_sample": 336.7,
+            "bazel_heap_nonheap_mib_max_sample": 205.0,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "ElideJavac": 337.25906249999997
+            }
+          },
+          "profile_file": "java-elide-multi_file_body-4.profile.json.gz"
+        },
+        {
+          "seconds": 1.749282317000052,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 1,
+            "JavaIjar": 1
+          },
+          "execution_log": "java-elide-multi_file_body-5.json",
+          "profile": {
+            "critical_path_action_seconds": 1.5791,
+            "critical_path_span_seconds": 1.585608,
+            "worker_memory_mib_max_sample": 340.32499999999993,
+            "bazel_heap_nonheap_mib_max_sample": 242.378,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "ElideJavac": 340.703046875
+            }
+          },
+          "profile_file": "java-elide-multi_file_body-5.profile.json.gz"
+        }
+      ]
+    },
+    {
+      "language": "java",
+      "mode": "elide_abi",
+      "scenario": "no_op",
+      "samples": [
+        {
+          "seconds": 0.2730496849999895,
+          "compile_targets": [],
+          "abi_targets": [],
+          "actions": {},
+          "execution_log": "java-elide_abi-no_op-1.json",
+          "profile": {
+            "critical_path_action_seconds": 0.001327,
+            "critical_path_span_seconds": 0.001327,
+            "worker_memory_mib_max_sample": null,
+            "bazel_heap_nonheap_mib_max_sample": null,
+            "worker_memory_mib_by_mnemonic_max_sample": {}
+          },
+          "profile_file": "java-elide_abi-no_op-1.profile.json.gz"
+        },
+        {
+          "seconds": 0.24486168300001054,
+          "compile_targets": [],
+          "abi_targets": [],
+          "actions": {},
+          "execution_log": "java-elide_abi-no_op-2.json",
+          "profile": {
+            "critical_path_action_seconds": 0.000937,
+            "critical_path_span_seconds": 0.000937,
+            "worker_memory_mib_max_sample": null,
+            "bazel_heap_nonheap_mib_max_sample": null,
+            "worker_memory_mib_by_mnemonic_max_sample": {}
+          },
+          "profile_file": "java-elide_abi-no_op-2.profile.json.gz"
+        },
+        {
+          "seconds": 0.23570303799999692,
+          "compile_targets": [],
+          "abi_targets": [],
+          "actions": {},
+          "execution_log": "java-elide_abi-no_op-3.json",
+          "profile": {
+            "critical_path_action_seconds": 0.001256,
+            "critical_path_span_seconds": 0.001256,
+            "worker_memory_mib_max_sample": null,
+            "bazel_heap_nonheap_mib_max_sample": null,
+            "worker_memory_mib_by_mnemonic_max_sample": {}
+          },
+          "profile_file": "java-elide_abi-no_op-3.profile.json.gz"
+        },
+        {
+          "seconds": 0.16224414500004514,
+          "compile_targets": [],
+          "abi_targets": [],
+          "actions": {},
+          "execution_log": "java-elide_abi-no_op-4.json",
+          "profile": {
+            "critical_path_action_seconds": 0.00095,
+            "critical_path_span_seconds": 0.00095,
+            "worker_memory_mib_max_sample": null,
+            "bazel_heap_nonheap_mib_max_sample": null,
+            "worker_memory_mib_by_mnemonic_max_sample": {}
+          },
+          "profile_file": "java-elide_abi-no_op-4.profile.json.gz"
+        },
+        {
+          "seconds": 0.22329344599995693,
+          "compile_targets": [],
+          "abi_targets": [],
+          "actions": {},
+          "execution_log": "java-elide_abi-no_op-5.json",
+          "profile": {
+            "critical_path_action_seconds": 0.001009,
+            "critical_path_span_seconds": 0.001009,
+            "worker_memory_mib_max_sample": null,
+            "bazel_heap_nonheap_mib_max_sample": null,
+            "worker_memory_mib_by_mnemonic_max_sample": {}
+          },
+          "profile_file": "java-elide_abi-no_op-5.profile.json.gz"
+        }
+      ]
+    },
+    {
+      "language": "java",
+      "mode": "elide_abi",
+      "scenario": "comment",
+      "samples": [
+        {
+          "seconds": 1.4418778289999636,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "ElideJavac": 1,
+            "ElideJavacAbi": 1
+          },
+          "execution_log": "java-elide_abi-comment-1.json",
+          "profile": {
+            "critical_path_action_seconds": 1.209617,
+            "critical_path_span_seconds": 1.209617,
+            "worker_memory_mib_max_sample": 526.841,
+            "bazel_heap_nonheap_mib_max_sample": 319.2,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "ElideJavacAbi": 207.81093750000002,
+              "ElideJavac": 319.77985156249997
+            }
+          },
+          "profile_file": "java-elide_abi-comment-1.profile.json.gz"
+        },
+        {
+          "seconds": 1.538273477999951,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "ElideJavac": 1,
+            "ElideJavacAbi": 1
+          },
+          "execution_log": "java-elide_abi-comment-2.json",
+          "profile": {
+            "critical_path_action_seconds": 1.344986,
+            "critical_path_span_seconds": 1.344986,
+            "worker_memory_mib_max_sample": 497.59999999999997,
+            "bazel_heap_nonheap_mib_max_sample": 216.79799999999997,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "ElideJavacAbi": 198.31328125,
+              "ElideJavac": 299.82820312499996
+            }
+          },
+          "profile_file": "java-elide_abi-comment-2.profile.json.gz"
+        },
+        {
+          "seconds": 1.730087286000014,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "ElideJavac": 1,
+            "ElideJavacAbi": 1
+          },
+          "execution_log": "java-elide_abi-comment-3.json",
+          "profile": {
+            "critical_path_action_seconds": 1.521466,
+            "critical_path_span_seconds": 1.521466,
+            "worker_memory_mib_max_sample": 580.95,
+            "bazel_heap_nonheap_mib_max_sample": 276.994,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "ElideJavacAbi": 220.354078125,
+              "ElideJavac": 360.8855078125
+            }
+          },
+          "profile_file": "java-elide_abi-comment-3.profile.json.gz"
+        },
+        {
+          "seconds": 1.4264112700000169,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "ElideJavac": 1,
+            "ElideJavacAbi": 1
+          },
+          "execution_log": "java-elide_abi-comment-4.json",
+          "profile": {
+            "critical_path_action_seconds": 1.225759,
+            "critical_path_span_seconds": 1.225759,
+            "worker_memory_mib_max_sample": 552.02,
+            "bazel_heap_nonheap_mib_max_sample": 335.20000000000005,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "ElideJavacAbi": 211.30795703125003,
+              "ElideJavac": 341.357828125
+            }
+          },
+          "profile_file": "java-elide_abi-comment-4.profile.json.gz"
+        },
+        {
+          "seconds": 1.4394594930000153,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "ElideJavac": 1,
+            "ElideJavacAbi": 1
+          },
+          "execution_log": "java-elide_abi-comment-5.json",
+          "profile": {
+            "critical_path_action_seconds": 1.256817,
+            "critical_path_span_seconds": 1.256817,
+            "worker_memory_mib_max_sample": 553.401,
+            "bazel_heap_nonheap_mib_max_sample": 231.6,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "ElideJavacAbi": 209.25005078125,
+              "ElideJavac": 344.34078906249994
+            }
+          },
+          "profile_file": "java-elide_abi-comment-5.profile.json.gz"
+        }
+      ]
+    },
+    {
+      "language": "java",
+      "mode": "elide_abi",
+      "scenario": "body",
+      "samples": [
+        {
+          "seconds": 1.4083844709999767,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "ElideJavac": 1,
+            "ElideJavacAbi": 1
+          },
+          "execution_log": "java-elide_abi-body-1.json",
+          "profile": {
+            "critical_path_action_seconds": 1.227972,
+            "critical_path_span_seconds": 1.227972,
+            "worker_memory_mib_max_sample": 555.619,
+            "bazel_heap_nonheap_mib_max_sample": 345.19999999999993,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "ElideJavacAbi": 207.07892578125,
+              "ElideJavac": 349.51033203124996
+            }
+          },
+          "profile_file": "java-elide_abi-body-1.profile.json.gz"
+        },
+        {
+          "seconds": 1.4440189110000006,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "ElideJavac": 1,
+            "ElideJavacAbi": 1
+          },
+          "execution_log": "java-elide_abi-body-2.json",
+          "profile": {
+            "critical_path_action_seconds": 1.256973,
+            "critical_path_span_seconds": 1.256973,
+            "worker_memory_mib_max_sample": 546.8319999999999,
+            "bazel_heap_nonheap_mib_max_sample": 240.97799999999998,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "ElideJavacAbi": 195.575921875,
+              "ElideJavac": 351.74595312499997
+            }
+          },
+          "profile_file": "java-elide_abi-body-2.profile.json.gz"
+        },
+        {
+          "seconds": 1.4231671249999636,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "ElideJavac": 1,
+            "ElideJavacAbi": 1
+          },
+          "execution_log": "java-elide_abi-body-3.json",
+          "profile": {
+            "critical_path_action_seconds": 1.246401,
+            "critical_path_span_seconds": 1.246401,
+            "worker_memory_mib_max_sample": 559.807,
+            "bazel_heap_nonheap_mib_max_sample": 295.6,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "ElideJavacAbi": 205.94245703125,
+              "ElideJavac": 354.23015234375
+            }
+          },
+          "profile_file": "java-elide_abi-body-3.profile.json.gz"
+        },
+        {
+          "seconds": 1.4390573850000123,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "ElideJavac": 1,
+            "ElideJavacAbi": 1
+          },
+          "execution_log": "java-elide_abi-body-4.json",
+          "profile": {
+            "critical_path_action_seconds": 1.250044,
+            "critical_path_span_seconds": 1.250044,
+            "worker_memory_mib_max_sample": 561.619,
+            "bazel_heap_nonheap_mib_max_sample": 231.20000000000002,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "ElideJavacAbi": 205.5884375,
+              "ElideJavac": 356.2638203125
+            }
+          },
+          "profile_file": "java-elide_abi-body-4.profile.json.gz"
+        },
+        {
+          "seconds": 1.4252648150000482,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "ElideJavac": 1,
+            "ElideJavacAbi": 1
+          },
+          "execution_log": "java-elide_abi-body-5.json",
+          "profile": {
+            "critical_path_action_seconds": 1.242016,
+            "critical_path_span_seconds": 1.242016,
+            "worker_memory_mib_max_sample": 564.208,
+            "bazel_heap_nonheap_mib_max_sample": 251.59999999999997,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "ElideJavacAbi": 206.18025781249997,
+              "ElideJavac": 358.7975078125
+            }
+          },
+          "profile_file": "java-elide_abi-body-5.profile.json.gz"
+        }
+      ]
+    },
+    {
+      "language": "java",
+      "mode": "elide_abi",
+      "scenario": "private_member",
+      "samples": [
+        {
+          "seconds": 1.416503567999996,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "ElideJavac": 1,
+            "ElideJavacAbi": 1
+          },
+          "execution_log": "java-elide_abi-private_member-1.json",
+          "profile": {
+            "critical_path_action_seconds": 1.234158,
+            "critical_path_span_seconds": 1.234158,
+            "worker_memory_mib_max_sample": 518.7370000000001,
+            "bazel_heap_nonheap_mib_max_sample": 333.57200000000006,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "ElideJavacAbi": 192.25500781250003,
+              "ElideJavac": 326.7904296875001
+            }
+          },
+          "profile_file": "java-elide_abi-private_member-1.profile.json.gz"
+        },
+        {
+          "seconds": 1.5145476000000144,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "ElideJavac": 1,
+            "ElideJavacAbi": 1
+          },
+          "execution_log": "java-elide_abi-private_member-2.json",
+          "profile": {
+            "critical_path_action_seconds": 1.324796,
+            "critical_path_span_seconds": 1.324796,
+            "worker_memory_mib_max_sample": 523.5730000000001,
+            "bazel_heap_nonheap_mib_max_sample": 223.20000000000005,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "ElideJavacAbi": 197.40168359375002,
+              "ElideJavac": 326.83489453125003
+            }
+          },
+          "profile_file": "java-elide_abi-private_member-2.profile.json.gz"
+        },
+        {
+          "seconds": 1.4461480539999911,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "ElideJavac": 1,
+            "ElideJavacAbi": 1
+          },
+          "execution_log": "java-elide_abi-private_member-3.json",
+          "profile": {
+            "critical_path_action_seconds": 1.253823,
+            "critical_path_span_seconds": 1.253823,
+            "worker_memory_mib_max_sample": 520.844,
+            "bazel_heap_nonheap_mib_max_sample": 277.6,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "ElideJavacAbi": 190.66988281250002,
+              "ElideJavac": 330.92752343750004
+            }
+          },
+          "profile_file": "java-elide_abi-private_member-3.profile.json.gz"
+        },
+        {
+          "seconds": 1.488711034000005,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "ElideJavac": 1,
+            "ElideJavacAbi": 1
+          },
+          "execution_log": "java-elide_abi-private_member-4.json",
+          "profile": {
+            "critical_path_action_seconds": 1.299119,
+            "critical_path_span_seconds": 1.299119,
+            "worker_memory_mib_max_sample": 501.2510000000001,
+            "bazel_heap_nonheap_mib_max_sample": 326.20000000000005,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "ElideJavacAbi": 196.42971093750003,
+              "ElideJavac": 305.5156445312501
+            }
+          },
+          "profile_file": "java-elide_abi-private_member-4.profile.json.gz"
+        },
+        {
+          "seconds": 1.4559070829999996,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "ElideJavac": 1,
+            "ElideJavacAbi": 1
+          },
+          "execution_log": "java-elide_abi-private_member-5.json",
+          "profile": {
+            "critical_path_action_seconds": 1.281172,
+            "critical_path_span_seconds": 1.281172,
+            "worker_memory_mib_max_sample": 505.6500000000001,
+            "bazel_heap_nonheap_mib_max_sample": 249.8,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "ElideJavacAbi": 197.70074218750003,
+              "ElideJavac": 308.46085937500004
+            }
+          },
+          "profile_file": "java-elide_abi-private_member-5.profile.json.gz"
+        }
+      ]
+    },
+    {
+      "language": "java",
+      "mode": "elide_abi",
+      "scenario": "internal_module_api",
+      "samples": [
+        {
+          "seconds": 1.928738663000047,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "actions": {
+            "ElideJavac": 6,
+            "ElideJavacAbi": 5
+          },
+          "execution_log": "java-elide_abi-internal_module_api-1.json",
+          "profile": {
+            "critical_path_action_seconds": 1.428939,
+            "critical_path_span_seconds": 1.438717,
+            "worker_memory_mib_max_sample": 496.248,
+            "bazel_heap_nonheap_mib_max_sample": 323.6,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "ElideJavacAbi": 180.14921875,
+              "ElideJavac": 316.69864843749997
+            }
+          },
+          "profile_file": "java-elide_abi-internal_module_api-1.profile.json.gz"
+        },
+        {
+          "seconds": 1.8813449389999732,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "actions": {
+            "ElideJavac": 6,
+            "ElideJavacAbi": 5
+          },
+          "execution_log": "java-elide_abi-internal_module_api-2.json",
+          "profile": {
+            "critical_path_action_seconds": 1.436634,
+            "critical_path_span_seconds": 1.447335,
+            "worker_memory_mib_max_sample": 478.11600000000004,
+            "bazel_heap_nonheap_mib_max_sample": 385.10799999999995,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "ElideJavacAbi": 185.47706250000002,
+              "ElideJavac": 292.992515625
+            }
+          },
+          "profile_file": "java-elide_abi-internal_module_api-2.profile.json.gz"
+        },
+        {
+          "seconds": 1.8483560150000358,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "actions": {
+            "ElideJavac": 6,
+            "ElideJavacAbi": 5
+          },
+          "execution_log": "java-elide_abi-internal_module_api-3.json",
+          "profile": {
+            "critical_path_action_seconds": 1.404904,
+            "critical_path_span_seconds": 1.413656,
+            "worker_memory_mib_max_sample": 562.823,
+            "bazel_heap_nonheap_mib_max_sample": 434.966,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "ElideJavacAbi": 180.5145859375,
+              "ElideJavac": 382.496984375
+            }
+          },
+          "profile_file": "java-elide_abi-internal_module_api-3.profile.json.gz"
+        },
+        {
+          "seconds": 1.9182147980000082,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "actions": {
+            "ElideJavac": 6,
+            "ElideJavacAbi": 5
+          },
+          "execution_log": "java-elide_abi-internal_module_api-4.json",
+          "profile": {
+            "critical_path_action_seconds": 1.512029,
+            "critical_path_span_seconds": 1.520486,
+            "worker_memory_mib_max_sample": 556.8900000000001,
+            "bazel_heap_nonheap_mib_max_sample": 488.796,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "ElideJavacAbi": 180.43241406250002,
+              "ElideJavac": 377.02946875000004
+            }
+          },
+          "profile_file": "java-elide_abi-internal_module_api-4.profile.json.gz"
+        },
+        {
+          "seconds": 1.875509588,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "actions": {
+            "ElideJavac": 6,
+            "ElideJavacAbi": 5
+          },
+          "execution_log": "java-elide_abi-internal_module_api-5.json",
+          "profile": {
+            "critical_path_action_seconds": 1.439955,
+            "critical_path_span_seconds": 1.448636,
+            "worker_memory_mib_max_sample": 527.529,
+            "bazel_heap_nonheap_mib_max_sample": 390.502,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "ElideJavacAbi": 185.61954687499997,
+              "ElideJavac": 342.3149296875
+            }
+          },
+          "profile_file": "java-elide_abi-internal_module_api-5.profile.json.gz"
+        }
+      ]
+    },
+    {
+      "language": "java",
+      "mode": "elide_abi",
+      "scenario": "public_module_api",
+      "samples": [
+        {
+          "seconds": 0.5429968509999981,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//facade:facade"
+          ],
+          "abi_targets": [
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//facade:facade"
+          ],
+          "actions": {
+            "ElideJavac": 5,
+            "ElideJavacAbi": 4
+          },
+          "execution_log": "java-elide_abi-public_module_api-1.json",
+          "profile": {
+            "critical_path_action_seconds": 0.212586,
+            "critical_path_span_seconds": 0.21922,
+            "worker_memory_mib_max_sample": null,
+            "bazel_heap_nonheap_mib_max_sample": null,
+            "worker_memory_mib_by_mnemonic_max_sample": {}
+          },
+          "profile_file": "java-elide_abi-public_module_api-1.profile.json.gz"
+        },
+        {
+          "seconds": 0.5200841329999548,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//facade:facade"
+          ],
+          "abi_targets": [
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//facade:facade"
+          ],
+          "actions": {
+            "ElideJavac": 5,
+            "ElideJavacAbi": 4
+          },
+          "execution_log": "java-elide_abi-public_module_api-2.json",
+          "profile": {
+            "critical_path_action_seconds": 0.191894,
+            "critical_path_span_seconds": 0.197137,
+            "worker_memory_mib_max_sample": null,
+            "bazel_heap_nonheap_mib_max_sample": null,
+            "worker_memory_mib_by_mnemonic_max_sample": {}
+          },
+          "profile_file": "java-elide_abi-public_module_api-2.profile.json.gz"
+        },
+        {
+          "seconds": 0.4993296119999968,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//facade:facade"
+          ],
+          "abi_targets": [
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//facade:facade"
+          ],
+          "actions": {
+            "ElideJavac": 5,
+            "ElideJavacAbi": 4
+          },
+          "execution_log": "java-elide_abi-public_module_api-3.json",
+          "profile": {
+            "critical_path_action_seconds": 0.207568,
+            "critical_path_span_seconds": 0.237786,
+            "worker_memory_mib_max_sample": null,
+            "bazel_heap_nonheap_mib_max_sample": null,
+            "worker_memory_mib_by_mnemonic_max_sample": {}
+          },
+          "profile_file": "java-elide_abi-public_module_api-3.profile.json.gz"
+        },
+        {
+          "seconds": 0.501703684000006,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//facade:facade"
+          ],
+          "abi_targets": [
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//facade:facade"
+          ],
+          "actions": {
+            "ElideJavac": 5,
+            "ElideJavacAbi": 4
+          },
+          "execution_log": "java-elide_abi-public_module_api-4.json",
+          "profile": {
+            "critical_path_action_seconds": 0.172543,
+            "critical_path_span_seconds": 0.217211,
+            "worker_memory_mib_max_sample": null,
+            "bazel_heap_nonheap_mib_max_sample": null,
+            "worker_memory_mib_by_mnemonic_max_sample": {}
+          },
+          "profile_file": "java-elide_abi-public_module_api-4.profile.json.gz"
+        },
+        {
+          "seconds": 0.4899959799999465,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//facade:facade"
+          ],
+          "abi_targets": [
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//facade:facade"
+          ],
+          "actions": {
+            "ElideJavac": 5,
+            "ElideJavacAbi": 4
+          },
+          "execution_log": "java-elide_abi-public_module_api-5.json",
+          "profile": {
+            "critical_path_action_seconds": 0.194592,
+            "critical_path_span_seconds": 0.22285,
+            "worker_memory_mib_max_sample": null,
+            "bazel_heap_nonheap_mib_max_sample": null,
+            "worker_memory_mib_by_mnemonic_max_sample": {}
+          },
+          "profile_file": "java-elide_abi-public_module_api-5.profile.json.gz"
+        }
+      ]
+    },
+    {
+      "language": "java",
+      "mode": "elide_abi",
+      "scenario": "multi_file_body",
+      "samples": [
+        {
+          "seconds": 1.5973553549999906,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "ElideJavac": 1,
+            "ElideJavacAbi": 1
+          },
+          "execution_log": "java-elide_abi-multi_file_body-1.json",
+          "profile": {
+            "critical_path_action_seconds": 1.42661,
+            "critical_path_span_seconds": 1.42661,
+            "worker_memory_mib_max_sample": 541.213,
+            "bazel_heap_nonheap_mib_max_sample": 305.2,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "ElideJavacAbi": 213.48784375,
+              "ElideJavac": 328.0569921875001
+            }
+          },
+          "profile_file": "java-elide_abi-multi_file_body-1.profile.json.gz"
+        },
+        {
+          "seconds": 1.922790563000035,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "ElideJavac": 1,
+            "ElideJavacAbi": 1
+          },
+          "execution_log": "java-elide_abi-multi_file_body-2.json",
+          "profile": {
+            "critical_path_action_seconds": 1.73884,
+            "critical_path_span_seconds": 1.73884,
+            "worker_memory_mib_max_sample": 488.49399999999997,
+            "bazel_heap_nonheap_mib_max_sample": 539.1999999999999,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "ElideJavacAbi": 203.70078125,
+              "ElideJavac": 285.16488281249997
+            }
+          },
+          "profile_file": "java-elide_abi-multi_file_body-2.profile.json.gz"
+        },
+        {
+          "seconds": 1.928545971999995,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "ElideJavac": 1,
+            "ElideJavacAbi": 1
+          },
+          "execution_log": "java-elide_abi-multi_file_body-3.json",
+          "profile": {
+            "critical_path_action_seconds": 1.757347,
+            "critical_path_span_seconds": 1.757347,
+            "worker_memory_mib_max_sample": 500.938,
+            "bazel_heap_nonheap_mib_max_sample": 389.19999999999993,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "ElideJavacAbi": 212.42578125,
+              "ElideJavac": 289.00228906250004
+            }
+          },
+          "profile_file": "java-elide_abi-multi_file_body-3.profile.json.gz"
+        },
+        {
+          "seconds": 1.6281737570000132,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "ElideJavac": 1,
+            "ElideJavacAbi": 1
+          },
+          "execution_log": "java-elide_abi-multi_file_body-4.json",
+          "profile": {
+            "critical_path_action_seconds": 1.45514,
+            "critical_path_span_seconds": 1.45514,
+            "worker_memory_mib_max_sample": 462.25999999999993,
+            "bazel_heap_nonheap_mib_max_sample": 334.0,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "ElideJavacAbi": 211.65703125,
+              "ElideJavac": 250.981515625
+            }
+          },
+          "profile_file": "java-elide_abi-multi_file_body-4.profile.json.gz"
+        },
+        {
+          "seconds": 1.7181420559999765,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "ElideJavac": 1,
+            "ElideJavacAbi": 1
+          },
+          "execution_log": "java-elide_abi-multi_file_body-5.json",
+          "profile": {
+            "critical_path_action_seconds": 1.544836,
+            "critical_path_span_seconds": 1.544836,
+            "worker_memory_mib_max_sample": 501.8999999999999,
+            "bazel_heap_nonheap_mib_max_sample": 507.1859999999999,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "ElideJavacAbi": 210.76540624999996,
+              "ElideJavac": 291.6025624999999
+            }
+          },
+          "profile_file": "java-elide_abi-multi_file_body-5.profile.json.gz"
+        }
+      ]
+    },
+    {
+      "language": "java",
+      "mode": "elide_pruned",
+      "scenario": "no_op",
+      "samples": [
+        {
+          "seconds": 0.2466903650000063,
+          "compile_targets": [],
+          "abi_targets": [],
+          "actions": {},
+          "execution_log": "java-elide_pruned-no_op-1.json",
+          "profile": {
+            "critical_path_action_seconds": 0.001195,
+            "critical_path_span_seconds": 0.001195,
+            "worker_memory_mib_max_sample": null,
+            "bazel_heap_nonheap_mib_max_sample": null,
+            "worker_memory_mib_by_mnemonic_max_sample": {}
+          },
+          "profile_file": "java-elide_pruned-no_op-1.profile.json.gz"
+        },
+        {
+          "seconds": 0.24116002899995692,
+          "compile_targets": [],
+          "abi_targets": [],
+          "actions": {},
+          "execution_log": "java-elide_pruned-no_op-2.json",
+          "profile": {
+            "critical_path_action_seconds": 0.001097,
+            "critical_path_span_seconds": 0.001097,
+            "worker_memory_mib_max_sample": null,
+            "bazel_heap_nonheap_mib_max_sample": null,
+            "worker_memory_mib_by_mnemonic_max_sample": {}
+          },
+          "profile_file": "java-elide_pruned-no_op-2.profile.json.gz"
+        },
+        {
+          "seconds": 0.20757595300000276,
+          "compile_targets": [],
+          "abi_targets": [],
+          "actions": {},
+          "execution_log": "java-elide_pruned-no_op-3.json",
+          "profile": {
+            "critical_path_action_seconds": 0.000954,
+            "critical_path_span_seconds": 0.000954,
+            "worker_memory_mib_max_sample": null,
+            "bazel_heap_nonheap_mib_max_sample": null,
+            "worker_memory_mib_by_mnemonic_max_sample": {}
+          },
+          "profile_file": "java-elide_pruned-no_op-3.profile.json.gz"
+        },
+        {
+          "seconds": 0.2066821890000483,
+          "compile_targets": [],
+          "abi_targets": [],
+          "actions": {},
+          "execution_log": "java-elide_pruned-no_op-4.json",
+          "profile": {
+            "critical_path_action_seconds": 0.000923,
+            "critical_path_span_seconds": 0.000923,
+            "worker_memory_mib_max_sample": null,
+            "bazel_heap_nonheap_mib_max_sample": null,
+            "worker_memory_mib_by_mnemonic_max_sample": {}
+          },
+          "profile_file": "java-elide_pruned-no_op-4.profile.json.gz"
+        },
+        {
+          "seconds": 0.1738933470000461,
+          "compile_targets": [],
+          "abi_targets": [],
+          "actions": {},
+          "execution_log": "java-elide_pruned-no_op-5.json",
+          "profile": {
+            "critical_path_action_seconds": 0.001164,
+            "critical_path_span_seconds": 0.001164,
+            "worker_memory_mib_max_sample": null,
+            "bazel_heap_nonheap_mib_max_sample": null,
+            "worker_memory_mib_by_mnemonic_max_sample": {}
+          },
+          "profile_file": "java-elide_pruned-no_op-5.profile.json.gz"
+        }
+      ]
+    },
+    {
+      "language": "java",
+      "mode": "elide_pruned",
+      "scenario": "comment",
+      "samples": [
+        {
+          "seconds": 1.5944237300000168,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "ElideJavac": 1,
+            "ElideJavacAbi": 1
+          },
+          "execution_log": "java-elide_pruned-comment-1.json",
+          "profile": {
+            "critical_path_action_seconds": 1.368438,
+            "critical_path_span_seconds": 1.368438,
+            "worker_memory_mib_max_sample": 549.4000000000001,
+            "bazel_heap_nonheap_mib_max_sample": 245.56400000000002,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "ElideJavac": 337.29992187500005,
+              "ElideJavacAbi": 212.49632812500005
+            }
+          },
+          "profile_file": "java-elide_pruned-comment-1.profile.json.gz"
+        },
+        {
+          "seconds": 1.549162497999987,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "ElideJavac": 1,
+            "ElideJavacAbi": 1
+          },
+          "execution_log": "java-elide_pruned-comment-2.json",
+          "profile": {
+            "critical_path_action_seconds": 1.287674,
+            "critical_path_span_seconds": 1.287674,
+            "worker_memory_mib_max_sample": 502.3550000000001,
+            "bazel_heap_nonheap_mib_max_sample": 330.986,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "ElideJavac": 304.28560546875,
+              "ElideJavacAbi": 198.82500000000002
+            }
+          },
+          "profile_file": "java-elide_pruned-comment-2.profile.json.gz"
+        },
+        {
+          "seconds": 1.6287832400000184,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "ElideJavac": 1,
+            "ElideJavacAbi": 1
+          },
+          "execution_log": "java-elide_pruned-comment-3.json",
+          "profile": {
+            "critical_path_action_seconds": 1.407948,
+            "critical_path_span_seconds": 1.407948,
+            "worker_memory_mib_max_sample": 563.4039999999999,
+            "bazel_heap_nonheap_mib_max_sample": 232.576,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "ElideJavac": 351.55186718749997,
+              "ElideJavacAbi": 212.44608203125
+            }
+          },
+          "profile_file": "java-elide_pruned-comment-3.profile.json.gz"
+        },
+        {
+          "seconds": 1.4964053889999605,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "ElideJavac": 1,
+            "ElideJavacAbi": 1
+          },
+          "execution_log": "java-elide_pruned-comment-4.json",
+          "profile": {
+            "critical_path_action_seconds": 1.264792,
+            "critical_path_span_seconds": 1.264792,
+            "worker_memory_mib_max_sample": 561.817,
+            "bazel_heap_nonheap_mib_max_sample": 319.59799999999996,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "ElideJavac": 343.93075781249996,
+              "ElideJavacAbi": 218.4256171875
+            }
+          },
+          "profile_file": "java-elide_pruned-comment-4.profile.json.gz"
+        },
+        {
+          "seconds": 1.810720190999973,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "ElideJavac": 1,
+            "ElideJavacAbi": 1
+          },
+          "execution_log": "java-elide_pruned-comment-5.json",
+          "profile": {
+            "critical_path_action_seconds": 1.609131,
+            "critical_path_span_seconds": 1.609131,
+            "worker_memory_mib_max_sample": 597.9100000000001,
+            "bazel_heap_nonheap_mib_max_sample": 243.40000000000003,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "ElideJavac": 390.8908984375,
+              "ElideJavacAbi": 207.62343750000002
+            }
+          },
+          "profile_file": "java-elide_pruned-comment-5.profile.json.gz"
+        }
+      ]
+    },
+    {
+      "language": "java",
+      "mode": "elide_pruned",
+      "scenario": "body",
+      "samples": [
+        {
+          "seconds": 1.5323513280000043,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "ElideJavac": 1,
+            "ElideJavacAbi": 1
+          },
+          "execution_log": "java-elide_pruned-body-1.json",
+          "profile": {
+            "critical_path_action_seconds": 1.337748,
+            "critical_path_span_seconds": 1.337748,
+            "worker_memory_mib_max_sample": 590.609,
+            "bazel_heap_nonheap_mib_max_sample": 215.96999999999997,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "ElideJavac": 380.94544140625,
+              "ElideJavacAbi": 209.9421640625
+            }
+          },
+          "profile_file": "java-elide_pruned-body-1.profile.json.gz"
+        },
+        {
+          "seconds": 1.6642264820000037,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "ElideJavac": 1,
+            "ElideJavacAbi": 1
+          },
+          "execution_log": "java-elide_pruned-body-2.json",
+          "profile": {
+            "critical_path_action_seconds": 1.465924,
+            "critical_path_span_seconds": 1.465924,
+            "worker_memory_mib_max_sample": 519.356,
+            "bazel_heap_nonheap_mib_max_sample": 272.4,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "ElideJavac": 305.98977734375,
+              "ElideJavacAbi": 213.6519453125
+            }
+          },
+          "profile_file": "java-elide_pruned-body-2.profile.json.gz"
+        },
+        {
+          "seconds": 1.780044802999953,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "ElideJavac": 1,
+            "ElideJavacAbi": 1
+          },
+          "execution_log": "java-elide_pruned-body-3.json",
+          "profile": {
+            "critical_path_action_seconds": 1.576454,
+            "critical_path_span_seconds": 1.576454,
+            "worker_memory_mib_max_sample": 590.0500000000001,
+            "bazel_heap_nonheap_mib_max_sample": 233.194,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "ElideJavac": 378.57346484375,
+              "ElideJavacAbi": 212.17421875
+            }
+          },
+          "profile_file": "java-elide_pruned-body-3.profile.json.gz"
+        },
+        {
+          "seconds": 1.5929353409999862,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "ElideJavac": 1,
+            "ElideJavacAbi": 1
+          },
+          "execution_log": "java-elide_pruned-body-4.json",
+          "profile": {
+            "critical_path_action_seconds": 1.400523,
+            "critical_path_span_seconds": 1.400523,
+            "worker_memory_mib_max_sample": 563.1429999999999,
+            "bazel_heap_nonheap_mib_max_sample": 307.19599999999997,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "ElideJavac": 349.38995703124993,
+              "ElideJavacAbi": 214.22981249999998
+            }
+          },
+          "profile_file": "java-elide_pruned-body-4.profile.json.gz"
+        },
+        {
+          "seconds": 1.6515818930000137,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "ElideJavac": 1,
+            "ElideJavacAbi": 1
+          },
+          "execution_log": "java-elide_pruned-body-5.json",
+          "profile": {
+            "critical_path_action_seconds": 1.448151,
+            "critical_path_span_seconds": 1.448151,
+            "worker_memory_mib_max_sample": 605.32,
+            "bazel_heap_nonheap_mib_max_sample": 228.99800000000002,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "ElideJavac": 394.9253515625,
+              "ElideJavacAbi": 210.72031250000003
+            }
+          },
+          "profile_file": "java-elide_pruned-body-5.profile.json.gz"
+        }
+      ]
+    },
+    {
+      "language": "java",
+      "mode": "elide_pruned",
+      "scenario": "private_member",
+      "samples": [
+        {
+          "seconds": 1.7552758219999873,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "ElideJavac": 1,
+            "ElideJavacAbi": 1
+          },
+          "execution_log": "java-elide_pruned-private_member-1.json",
+          "profile": {
+            "critical_path_action_seconds": 1.561176,
+            "critical_path_span_seconds": 1.561176,
+            "worker_memory_mib_max_sample": 625.5219999999999,
+            "bazel_heap_nonheap_mib_max_sample": 223.392,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "ElideJavac": 421.43949218750004,
+              "ElideJavacAbi": 204.1984375
+            }
+          },
+          "profile_file": "java-elide_pruned-private_member-1.profile.json.gz"
+        },
+        {
+          "seconds": 1.637351437999996,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "ElideJavac": 1,
+            "ElideJavacAbi": 1
+          },
+          "execution_log": "java-elide_pruned-private_member-2.json",
+          "profile": {
+            "critical_path_action_seconds": 1.430889,
+            "critical_path_span_seconds": 1.430889,
+            "worker_memory_mib_max_sample": 546.0900000000001,
+            "bazel_heap_nonheap_mib_max_sample": 306.5760000000001,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "ElideJavac": 343.50584765625,
+              "ElideJavacAbi": 203.03628515625002
+            }
+          },
+          "profile_file": "java-elide_pruned-private_member-2.profile.json.gz"
+        },
+        {
+          "seconds": 1.6493324369999982,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "ElideJavac": 1,
+            "ElideJavacAbi": 1
+          },
+          "execution_log": "java-elide_pruned-private_member-3.json",
+          "profile": {
+            "critical_path_action_seconds": 1.436604,
+            "critical_path_span_seconds": 1.436604,
+            "worker_memory_mib_max_sample": 610.636,
+            "bazel_heap_nonheap_mib_max_sample": 249.17799999999997,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "ElideJavac": 419.48407812499994,
+              "ElideJavacAbi": 191.48359374999998
+            }
+          },
+          "profile_file": "java-elide_pruned-private_member-3.profile.json.gz"
+        },
+        {
+          "seconds": 1.4597923850000143,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "ElideJavac": 1,
+            "ElideJavacAbi": 1
+          },
+          "execution_log": "java-elide_pruned-private_member-4.json",
+          "profile": {
+            "critical_path_action_seconds": 1.264848,
+            "critical_path_span_seconds": 1.264848,
+            "worker_memory_mib_max_sample": 512.615,
+            "bazel_heap_nonheap_mib_max_sample": 301.0,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "ElideJavac": 306.69813671875,
+              "ElideJavacAbi": 206.58671875
+            }
+          },
+          "profile_file": "java-elide_pruned-private_member-4.profile.json.gz"
+        },
+        {
+          "seconds": 1.5570151399999759,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "ElideJavac": 1,
+            "ElideJavacAbi": 1
+          },
+          "execution_log": "java-elide_pruned-private_member-5.json",
+          "profile": {
+            "critical_path_action_seconds": 1.375918,
+            "critical_path_span_seconds": 1.375918,
+            "worker_memory_mib_max_sample": 583.284,
+            "bazel_heap_nonheap_mib_max_sample": 218.0,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "ElideJavac": 386.72992187499995,
+              "ElideJavacAbi": 196.72031249999998
+            }
+          },
+          "profile_file": "java-elide_pruned-private_member-5.profile.json.gz"
+        }
+      ]
+    },
+    {
+      "language": "java",
+      "mode": "elide_pruned",
+      "scenario": "internal_module_api",
+      "samples": [
+        {
+          "seconds": 1.7262997980000137,
+          "compile_targets": [
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "actions": {
+            "ElideJavac": 2,
+            "ElideJavacAbi": 5
+          },
+          "execution_log": "java-elide_pruned-internal_module_api-1.json",
+          "profile": {
+            "critical_path_action_seconds": 1.428724,
+            "critical_path_span_seconds": 1.439912,
+            "worker_memory_mib_max_sample": 501.555,
+            "bazel_heap_nonheap_mib_max_sample": 275.132,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "ElideJavac": 304.65521484375006,
+              "ElideJavacAbi": 197.56494140625
+            }
+          },
+          "profile_file": "java-elide_pruned-internal_module_api-1.profile.json.gz"
+        },
+        {
+          "seconds": 1.8381345289999445,
+          "compile_targets": [
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "actions": {
+            "ElideJavac": 2,
+            "ElideJavacAbi": 5
+          },
+          "execution_log": "java-elide_pruned-internal_module_api-2.json",
+          "profile": {
+            "critical_path_action_seconds": 1.490452,
+            "critical_path_span_seconds": 1.500739,
+            "worker_memory_mib_max_sample": 570.914,
+            "bazel_heap_nonheap_mib_max_sample": 261.948,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "ElideJavac": 378.89028125000004,
+              "ElideJavacAbi": 192.404828125
+            }
+          },
+          "profile_file": "java-elide_pruned-internal_module_api-2.profile.json.gz"
+        },
+        {
+          "seconds": 1.8088873469999953,
+          "compile_targets": [
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "actions": {
+            "ElideJavac": 2,
+            "ElideJavacAbi": 5
+          },
+          "execution_log": "java-elide_pruned-internal_module_api-3.json",
+          "profile": {
+            "critical_path_action_seconds": 1.525696,
+            "critical_path_span_seconds": 1.534307,
+            "worker_memory_mib_max_sample": 669.5179999999999,
+            "bazel_heap_nonheap_mib_max_sample": 263.4669999999999,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "ElideJavac": 474.09244531249993,
+              "ElideJavacAbi": 195.98607812499995
+            }
+          },
+          "profile_file": "java-elide_pruned-internal_module_api-3.profile.json.gz"
+        },
+        {
+          "seconds": 1.8846636119999403,
+          "compile_targets": [
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "actions": {
+            "ElideJavac": 2,
+            "ElideJavacAbi": 5
+          },
+          "execution_log": "java-elide_pruned-internal_module_api-4.json",
+          "profile": {
+            "critical_path_action_seconds": 1.594851,
+            "critical_path_span_seconds": 1.603012,
+            "worker_memory_mib_max_sample": 731.9599999999999,
+            "bazel_heap_nonheap_mib_max_sample": 292.73199999999997,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "ElideJavac": 539.375578125,
+              "ElideJavacAbi": 192.839375
+            }
+          },
+          "profile_file": "java-elide_pruned-internal_module_api-4.profile.json.gz"
+        },
+        {
+          "seconds": 1.8097961339999529,
+          "compile_targets": [
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "actions": {
+            "ElideJavac": 2,
+            "ElideJavacAbi": 5
+          },
+          "execution_log": "java-elide_pruned-internal_module_api-5.json",
+          "profile": {
+            "critical_path_action_seconds": 1.528996,
+            "critical_path_span_seconds": 1.538051,
+            "worker_memory_mib_max_sample": 548.5490000000001,
+            "bazel_heap_nonheap_mib_max_sample": 256.156,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "ElideJavac": 358.93898046875,
+              "ElideJavacAbi": 190.31786328125
+            }
+          },
+          "profile_file": "java-elide_pruned-internal_module_api-5.profile.json.gz"
+        }
+      ]
+    },
+    {
+      "language": "java",
+      "mode": "elide_pruned",
+      "scenario": "public_module_api",
+      "samples": [
+        {
+          "seconds": 0.5237236579999944,
+          "compile_targets": [
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//facade:facade"
+          ],
+          "abi_targets": [
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//facade:facade"
+          ],
+          "actions": {
+            "ElideJavac": 4,
+            "ElideJavacAbi": 4
+          },
+          "execution_log": "java-elide_pruned-public_module_api-1.json",
+          "profile": {
+            "critical_path_action_seconds": 0.136951,
+            "critical_path_span_seconds": 0.221484,
+            "worker_memory_mib_max_sample": null,
+            "bazel_heap_nonheap_mib_max_sample": null,
+            "worker_memory_mib_by_mnemonic_max_sample": {}
+          },
+          "profile_file": "java-elide_pruned-public_module_api-1.profile.json.gz"
+        },
+        {
+          "seconds": 0.5175840900000139,
+          "compile_targets": [
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//facade:facade"
+          ],
+          "abi_targets": [
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//facade:facade"
+          ],
+          "actions": {
+            "ElideJavac": 4,
+            "ElideJavacAbi": 4
+          },
+          "execution_log": "java-elide_pruned-public_module_api-2.json",
+          "profile": {
+            "critical_path_action_seconds": 0.165065,
+            "critical_path_span_seconds": 0.175028,
+            "worker_memory_mib_max_sample": null,
+            "bazel_heap_nonheap_mib_max_sample": null,
+            "worker_memory_mib_by_mnemonic_max_sample": {}
+          },
+          "profile_file": "java-elide_pruned-public_module_api-2.profile.json.gz"
+        },
+        {
+          "seconds": 0.5474867750000385,
+          "compile_targets": [
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//facade:facade"
+          ],
+          "abi_targets": [
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//facade:facade"
+          ],
+          "actions": {
+            "ElideJavac": 4,
+            "ElideJavacAbi": 4
+          },
+          "execution_log": "java-elide_pruned-public_module_api-3.json",
+          "profile": {
+            "critical_path_action_seconds": 0.165375,
+            "critical_path_span_seconds": 0.173494,
+            "worker_memory_mib_max_sample": null,
+            "bazel_heap_nonheap_mib_max_sample": null,
+            "worker_memory_mib_by_mnemonic_max_sample": {}
+          },
+          "profile_file": "java-elide_pruned-public_module_api-3.profile.json.gz"
+        },
+        {
+          "seconds": 0.4914319990000422,
+          "compile_targets": [
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//facade:facade"
+          ],
+          "abi_targets": [
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//facade:facade"
+          ],
+          "actions": {
+            "ElideJavac": 4,
+            "ElideJavacAbi": 4
+          },
+          "execution_log": "java-elide_pruned-public_module_api-4.json",
+          "profile": {
+            "critical_path_action_seconds": 0.154997,
+            "critical_path_span_seconds": 0.163124,
+            "worker_memory_mib_max_sample": null,
+            "bazel_heap_nonheap_mib_max_sample": null,
+            "worker_memory_mib_by_mnemonic_max_sample": {}
+          },
+          "profile_file": "java-elide_pruned-public_module_api-4.profile.json.gz"
+        },
+        {
+          "seconds": 0.5016321450000305,
+          "compile_targets": [
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//facade:facade"
+          ],
+          "abi_targets": [
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//facade:facade"
+          ],
+          "actions": {
+            "ElideJavac": 4,
+            "ElideJavacAbi": 4
+          },
+          "execution_log": "java-elide_pruned-public_module_api-5.json",
+          "profile": {
+            "critical_path_action_seconds": 0.164499,
+            "critical_path_span_seconds": 0.172674,
+            "worker_memory_mib_max_sample": null,
+            "bazel_heap_nonheap_mib_max_sample": null,
+            "worker_memory_mib_by_mnemonic_max_sample": {}
+          },
+          "profile_file": "java-elide_pruned-public_module_api-5.profile.json.gz"
+        }
+      ]
+    },
+    {
+      "language": "java",
+      "mode": "elide_pruned",
+      "scenario": "multi_file_body",
+      "samples": [
+        {
+          "seconds": 1.6417672300000277,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "ElideJavac": 1,
+            "ElideJavacAbi": 1
+          },
+          "execution_log": "java-elide_pruned-multi_file_body-1.json",
+          "profile": {
+            "critical_path_action_seconds": 1.462689,
+            "critical_path_span_seconds": 1.462689,
+            "worker_memory_mib_max_sample": 655.842,
+            "bazel_heap_nonheap_mib_max_sample": 254.778,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "ElideJavac": 446.26475000000005,
+              "ElideJavacAbi": 210.41279687499997
+            }
+          },
+          "profile_file": "java-elide_pruned-multi_file_body-1.profile.json.gz"
+        },
+        {
+          "seconds": 1.8632208249999849,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "ElideJavac": 1,
+            "ElideJavacAbi": 1
+          },
+          "execution_log": "java-elide_pruned-multi_file_body-2.json",
+          "profile": {
+            "critical_path_action_seconds": 1.673759,
+            "critical_path_span_seconds": 1.673759,
+            "worker_memory_mib_max_sample": 643.5350000000001,
+            "bazel_heap_nonheap_mib_max_sample": 300.788,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "ElideJavac": 418.93475390625,
+              "ElideJavacAbi": 225.44296875
+            }
+          },
+          "profile_file": "java-elide_pruned-multi_file_body-2.profile.json.gz"
+        },
+        {
+          "seconds": 1.9610838739999963,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "ElideJavac": 1,
+            "ElideJavacAbi": 1
+          },
+          "execution_log": "java-elide_pruned-multi_file_body-3.json",
+          "profile": {
+            "critical_path_action_seconds": 1.789625,
+            "critical_path_span_seconds": 1.789625,
+            "worker_memory_mib_max_sample": 537.028,
+            "bazel_heap_nonheap_mib_max_sample": 218.17400000000004,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "ElideJavac": 330.1000390625,
+              "ElideJavacAbi": 207.41817578125003
+            }
+          },
+          "profile_file": "java-elide_pruned-multi_file_body-3.profile.json.gz"
+        },
+        {
+          "seconds": 1.8139891589999024,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "ElideJavac": 1,
+            "ElideJavacAbi": 1
+          },
+          "execution_log": "java-elide_pruned-multi_file_body-4.json",
+          "profile": {
+            "critical_path_action_seconds": 1.628148,
+            "critical_path_span_seconds": 1.628148,
+            "worker_memory_mib_max_sample": 551.3400000000001,
+            "bazel_heap_nonheap_mib_max_sample": 274.0,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "ElideJavac": 338.38267578125004,
+              "ElideJavacAbi": 213.28607421875003
+            }
+          },
+          "profile_file": "java-elide_pruned-multi_file_body-4.profile.json.gz"
+        },
+        {
+          "seconds": 2.046794656999964,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [
+            "//core:core"
+          ],
+          "actions": {
+            "ElideJavac": 1,
+            "ElideJavacAbi": 1
+          },
+          "execution_log": "java-elide_pruned-multi_file_body-5.json",
+          "profile": {
+            "critical_path_action_seconds": 1.863173,
+            "critical_path_span_seconds": 1.863173,
+            "worker_memory_mib_max_sample": 551.554,
+            "bazel_heap_nonheap_mib_max_sample": 235.0,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "ElideJavac": 327.71955078125,
+              "ElideJavacAbi": 224.1387734375
+            }
+          },
+          "profile_file": "java-elide_pruned-multi_file_body-5.profile.json.gz"
+        }
+      ]
+    },
+    {
+      "language": "java",
+      "mode": "elide_fused",
+      "scenario": "no_op",
+      "samples": [
+        {
+          "seconds": 0.2724442180000324,
+          "compile_targets": [],
+          "abi_targets": [],
+          "actions": {},
+          "execution_log": "java-elide_fused-no_op-1.json",
+          "profile": {
+            "critical_path_action_seconds": 0.001763,
+            "critical_path_span_seconds": 0.001763,
+            "worker_memory_mib_max_sample": null,
+            "bazel_heap_nonheap_mib_max_sample": null,
+            "worker_memory_mib_by_mnemonic_max_sample": {}
+          },
+          "profile_file": "java-elide_fused-no_op-1.profile.json.gz"
+        },
+        {
+          "seconds": 0.256128958999966,
+          "compile_targets": [],
+          "abi_targets": [],
+          "actions": {},
+          "execution_log": "java-elide_fused-no_op-2.json",
+          "profile": {
+            "critical_path_action_seconds": 0.000858,
+            "critical_path_span_seconds": 0.000858,
+            "worker_memory_mib_max_sample": null,
+            "bazel_heap_nonheap_mib_max_sample": null,
+            "worker_memory_mib_by_mnemonic_max_sample": {}
+          },
+          "profile_file": "java-elide_fused-no_op-2.profile.json.gz"
+        },
+        {
+          "seconds": 0.21764679700004308,
+          "compile_targets": [],
+          "abi_targets": [],
+          "actions": {},
+          "execution_log": "java-elide_fused-no_op-3.json",
+          "profile": {
+            "critical_path_action_seconds": 0.000973,
+            "critical_path_span_seconds": 0.000973,
+            "worker_memory_mib_max_sample": null,
+            "bazel_heap_nonheap_mib_max_sample": null,
+            "worker_memory_mib_by_mnemonic_max_sample": {}
+          },
+          "profile_file": "java-elide_fused-no_op-3.profile.json.gz"
+        },
+        {
+          "seconds": 0.19784145800008446,
+          "compile_targets": [],
+          "abi_targets": [],
+          "actions": {},
+          "execution_log": "java-elide_fused-no_op-4.json",
+          "profile": {
+            "critical_path_action_seconds": 0.001087,
+            "critical_path_span_seconds": 0.001087,
+            "worker_memory_mib_max_sample": null,
+            "bazel_heap_nonheap_mib_max_sample": null,
+            "worker_memory_mib_by_mnemonic_max_sample": {}
+          },
+          "profile_file": "java-elide_fused-no_op-4.profile.json.gz"
+        },
+        {
+          "seconds": 0.1902419780000173,
+          "compile_targets": [],
+          "abi_targets": [],
+          "actions": {},
+          "execution_log": "java-elide_fused-no_op-5.json",
+          "profile": {
+            "critical_path_action_seconds": 0.000991,
+            "critical_path_span_seconds": 0.000991,
+            "worker_memory_mib_max_sample": null,
+            "bazel_heap_nonheap_mib_max_sample": null,
+            "worker_memory_mib_by_mnemonic_max_sample": {}
+          },
+          "profile_file": "java-elide_fused-no_op-5.profile.json.gz"
+        }
+      ]
+    },
+    {
+      "language": "java",
+      "mode": "elide_fused",
+      "scenario": "comment",
+      "samples": [
+        {
+          "seconds": 1.743923251999945,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 1
+          },
+          "execution_log": "java-elide_fused-comment-1.json",
+          "profile": {
+            "critical_path_action_seconds": 1.459192,
+            "critical_path_span_seconds": 1.469631,
+            "worker_memory_mib_max_sample": 320.92,
+            "bazel_heap_nonheap_mib_max_sample": 208.376,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "ElideJavac": 321.62775
+            }
+          },
+          "profile_file": "java-elide_fused-comment-1.profile.json.gz"
+        },
+        {
+          "seconds": 1.6484652929999584,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 1
+          },
+          "execution_log": "java-elide_fused-comment-2.json",
+          "profile": {
+            "critical_path_action_seconds": 1.411506,
+            "critical_path_span_seconds": 1.419087,
+            "worker_memory_mib_max_sample": 311.448,
+            "bazel_heap_nonheap_mib_max_sample": 209.0,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "ElideJavac": 312.251234375
+            }
+          },
+          "profile_file": "java-elide_fused-comment-2.profile.json.gz"
+        },
+        {
+          "seconds": 1.5471522569999934,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 1
+          },
+          "execution_log": "java-elide_fused-comment-3.json",
+          "profile": {
+            "critical_path_action_seconds": 1.356782,
+            "critical_path_span_seconds": 1.363723,
+            "worker_memory_mib_max_sample": 322.87000000000006,
+            "bazel_heap_nonheap_mib_max_sample": 218.36800000000002,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "ElideJavac": 323.07287109375
+            }
+          },
+          "profile_file": "java-elide_fused-comment-3.profile.json.gz"
+        },
+        {
+          "seconds": 1.6559346310000365,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 1
+          },
+          "execution_log": "java-elide_fused-comment-4.json",
+          "profile": {
+            "critical_path_action_seconds": 1.48011,
+            "critical_path_span_seconds": 1.48717,
+            "worker_memory_mib_max_sample": 328.511,
+            "bazel_heap_nonheap_mib_max_sample": 239.0,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "ElideJavac": 329.08960546875
+            }
+          },
+          "profile_file": "java-elide_fused-comment-4.profile.json.gz"
+        },
+        {
+          "seconds": 1.667441972000006,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 1
+          },
+          "execution_log": "java-elide_fused-comment-5.json",
+          "profile": {
+            "critical_path_action_seconds": 1.476533,
+            "critical_path_span_seconds": 1.483179,
+            "worker_memory_mib_max_sample": 385.98,
+            "bazel_heap_nonheap_mib_max_sample": 233.762,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "ElideJavac": 386.40781250000003
+            }
+          },
+          "profile_file": "java-elide_fused-comment-5.profile.json.gz"
+        }
+      ]
+    },
+    {
+      "language": "java",
+      "mode": "elide_fused",
+      "scenario": "body",
+      "samples": [
+        {
+          "seconds": 1.6494238239999959,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 1
+          },
+          "execution_log": "java-elide_fused-body-1.json",
+          "profile": {
+            "critical_path_action_seconds": 1.456933,
+            "critical_path_span_seconds": 1.46512,
+            "worker_memory_mib_max_sample": 418.14799999999997,
+            "bazel_heap_nonheap_mib_max_sample": 217.0,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "ElideJavac": 418.777375
+            }
+          },
+          "profile_file": "java-elide_fused-body-1.profile.json.gz"
+        },
+        {
+          "seconds": 1.6166658140000436,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 1
+          },
+          "execution_log": "java-elide_fused-body-2.json",
+          "profile": {
+            "critical_path_action_seconds": 1.441783,
+            "critical_path_span_seconds": 1.448458,
+            "worker_memory_mib_max_sample": 338.178,
+            "bazel_heap_nonheap_mib_max_sample": 211.0,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "ElideJavac": 338.35066796875003
+            }
+          },
+          "profile_file": "java-elide_fused-body-2.profile.json.gz"
+        },
+        {
+          "seconds": 1.6307685739999442,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 1
+          },
+          "execution_log": "java-elide_fused-body-3.json",
+          "profile": {
+            "critical_path_action_seconds": 1.437889,
+            "critical_path_span_seconds": 1.444513,
+            "worker_memory_mib_max_sample": 425.289,
+            "bazel_heap_nonheap_mib_max_sample": 209.19599999999997,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "ElideJavac": 425.836640625
+            }
+          },
+          "profile_file": "java-elide_fused-body-3.profile.json.gz"
+        },
+        {
+          "seconds": 1.5444093950000024,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 1
+          },
+          "execution_log": "java-elide_fused-body-4.json",
+          "profile": {
+            "critical_path_action_seconds": 1.379447,
+            "critical_path_span_seconds": 1.385125,
+            "worker_memory_mib_max_sample": 322.539,
+            "bazel_heap_nonheap_mib_max_sample": 209.0,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "ElideJavac": 322.94794140625
+            }
+          },
+          "profile_file": "java-elide_fused-body-4.profile.json.gz"
+        },
+        {
+          "seconds": 1.6920096420000164,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 1
+          },
+          "execution_log": "java-elide_fused-body-5.json",
+          "profile": {
+            "critical_path_action_seconds": 1.476272,
+            "critical_path_span_seconds": 1.486572,
+            "worker_memory_mib_max_sample": 418.184,
+            "bazel_heap_nonheap_mib_max_sample": 210.99999999999997,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "ElideJavac": 418.47054687499997
+            }
+          },
+          "profile_file": "java-elide_fused-body-5.profile.json.gz"
+        }
+      ]
+    },
+    {
+      "language": "java",
+      "mode": "elide_fused",
+      "scenario": "private_member",
+      "samples": [
+        {
+          "seconds": 1.596922520000021,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 1
+          },
+          "execution_log": "java-elide_fused-private_member-1.json",
+          "profile": {
+            "critical_path_action_seconds": 1.420177,
+            "critical_path_span_seconds": 1.425975,
+            "worker_memory_mib_max_sample": 389.134,
+            "bazel_heap_nonheap_mib_max_sample": 380.0,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "ElideJavac": 389.840390625
+            }
+          },
+          "profile_file": "java-elide_fused-private_member-1.profile.json.gz"
+        },
+        {
+          "seconds": 1.6462524989999565,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 1
+          },
+          "execution_log": "java-elide_fused-private_member-2.json",
+          "profile": {
+            "critical_path_action_seconds": 1.460097,
+            "critical_path_span_seconds": 1.467068,
+            "worker_memory_mib_max_sample": 455.57399999999996,
+            "bazel_heap_nonheap_mib_max_sample": 224.00000000000003,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "ElideJavac": 456.19174609374994
+            }
+          },
+          "profile_file": "java-elide_fused-private_member-2.profile.json.gz"
+        },
+        {
+          "seconds": 1.5328929810000318,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 1
+          },
+          "execution_log": "java-elide_fused-private_member-3.json",
+          "profile": {
+            "critical_path_action_seconds": 1.359343,
+            "critical_path_span_seconds": 1.365089,
+            "worker_memory_mib_max_sample": 332.288,
+            "bazel_heap_nonheap_mib_max_sample": 251.0,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "ElideJavac": 332.91506250000003
+            }
+          },
+          "profile_file": "java-elide_fused-private_member-3.profile.json.gz"
+        },
+        {
+          "seconds": 1.608757636000064,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 1
+          },
+          "execution_log": "java-elide_fused-private_member-4.json",
+          "profile": {
+            "critical_path_action_seconds": 1.429404,
+            "critical_path_span_seconds": 1.435881,
+            "worker_memory_mib_max_sample": 405.39700000000005,
+            "bazel_heap_nonheap_mib_max_sample": 244.19800000000004,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "ElideJavac": 405.84511718749997
+            }
+          },
+          "profile_file": "java-elide_fused-private_member-4.profile.json.gz"
+        },
+        {
+          "seconds": 1.6015022420000378,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 1
+          },
+          "execution_log": "java-elide_fused-private_member-5.json",
+          "profile": {
+            "critical_path_action_seconds": 1.440543,
+            "critical_path_span_seconds": 1.446172,
+            "worker_memory_mib_max_sample": 480.96999999999997,
+            "bazel_heap_nonheap_mib_max_sample": 234.376,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "ElideJavac": 481.1207578125
+            }
+          },
+          "profile_file": "java-elide_fused-private_member-5.profile.json.gz"
+        }
+      ]
+    },
+    {
+      "language": "java",
+      "mode": "elide_fused",
+      "scenario": "internal_module_api",
+      "samples": [
+        {
+          "seconds": 2.0192928479999637,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 6
+          },
+          "execution_log": "java-elide_fused-internal_module_api-1.json",
+          "profile": {
+            "critical_path_action_seconds": 1.710208,
+            "critical_path_span_seconds": 1.724245,
+            "worker_memory_mib_max_sample": 401.1000000000001,
+            "bazel_heap_nonheap_mib_max_sample": 253.36800000000005,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "ElideJavac": 401.7346484375
+            }
+          },
+          "profile_file": "java-elide_fused-internal_module_api-1.profile.json.gz"
+        },
+        {
+          "seconds": 1.8952545049999117,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 6
+          },
+          "execution_log": "java-elide_fused-internal_module_api-2.json",
+          "profile": {
+            "critical_path_action_seconds": 1.629935,
+            "critical_path_span_seconds": 1.641911,
+            "worker_memory_mib_max_sample": 485.61,
+            "bazel_heap_nonheap_mib_max_sample": 289.198,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "ElideJavac": 486.22226562500003
+            }
+          },
+          "profile_file": "java-elide_fused-internal_module_api-2.profile.json.gz"
+        },
+        {
+          "seconds": 1.9419588150000209,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 6
+          },
+          "execution_log": "java-elide_fused-internal_module_api-3.json",
+          "profile": {
+            "critical_path_action_seconds": 1.687636,
+            "critical_path_span_seconds": 1.699698,
+            "worker_memory_mib_max_sample": 338.67199999999997,
+            "bazel_heap_nonheap_mib_max_sample": 240.0,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "ElideJavac": 339.35602343749997
+            }
+          },
+          "profile_file": "java-elide_fused-internal_module_api-3.profile.json.gz"
+        },
+        {
+          "seconds": 1.9087964090000469,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 6
+          },
+          "execution_log": "java-elide_fused-internal_module_api-4.json",
+          "profile": {
+            "critical_path_action_seconds": 1.6427,
+            "critical_path_span_seconds": 1.654705,
+            "worker_memory_mib_max_sample": 412.89,
+            "bazel_heap_nonheap_mib_max_sample": 323.37399999999997,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "ElideJavac": 413.75891406249997
+            }
+          },
+          "profile_file": "java-elide_fused-internal_module_api-4.profile.json.gz"
+        },
+        {
+          "seconds": 1.8801665810000259,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 6
+          },
+          "execution_log": "java-elide_fused-internal_module_api-5.json",
+          "profile": {
+            "critical_path_action_seconds": 1.624671,
+            "critical_path_span_seconds": 1.636862,
+            "worker_memory_mib_max_sample": 488.58,
+            "bazel_heap_nonheap_mib_max_sample": 291.0,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "ElideJavac": 489.0049804687501
+            }
+          },
+          "profile_file": "java-elide_fused-internal_module_api-5.profile.json.gz"
+        }
+      ]
+    },
+    {
+      "language": "java",
+      "mode": "elide_fused",
+      "scenario": "public_module_api",
+      "samples": [
+        {
+          "seconds": 0.4883978479999769,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//facade:facade"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 5
+          },
+          "execution_log": "java-elide_fused-public_module_api-1.json",
+          "profile": {
+            "critical_path_action_seconds": 0.238007,
+            "critical_path_span_seconds": 0.245939,
+            "worker_memory_mib_max_sample": null,
+            "bazel_heap_nonheap_mib_max_sample": null,
+            "worker_memory_mib_by_mnemonic_max_sample": {}
+          },
+          "profile_file": "java-elide_fused-public_module_api-1.profile.json.gz"
+        },
+        {
+          "seconds": 0.45804021699996156,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//facade:facade"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 5
+          },
+          "execution_log": "java-elide_fused-public_module_api-2.json",
+          "profile": {
+            "critical_path_action_seconds": 0.22337,
+            "critical_path_span_seconds": 0.231077,
+            "worker_memory_mib_max_sample": null,
+            "bazel_heap_nonheap_mib_max_sample": null,
+            "worker_memory_mib_by_mnemonic_max_sample": {}
+          },
+          "profile_file": "java-elide_fused-public_module_api-2.profile.json.gz"
+        },
+        {
+          "seconds": 0.9002937239999937,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//facade:facade"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 5
+          },
+          "execution_log": "java-elide_fused-public_module_api-3.json",
+          "profile": {
+            "critical_path_action_seconds": 0.378437,
+            "critical_path_span_seconds": 0.386243,
+            "worker_memory_mib_max_sample": null,
+            "bazel_heap_nonheap_mib_max_sample": null,
+            "worker_memory_mib_by_mnemonic_max_sample": {}
+          },
+          "profile_file": "java-elide_fused-public_module_api-3.profile.json.gz"
+        },
+        {
+          "seconds": 0.4307412509999722,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//facade:facade"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 5
+          },
+          "execution_log": "java-elide_fused-public_module_api-4.json",
+          "profile": {
+            "critical_path_action_seconds": 0.201496,
+            "critical_path_span_seconds": 0.209548,
+            "worker_memory_mib_max_sample": null,
+            "bazel_heap_nonheap_mib_max_sample": null,
+            "worker_memory_mib_by_mnemonic_max_sample": {}
+          },
+          "profile_file": "java-elide_fused-public_module_api-4.profile.json.gz"
+        },
+        {
+          "seconds": 0.43384664600000633,
+          "compile_targets": [
+            "//app:app",
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//facade:facade"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 5
+          },
+          "execution_log": "java-elide_fused-public_module_api-5.json",
+          "profile": {
+            "critical_path_action_seconds": 0.202129,
+            "critical_path_span_seconds": 0.209875,
+            "worker_memory_mib_max_sample": null,
+            "bazel_heap_nonheap_mib_max_sample": null,
+            "worker_memory_mib_by_mnemonic_max_sample": {}
+          },
+          "profile_file": "java-elide_fused-public_module_api-5.profile.json.gz"
+        }
+      ]
+    },
+    {
+      "language": "java",
+      "mode": "elide_fused",
+      "scenario": "multi_file_body",
+      "samples": [
+        {
+          "seconds": 1.5594409120000137,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 1
+          },
+          "execution_log": "java-elide_fused-multi_file_body-1.json",
+          "profile": {
+            "critical_path_action_seconds": 1.385919,
+            "critical_path_span_seconds": 1.391379,
+            "worker_memory_mib_max_sample": 344.898,
+            "bazel_heap_nonheap_mib_max_sample": 281.6,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "ElideJavac": 345.0862382812501
+            }
+          },
+          "profile_file": "java-elide_fused-multi_file_body-1.profile.json.gz"
+        },
+        {
+          "seconds": 1.4852520439999353,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 1
+          },
+          "execution_log": "java-elide_fused-multi_file_body-2.json",
+          "profile": {
+            "critical_path_action_seconds": 1.303005,
+            "critical_path_span_seconds": 1.308491,
+            "worker_memory_mib_max_sample": 317.4,
+            "bazel_heap_nonheap_mib_max_sample": 268.0,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "ElideJavac": 318.0458203125
+            }
+          },
+          "profile_file": "java-elide_fused-multi_file_body-2.profile.json.gz"
+        },
+        {
+          "seconds": 1.4808667780000633,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 1
+          },
+          "execution_log": "java-elide_fused-multi_file_body-3.json",
+          "profile": {
+            "critical_path_action_seconds": 1.31282,
+            "critical_path_span_seconds": 1.31852,
+            "worker_memory_mib_max_sample": 319.616,
+            "bazel_heap_nonheap_mib_max_sample": 248.772,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "ElideJavac": 320.1854296875
+            }
+          },
+          "profile_file": "java-elide_fused-multi_file_body-3.profile.json.gz"
+        },
+        {
+          "seconds": 1.8353789550000101,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 1
+          },
+          "execution_log": "java-elide_fused-multi_file_body-4.json",
+          "profile": {
+            "critical_path_action_seconds": 1.681425,
+            "critical_path_span_seconds": 1.686855,
+            "worker_memory_mib_max_sample": 341.5,
+            "bazel_heap_nonheap_mib_max_sample": 218.0,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "ElideJavac": 341.70144531249997
+            }
+          },
+          "profile_file": "java-elide_fused-multi_file_body-4.profile.json.gz"
+        },
+        {
+          "seconds": 1.8332625609999695,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 1
+          },
+          "execution_log": "java-elide_fused-multi_file_body-5.json",
+          "profile": {
+            "critical_path_action_seconds": 1.667192,
+            "critical_path_span_seconds": 1.673011,
+            "worker_memory_mib_max_sample": 349.5249999999999,
+            "bazel_heap_nonheap_mib_max_sample": 386.37800000000004,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "ElideJavac": 350.16541796875003
+            }
+          },
+          "profile_file": "java-elide_fused-multi_file_body-5.profile.json.gz"
+        }
+      ]
+    },
+    {
+      "language": "java",
+      "mode": "elide_fused_pruned",
+      "scenario": "no_op",
+      "samples": [
+        {
+          "seconds": 0.25308906500004014,
+          "compile_targets": [],
+          "abi_targets": [],
+          "actions": {},
+          "execution_log": "java-elide_fused_pruned-no_op-1.json",
+          "profile": {
+            "critical_path_action_seconds": 0.000942,
+            "critical_path_span_seconds": 0.000942,
+            "worker_memory_mib_max_sample": null,
+            "bazel_heap_nonheap_mib_max_sample": null,
+            "worker_memory_mib_by_mnemonic_max_sample": {}
+          },
+          "profile_file": "java-elide_fused_pruned-no_op-1.profile.json.gz"
+        },
+        {
+          "seconds": 0.22876969100002498,
+          "compile_targets": [],
+          "abi_targets": [],
+          "actions": {},
+          "execution_log": "java-elide_fused_pruned-no_op-2.json",
+          "profile": {
+            "critical_path_action_seconds": 0.000809,
+            "critical_path_span_seconds": 0.000809,
+            "worker_memory_mib_max_sample": null,
+            "bazel_heap_nonheap_mib_max_sample": null,
+            "worker_memory_mib_by_mnemonic_max_sample": {}
+          },
+          "profile_file": "java-elide_fused_pruned-no_op-2.profile.json.gz"
+        },
+        {
+          "seconds": 0.24462659899995742,
+          "compile_targets": [],
+          "abi_targets": [],
+          "actions": {},
+          "execution_log": "java-elide_fused_pruned-no_op-3.json",
+          "profile": {
+            "critical_path_action_seconds": 0.000992,
+            "critical_path_span_seconds": 0.000992,
+            "worker_memory_mib_max_sample": null,
+            "bazel_heap_nonheap_mib_max_sample": null,
+            "worker_memory_mib_by_mnemonic_max_sample": {}
+          },
+          "profile_file": "java-elide_fused_pruned-no_op-3.profile.json.gz"
+        },
+        {
+          "seconds": 0.24320833000001585,
+          "compile_targets": [],
+          "abi_targets": [],
+          "actions": {},
+          "execution_log": "java-elide_fused_pruned-no_op-4.json",
+          "profile": {
+            "critical_path_action_seconds": 0.000918,
+            "critical_path_span_seconds": 0.000918,
+            "worker_memory_mib_max_sample": null,
+            "bazel_heap_nonheap_mib_max_sample": null,
+            "worker_memory_mib_by_mnemonic_max_sample": {}
+          },
+          "profile_file": "java-elide_fused_pruned-no_op-4.profile.json.gz"
+        },
+        {
+          "seconds": 0.2441333650000388,
+          "compile_targets": [],
+          "abi_targets": [],
+          "actions": {},
+          "execution_log": "java-elide_fused_pruned-no_op-5.json",
+          "profile": {
+            "critical_path_action_seconds": 0.001025,
+            "critical_path_span_seconds": 0.001025,
+            "worker_memory_mib_max_sample": null,
+            "bazel_heap_nonheap_mib_max_sample": null,
+            "worker_memory_mib_by_mnemonic_max_sample": {}
+          },
+          "profile_file": "java-elide_fused_pruned-no_op-5.profile.json.gz"
+        }
+      ]
+    },
+    {
+      "language": "java",
+      "mode": "elide_fused_pruned",
+      "scenario": "comment",
+      "samples": [
+        {
+          "seconds": 1.676515165000069,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 1
+          },
+          "execution_log": "java-elide_fused_pruned-comment-1.json",
+          "profile": {
+            "critical_path_action_seconds": 1.418036,
+            "critical_path_span_seconds": 1.438841,
+            "worker_memory_mib_max_sample": 304.96000000000004,
+            "bazel_heap_nonheap_mib_max_sample": 301.192,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "ElideJavac": 305.642109375
+            }
+          },
+          "profile_file": "java-elide_fused_pruned-comment-1.profile.json.gz"
+        },
+        {
+          "seconds": 1.6630552670000043,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 1
+          },
+          "execution_log": "java-elide_fused_pruned-comment-2.json",
+          "profile": {
+            "critical_path_action_seconds": 1.466236,
+            "critical_path_span_seconds": 1.483481,
+            "worker_memory_mib_max_sample": 324.32,
+            "bazel_heap_nonheap_mib_max_sample": 301.00000000000006,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "ElideJavac": 324.5308281250001
+            }
+          },
+          "profile_file": "java-elide_fused_pruned-comment-2.profile.json.gz"
+        },
+        {
+          "seconds": 1.7990228099999968,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 1
+          },
+          "execution_log": "java-elide_fused_pruned-comment-3.json",
+          "profile": {
+            "critical_path_action_seconds": 1.59093,
+            "critical_path_span_seconds": 1.610091,
+            "worker_memory_mib_max_sample": 392.548,
+            "bazel_heap_nonheap_mib_max_sample": 295.778,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "ElideJavac": 393.26899999999995
+            }
+          },
+          "profile_file": "java-elide_fused_pruned-comment-3.profile.json.gz"
+        },
+        {
+          "seconds": 1.690114513000026,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 1
+          },
+          "execution_log": "java-elide_fused_pruned-comment-4.json",
+          "profile": {
+            "critical_path_action_seconds": 1.473923,
+            "critical_path_span_seconds": 1.491643,
+            "worker_memory_mib_max_sample": 375.802,
+            "bazel_heap_nonheap_mib_max_sample": 290.00000000000006,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "ElideJavac": 376.61263671875
+            }
+          },
+          "profile_file": "java-elide_fused_pruned-comment-4.profile.json.gz"
+        },
+        {
+          "seconds": 1.5444163909999133,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 1
+          },
+          "execution_log": "java-elide_fused_pruned-comment-5.json",
+          "profile": {
+            "critical_path_action_seconds": 1.367126,
+            "critical_path_span_seconds": 1.384241,
+            "worker_memory_mib_max_sample": 329.72800000000007,
+            "bazel_heap_nonheap_mib_max_sample": 285.76800000000003,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "ElideJavac": 329.84921875000003
+            }
+          },
+          "profile_file": "java-elide_fused_pruned-comment-5.profile.json.gz"
+        }
+      ]
+    },
+    {
+      "language": "java",
+      "mode": "elide_fused_pruned",
+      "scenario": "body",
+      "samples": [
+        {
+          "seconds": 1.6868638949999877,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 1
+          },
+          "execution_log": "java-elide_fused_pruned-body-1.json",
+          "profile": {
+            "critical_path_action_seconds": 1.467665,
+            "critical_path_span_seconds": 1.485675,
+            "worker_memory_mib_max_sample": 344.624,
+            "bazel_heap_nonheap_mib_max_sample": 300.0,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "ElideJavac": 345.032296875
+            }
+          },
+          "profile_file": "java-elide_fused_pruned-body-1.profile.json.gz"
+        },
+        {
+          "seconds": 1.6322434619999058,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 1
+          },
+          "execution_log": "java-elide_fused_pruned-body-2.json",
+          "profile": {
+            "critical_path_action_seconds": 1.455537,
+            "critical_path_span_seconds": 1.473854,
+            "worker_memory_mib_max_sample": 415.77200000000005,
+            "bazel_heap_nonheap_mib_max_sample": 307.796,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "ElideJavac": 416.1413125
+            }
+          },
+          "profile_file": "java-elide_fused_pruned-body-2.profile.json.gz"
+        },
+        {
+          "seconds": 1.6679864320000206,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 1
+          },
+          "execution_log": "java-elide_fused_pruned-body-3.json",
+          "profile": {
+            "critical_path_action_seconds": 1.423072,
+            "critical_path_span_seconds": 1.440857,
+            "worker_memory_mib_max_sample": 421.236,
+            "bazel_heap_nonheap_mib_max_sample": 267.0,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "ElideJavac": 422.101015625
+            }
+          },
+          "profile_file": "java-elide_fused_pruned-body-3.profile.json.gz"
+        },
+        {
+          "seconds": 1.6277942860000394,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 1
+          },
+          "execution_log": "java-elide_fused_pruned-body-4.json",
+          "profile": {
+            "critical_path_action_seconds": 1.441134,
+            "critical_path_span_seconds": 1.457052,
+            "worker_memory_mib_max_sample": 383.867,
+            "bazel_heap_nonheap_mib_max_sample": 271.00000000000006,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "ElideJavac": 384.43486718750006
+            }
+          },
+          "profile_file": "java-elide_fused_pruned-body-4.profile.json.gz"
+        },
+        {
+          "seconds": 1.6305630640000572,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 1
+          },
+          "execution_log": "java-elide_fused_pruned-body-5.json",
+          "profile": {
+            "critical_path_action_seconds": 1.440887,
+            "critical_path_span_seconds": 1.458738,
+            "worker_memory_mib_max_sample": 457.89300000000003,
+            "bazel_heap_nonheap_mib_max_sample": 279.00000000000006,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "ElideJavac": 458.2126875
+            }
+          },
+          "profile_file": "java-elide_fused_pruned-body-5.profile.json.gz"
+        }
+      ]
+    },
+    {
+      "language": "java",
+      "mode": "elide_fused_pruned",
+      "scenario": "private_member",
+      "samples": [
+        {
+          "seconds": 1.628314277999948,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 1
+          },
+          "execution_log": "java-elide_fused_pruned-private_member-1.json",
+          "profile": {
+            "critical_path_action_seconds": 1.446272,
+            "critical_path_span_seconds": 1.462663,
+            "worker_memory_mib_max_sample": 431.5200000000001,
+            "bazel_heap_nonheap_mib_max_sample": 302.0,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "ElideJavac": 431.977515625
+            }
+          },
+          "profile_file": "java-elide_fused_pruned-private_member-1.profile.json.gz"
+        },
+        {
+          "seconds": 1.7515519720000157,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 1
+          },
+          "execution_log": "java-elide_fused_pruned-private_member-2.json",
+          "profile": {
+            "critical_path_action_seconds": 1.555947,
+            "critical_path_span_seconds": 1.571127,
+            "worker_memory_mib_max_sample": 514.0559999999999,
+            "bazel_heap_nonheap_mib_max_sample": 315.77799999999996,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "ElideJavac": 514.56265625
+            }
+          },
+          "profile_file": "java-elide_fused_pruned-private_member-2.profile.json.gz"
+        },
+        {
+          "seconds": 1.6213950970000042,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 1
+          },
+          "execution_log": "java-elide_fused_pruned-private_member-3.json",
+          "profile": {
+            "critical_path_action_seconds": 1.435306,
+            "critical_path_span_seconds": 1.451302,
+            "worker_memory_mib_max_sample": 385.785,
+            "bazel_heap_nonheap_mib_max_sample": 314.00000000000006,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "ElideJavac": 386.21994140625003
+            }
+          },
+          "profile_file": "java-elide_fused_pruned-private_member-3.profile.json.gz"
+        },
+        {
+          "seconds": 1.634680032999995,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 1
+          },
+          "execution_log": "java-elide_fused_pruned-private_member-4.json",
+          "profile": {
+            "critical_path_action_seconds": 1.44498,
+            "critical_path_span_seconds": 1.461327,
+            "worker_memory_mib_max_sample": 468.6460000000001,
+            "bazel_heap_nonheap_mib_max_sample": 306.0,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "ElideJavac": 468.86067968750007
+            }
+          },
+          "profile_file": "java-elide_fused_pruned-private_member-4.profile.json.gz"
+        },
+        {
+          "seconds": 1.7313215379999747,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 1
+          },
+          "execution_log": "java-elide_fused_pruned-private_member-5.json",
+          "profile": {
+            "critical_path_action_seconds": 1.543604,
+            "critical_path_span_seconds": 1.559159,
+            "worker_memory_mib_max_sample": 533.97,
+            "bazel_heap_nonheap_mib_max_sample": 296.198,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "ElideJavac": 534.2220546875
+            }
+          },
+          "profile_file": "java-elide_fused_pruned-private_member-5.profile.json.gz"
+        }
+      ]
+    },
+    {
+      "language": "java",
+      "mode": "elide_fused_pruned",
+      "scenario": "internal_module_api",
+      "samples": [
+        {
+          "seconds": 1.7491519449999942,
+          "compile_targets": [
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 2
+          },
+          "execution_log": "java-elide_fused_pruned-internal_module_api-1.json",
+          "profile": {
+            "critical_path_action_seconds": 1.518989,
+            "critical_path_span_seconds": 1.541974,
+            "worker_memory_mib_max_sample": 467.231,
+            "bazel_heap_nonheap_mib_max_sample": 323.0,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "ElideJavac": 467.81092578125003
+            }
+          },
+          "profile_file": "java-elide_fused_pruned-internal_module_api-1.profile.json.gz"
+        },
+        {
+          "seconds": 1.8402967309999667,
+          "compile_targets": [
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 2
+          },
+          "execution_log": "java-elide_fused_pruned-internal_module_api-2.json",
+          "profile": {
+            "critical_path_action_seconds": 1.617486,
+            "critical_path_span_seconds": 1.640309,
+            "worker_memory_mib_max_sample": 531.579,
+            "bazel_heap_nonheap_mib_max_sample": 376.79599999999994,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "ElideJavac": 531.7912109375
+            }
+          },
+          "profile_file": "java-elide_fused_pruned-internal_module_api-2.profile.json.gz"
+        },
+        {
+          "seconds": 1.693783481999958,
+          "compile_targets": [
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 2
+          },
+          "execution_log": "java-elide_fused_pruned-internal_module_api-3.json",
+          "profile": {
+            "critical_path_action_seconds": 1.470447,
+            "critical_path_span_seconds": 1.49247,
+            "worker_memory_mib_max_sample": 378.93999999999994,
+            "bazel_heap_nonheap_mib_max_sample": 240.6,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "ElideJavac": 379.78523437499996
+            }
+          },
+          "profile_file": "java-elide_fused_pruned-internal_module_api-3.profile.json.gz"
+        },
+        {
+          "seconds": 1.6834208980000085,
+          "compile_targets": [
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 2
+          },
+          "execution_log": "java-elide_fused_pruned-internal_module_api-4.json",
+          "profile": {
+            "critical_path_action_seconds": 1.487117,
+            "critical_path_span_seconds": 1.506527,
+            "worker_memory_mib_max_sample": 457.701,
+            "bazel_heap_nonheap_mib_max_sample": 280.0,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "ElideJavac": 458.31160546875003
+            }
+          },
+          "profile_file": "java-elide_fused_pruned-internal_module_api-4.profile.json.gz"
+        },
+        {
+          "seconds": 1.692992911000033,
+          "compile_targets": [
+            "//core:core",
+            "//facade:facade"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 2
+          },
+          "execution_log": "java-elide_fused_pruned-internal_module_api-5.json",
+          "profile": {
+            "critical_path_action_seconds": 1.492142,
+            "critical_path_span_seconds": 1.511548,
+            "worker_memory_mib_max_sample": 527.9699999999999,
+            "bazel_heap_nonheap_mib_max_sample": 318.0,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "ElideJavac": 528.82009375
+            }
+          },
+          "profile_file": "java-elide_fused_pruned-internal_module_api-5.profile.json.gz"
+        }
+      ]
+    },
+    {
+      "language": "java",
+      "mode": "elide_fused_pruned",
+      "scenario": "public_module_api",
+      "samples": [
+        {
+          "seconds": 0.4339191210000308,
+          "compile_targets": [
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//facade:facade"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 4
+          },
+          "execution_log": "java-elide_fused_pruned-public_module_api-1.json",
+          "profile": {
+            "critical_path_action_seconds": 0.215763,
+            "critical_path_span_seconds": 0.230209,
+            "worker_memory_mib_max_sample": null,
+            "bazel_heap_nonheap_mib_max_sample": null,
+            "worker_memory_mib_by_mnemonic_max_sample": {}
+          },
+          "profile_file": "java-elide_fused_pruned-public_module_api-1.profile.json.gz"
+        },
+        {
+          "seconds": 0.3924718959999609,
+          "compile_targets": [
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//facade:facade"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 4
+          },
+          "execution_log": "java-elide_fused_pruned-public_module_api-2.json",
+          "profile": {
+            "critical_path_action_seconds": 0.167193,
+            "critical_path_span_seconds": 0.181655,
+            "worker_memory_mib_max_sample": null,
+            "bazel_heap_nonheap_mib_max_sample": null,
+            "worker_memory_mib_by_mnemonic_max_sample": {}
+          },
+          "profile_file": "java-elide_fused_pruned-public_module_api-2.profile.json.gz"
+        },
+        {
+          "seconds": 0.3981502270000874,
+          "compile_targets": [
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//facade:facade"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 4
+          },
+          "execution_log": "java-elide_fused_pruned-public_module_api-3.json",
+          "profile": {
+            "critical_path_action_seconds": 0.179153,
+            "critical_path_span_seconds": 0.193628,
+            "worker_memory_mib_max_sample": null,
+            "bazel_heap_nonheap_mib_max_sample": null,
+            "worker_memory_mib_by_mnemonic_max_sample": {}
+          },
+          "profile_file": "java-elide_fused_pruned-public_module_api-3.profile.json.gz"
+        },
+        {
+          "seconds": 0.3910232559999258,
+          "compile_targets": [
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//facade:facade"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 4
+          },
+          "execution_log": "java-elide_fused_pruned-public_module_api-4.json",
+          "profile": {
+            "critical_path_action_seconds": 0.177805,
+            "critical_path_span_seconds": 0.191931,
+            "worker_memory_mib_max_sample": null,
+            "bazel_heap_nonheap_mib_max_sample": null,
+            "worker_memory_mib_by_mnemonic_max_sample": {}
+          },
+          "profile_file": "java-elide_fused_pruned-public_module_api-4.profile.json.gz"
+        },
+        {
+          "seconds": 0.4004022139999961,
+          "compile_targets": [
+            "//clients:client0",
+            "//clients:client1",
+            "//clients:client2",
+            "//facade:facade"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 4
+          },
+          "execution_log": "java-elide_fused_pruned-public_module_api-5.json",
+          "profile": {
+            "critical_path_action_seconds": 0.180914,
+            "critical_path_span_seconds": 0.195349,
+            "worker_memory_mib_max_sample": null,
+            "bazel_heap_nonheap_mib_max_sample": null,
+            "worker_memory_mib_by_mnemonic_max_sample": {}
+          },
+          "profile_file": "java-elide_fused_pruned-public_module_api-5.profile.json.gz"
+        }
+      ]
+    },
+    {
+      "language": "java",
+      "mode": "elide_fused_pruned",
+      "scenario": "multi_file_body",
+      "samples": [
+        {
+          "seconds": 1.5519348590000845,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 1
+          },
+          "execution_log": "java-elide_fused_pruned-multi_file_body-1.json",
+          "profile": {
+            "critical_path_action_seconds": 1.36309,
+            "critical_path_span_seconds": 1.378851,
+            "worker_memory_mib_max_sample": 347.817,
+            "bazel_heap_nonheap_mib_max_sample": 249.796,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "ElideJavac": 348.15711718750003
+            }
+          },
+          "profile_file": "java-elide_fused_pruned-multi_file_body-1.profile.json.gz"
+        },
+        {
+          "seconds": 1.4680378909999945,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 1
+          },
+          "execution_log": "java-elide_fused_pruned-multi_file_body-2.json",
+          "profile": {
+            "critical_path_action_seconds": 1.292947,
+            "critical_path_span_seconds": 1.308772,
+            "worker_memory_mib_max_sample": 351.609,
+            "bazel_heap_nonheap_mib_max_sample": 233.378,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "ElideJavac": 352.1636484375
+            }
+          },
+          "profile_file": "java-elide_fused_pruned-multi_file_body-2.profile.json.gz"
+        },
+        {
+          "seconds": 1.541266225999948,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 1
+          },
+          "execution_log": "java-elide_fused_pruned-multi_file_body-3.json",
+          "profile": {
+            "critical_path_action_seconds": 1.360146,
+            "critical_path_span_seconds": 1.375678,
+            "worker_memory_mib_max_sample": 351.21799999999996,
+            "bazel_heap_nonheap_mib_max_sample": 406.6,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "ElideJavac": 351.65823046875
+            }
+          },
+          "profile_file": "java-elide_fused_pruned-multi_file_body-3.profile.json.gz"
+        },
+        {
+          "seconds": 1.525550494000072,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 1
+          },
+          "execution_log": "java-elide_fused_pruned-multi_file_body-4.json",
+          "profile": {
+            "critical_path_action_seconds": 1.352405,
+            "critical_path_span_seconds": 1.367847,
+            "worker_memory_mib_max_sample": 350.015,
+            "bazel_heap_nonheap_mib_max_sample": 390.0,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "ElideJavac": 350.50492578125
+            }
+          },
+          "profile_file": "java-elide_fused_pruned-multi_file_body-4.profile.json.gz"
+        },
+        {
+          "seconds": 1.5233166880000226,
+          "compile_targets": [
+            "//core:core"
+          ],
+          "abi_targets": [],
+          "actions": {
+            "ElideJavac": 1
+          },
+          "execution_log": "java-elide_fused_pruned-multi_file_body-5.json",
+          "profile": {
+            "critical_path_action_seconds": 1.349568,
+            "critical_path_span_seconds": 1.366543,
+            "worker_memory_mib_max_sample": 352.21799999999996,
+            "bazel_heap_nonheap_mib_max_sample": 383.198,
+            "worker_memory_mib_by_mnemonic_max_sample": {
+              "ElideJavac": 352.41333203125
+            }
+          },
+          "profile_file": "java-elide_fused_pruned-multi_file_body-5.profile.json.gz"
+        }
+      ]
+    }
+  ],
+  "source_workload": {
+    "project": "Apache Commons Lang",
+    "revision": "67cbf817b6af58fc168d26774186e889bb9efe50",
+    "checkout_dirty": false,
+    "source_sha256": "cfe6326f42939b19217f16fc1f78185d739d21274ce81ace7aebd0f3f27e428e",
+    "source_files": 259,
+    "consumer_graph": "generated"
+  },
+  "stock_error_prone_checks": false,
+  "runtime_java": "openjdk version \"21.0.13\" 2026-10-20 LTS\nOpenJDK Runtime Environment Temurin-21.0.13+9 (build 21.0.13+9-LTS)\nOpenJDK 64-Bit Server VM Temurin-21.0.13+9 (build 21.0.13+9-LTS, mixed mode, sharing)"
+}

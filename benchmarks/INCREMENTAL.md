@@ -23,6 +23,7 @@ appear faster merely by building dependency headers and omitting runtime code.
 
 | Edit | What changes | API boundary |
 | --- | --- | --- |
+| `clean` | Untimed `bazel clean`, followed by a timed full rebuild | All runtime targets are requested; dependencies remain downloaded |
 | `no_op` | Nothing | Control for Bazel/logging overhead; must execute no full compilers |
 | `comment` | One Core file's comment | No ABI or runtime behavior change |
 | `body` | One Core method body | Behavior changes, signature stays fixed |
@@ -98,7 +99,7 @@ cache-invalidation tests remain necessary.
 
 The workflow's `language` input selects `both`, `java`, or `kotlin`. This allows
 focused comparisons without rerunning the other language. Java now includes
-combined-emission modes; a full default run contains 154 cases and 462 measured
+combined-emission modes; a full default run contains 168 cases and 504 measured
 samples. Earlier recorded reports retain their original mode counts.
 
 ## Critical-path and memory traces
@@ -163,7 +164,7 @@ Commons Lang.
 This replaces the generated Core target with the whole production library;
 Facade, clients, and App remain generated consumers. It represents a real Java
 library behind a small consumer graph, not a real application's full build.
-Supported edits are `no_op`, `comment`, `body`, `private_member`,
+Supported scenarios are `clean`, `no_op`, `comment`, `body`, `private_member`,
 `internal_module_api`, `public_module_api`, and `multi_file_body`. The body edit
 changes `StringUtils.isEmpty` from a length comparison to `CharSequence.isEmpty`.
 The multi-file edit also rewrites equivalent predicates in `CharUtils` and
@@ -178,7 +179,7 @@ Commons Lang test suite or a complete language-compatibility check.
 
 The workflow's `workload=commons-lang` option checks out Apache Commons Lang at
 `67cbf817b6af58fc168d26774186e889bb9efe50`, selects Java, and runs all six Java modes
-and seven supported edit classes. `language` and `sources` affect only the
+and eight supported scenarios. `language` and `sources` affect only the
 `generated` workload. The production checkout is isolated from the rules checkout.
 
 ## Java target alignment
@@ -195,3 +196,19 @@ Earlier Java reports without `java_release` used Elide's compiler default (Java
 but timings are not a comparison of matched compilation targets and must be
 rerun before attributing differences to the rules or choosing defaults. Kotlin's
 stock and native compiler defaults both target JVM 1.8 in the recorded runs.
+
+The `clean` scenario measures a rebuild after `bazel clean`; cleanup is outside
+measurement. Dependency downloads and initial setup remain warm. It does not
+measure a cold machine, empty repository cache, or first installation. Each sample
+still builds every runtime target and runs the Commons Lang consumer assertions
+when that workload is selected. For example:
+
+```sh
+python3 benchmarks/incremental_matrix.py --languages java \
+  --commons-lang /path/to/commons-lang --scenarios clean body \
+  --modes vanilla elide elide_fused --rounds 5
+```
+
+[Recorded Commons Lang results](COMMONS_LANG_RESULTS.md) retain all 42 cases from
+the first hosted run with matched Java targets. Stock Java was faster in every
+scenario by median; that run predates the compiler input reductions.

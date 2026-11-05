@@ -18,7 +18,7 @@ import commons_lang_fixture
 
 REPO = Path(__file__).resolve().parents[1]
 SCENARIOS = (
-    "no_op", "comment", "body", "private_member", "internal_module_api",
+    "clean", "no_op", "comment", "body", "private_member", "internal_module_api",
     "public_module_api", "multi_file_body", "multi_module_body",
     "multi_module_api", "unused_dependency_api", "inline_or_constant",
 )
@@ -138,7 +138,7 @@ def mutate(sources, scenario, language, nonce):
         path.write_text(changed)
 
     edits = {
-        "no_op": [], "comment": [("Core0", "comment")],
+        "clean": [], "no_op": [], "comment": [("Core0", "comment")],
         "body": [("Core0", "body")], "private_member": [("Core0", "private")],
         "internal_module_api": [("Core0", "public")],
         "public_module_api": [("Facade", "public")],
@@ -294,6 +294,8 @@ def main():
                                 commons_lang_fixture.mutate(sources, scenario, index + 1)
                             else:
                                 mutate(sources, scenario, language, index + 1)
+                            if scenario == "clean":
+                                run(["clean"], output / "clean.log")
                             stem = f"{language}-{mode}-{scenario}-{index}"
                             execution = output / (stem + ".json")
                             profile = output / (stem + ".profile.json.gz")
@@ -305,6 +307,10 @@ def main():
                                 commons_lang_fixture.verify(work, args.fanout, mode, java, output / (stem + ".runtime.log"))
                             actions = list(json_entries(execution))
                             compiled = sorted({entry["targetLabel"] for entry in actions if entry.get("mnemonic") in COMPILERS})
+                            if scenario == "clean":
+                                expected = {t if ":" in t else t + ":" + t.rsplit("/", 1)[-1] for t in targets}
+                                if not expected.issubset(compiled):
+                                    raise AssertionError(f"Clean build skipped runtime compilers: {expected - set(compiled)}")
                             if scenario == "no_op" and compiled:
                                 raise AssertionError(f"No-op recompiled targets: {compiled}")
                             if scenario != "no_op" and not compiled:

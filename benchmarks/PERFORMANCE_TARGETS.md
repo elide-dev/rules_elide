@@ -8,7 +8,7 @@ needed; it is not a claim that every workload is already faster.
 | Dimension | Current evidence | Remaining work |
 | --- | --- | --- |
 | Clean compilation | The 50-source coarse benchmark favored Elide for Java and Kotlin | Real library/application targets, deeper graphs, and repeated runs on matched hardware |
-| Body/private/multi-file edits | Kotlin ABI avoidance substantially reduced rebuild scope; combined emission often reduced latency further | [Stock Kotlin ABI comparison](KOTLIN_200_RESULTS.md) now measured on generated sources; real projects and graph depths remain; [Java combined-emission comparison](JAVA_FUSED_RESULTS.md) |
+| Body/private/multi-file edits | Kotlin ABI avoidance reduced rebuild scope; [real Commons Lang results](COMMONS_LANG_RESULTS.md) still favor stock Java across all measured edits | [Stock Kotlin ABI comparison](KOTLIN_200_RESULTS.md) now measured on generated sources; real projects and graph depths remain; [Java combined-emission comparison](JAVA_FUSED_RESULTS.md) |
 | Internal/public API edits | Pruning reduced propagation; several Kotlin API-edit cases still lost to vanilla | Reduce compiler/worker overhead and test per-target early versus combined headers |
 | No-op builds | Small differences sit near the measurement floor | Measure Bazel analysis overhead separately from compiler work |
 | Memory and worker startup | Combined emission removes a separate compiler action and worker pool | Optional traces now record sampled worker memory and critical paths; measure true peak RSS and cold/warm startup next |

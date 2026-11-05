@@ -309,8 +309,8 @@ release-pin maintenance, and [docs/testing.md](docs/testing.md) for CI coverage.
 
 | If you currently use…    | Migrate to `rules_elide` for…                                              |
 |--------------------------|----------------------------------------------------------------------------|
-| `rules_java`             | Faster compile in steady state (~2.8x on micro-bench), JUnit 5 native, ABI ijar + source jars |
-| `rules_kotlin`           | Faster compile (~5.5x on micro-bench), compile-time-compatible JavaInfo, single Elide JDK — or keep `kt_jvm_*` rules and swap only the toolchain via `register_elide_kotlin_toolchain` |
+| `rules_java`             | Embedded compiler workers, JUnit 5 native, ABI headers + source jars |
+| `rules_kotlin`           | ABI compile avoidance, compile-time-compatible JavaInfo, single Elide JDK — or keep `kt_jvm_*` rules and swap only the toolchain via `register_elide_kotlin_toolchain` |
 | `rules_graalvm`          | An Elide native-image rule; review the current JDK/C toolchain limitations before migrating |
 
 `rules_elide` returns `JavaInfo` from every compile rule, so existing
@@ -320,7 +320,11 @@ unchanged.
 See [`benchmarks/RESULTS.md`](benchmarks/RESULTS.md) for methodology, recorded
 numbers, and how to reproduce locally via `./benchmarks/bench.sh`.
 The [incremental edit matrix](benchmarks/INCREMENTAL.md) covers ABI changes,
-module boundaries, dependency pruning, and multi-file edits with action logs.
+module boundaries, dependency pruning, multi-file edits, and clean rebuilds with action logs.
+Performance depends on the workload: in the matched-Java-21
+[Commons Lang comparison](benchmarks/COMMONS_LANG_RESULTS.md), stock `rules_java`
+had the lowest median in every incremental scenario. Microbenchmarks do not
+establish an application-wide speedup; compare your own clean and incremental builds.
 
 ## Local development against a non-released elide
 

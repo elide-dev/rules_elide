@@ -5,7 +5,7 @@ import shutil
 import subprocess
 import zipfile
 
-SCENARIOS = ("no_op", "comment", "body", "private_member", "internal_module_api",
+SCENARIOS = ("clean", "no_op", "comment", "body", "private_member", "internal_module_api",
              "public_module_api", "multi_file_body")
 
 
@@ -67,7 +67,7 @@ def replace_once(text, old, new):
 
 
 def mutate(sources, scenario, nonce):
-    if scenario == "no_op":
+    if scenario in ("clean", "no_op"):
         return
     by_name = {path.name: path for path in sources}
     path = by_name["Facade.java" if scenario == "public_module_api" else "StringUtils.java"]

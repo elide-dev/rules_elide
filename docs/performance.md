@@ -1,10 +1,14 @@
 # Compilation performance
 
-Use the [incremental results](../benchmarks/INCREMENTAL_RESULTS.md) to select
+Use the [real Java workload results](../benchmarks/COMMONS_LANG_RESULTS.md) and
+[generated-graph results](../benchmarks/INCREMENTAL_RESULTS.md) to evaluate
 optimizations for your dependency graph. The [target ledger](../benchmarks/PERFORMANCE_TARGETS.md)
 tracks measured wins and remaining gaps against stock rules. The measured small graph favors Kotlin
 ABI avoidance for implementation edits; pruning limits propagation through unused
-transitive dependencies. Neither setting guarantees faster builds for every edit.
+transitive dependencies. Stock Java still led every incremental scenario in the
+Commons Lang run. Neither setting guarantees faster builds for every edit.
+The current harness also supports clean rebuilds; keep these separate from warm
+edits and first-install/download costs.
 
 ## Combined Java ABI emission
 
