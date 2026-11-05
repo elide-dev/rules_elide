@@ -323,8 +323,11 @@ The [incremental edit matrix](benchmarks/INCREMENTAL.md) covers ABI changes,
 module boundaries, dependency pruning, multi-file edits, and clean rebuilds with action logs.
 Performance depends on the workload: in the matched-Java-21
 [Commons Lang comparison](benchmarks/COMMONS_LANG_RESULTS.md), stock `rules_java`
-had the lowest median in every incremental scenario. Microbenchmarks do not
-establish an application-wide speedup; compare your own clean and incremental builds.
+had the lowest median in every incremental scenario in the initial run. A subsequent
+[clean-and-incremental run](benchmarks/COMMONS_LANG_CLEAN_RESULTS.md) favored Elide
+for clean rebuilds while stock retained its implementation-edit advantage.
+Microbenchmarks do not establish an application-wide speedup; compare your own
+clean and incremental builds.
 
 ## Local development against a non-released elide
 

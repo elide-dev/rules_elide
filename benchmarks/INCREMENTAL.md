@@ -217,3 +217,7 @@ python3 benchmarks/incremental_matrix.py --languages java \
 [Recorded Commons Lang results](COMMONS_LANG_RESULTS.md) retain all 42 cases from
 the first hosted run with matched Java targets. Stock Java was faster in every
 scenario by median; that run predates the compiler input reductions.
+
+The [clean-and-incremental hosted comparison](COMMONS_LANG_CLEAN_RESULTS.md)
+adds 48 cases after compiler input reduction. Elide led clean rebuilds while
+stock retained the implementation-edit advantage; both outcomes are preserved.
