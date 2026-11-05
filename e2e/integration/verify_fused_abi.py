@@ -53,11 +53,15 @@ elide_%s_binary(name = "app", srcs = ["Main.%s"], deps = [":core"], main_class =
                 (work / "Inlined.kt").write_text("fun main() { System.out.println(Core.MAGIC + Core.inlineValue()) }\n")
             else:
                 (work / "Inlined.java").write_text("public class Inlined { public static void main(String[] args) { System.out.println(Core.MAGIC); } }\n")
-            configurations = [(workers, pruning, "false") for workers, pruning in
+            build_template = (work / "BUILD.bazel").read_text()
+            configurations = [(workers, pruning, "false", "inherit") for workers, pruning in
                               [("true", "false"), ("false", "false"), ("true", "true"), ("false", "true")]]
             if not kotlin:
-                configurations += [("true", "false", "true"), ("true", "true", "true")]
-            for workers, pruning, classpath_cache in configurations:
+                configurations += [("true", "false", "true", "inherit"), ("true", "true", "true", "inherit")]
+            configurations.append(("true", "false", "false", "combined"))
+            for workers, pruning, classpath_cache, abi_mode in configurations:
+                (work / "BUILD.bazel").write_text(build_template.replace("name = ", 'abi_mode = "combined", name = ') if abi_mode == "combined" else build_template)
+                global_abi = "false" if abi_mode == "combined" else "true"
                 previous = None
                 resource = "A"
                 cases = [("initial", 1, 2, 3, "", True),
@@ -76,10 +80,10 @@ elide_%s_binary(name = "app", srcs = ["Main.%s"], deps = [":core"], main_class =
                         if name == "resource":
                             resource = "B"
                         (work / "resource.txt").write_text(resource)
-                    log = work / f"{language}-{workers}-{pruning}-{classpath_cache}-{name}.json"
+                    log = work / f"{language}-{workers}-{pruning}-{classpath_cache}-{abi_mode}-{name}.json"
                     subprocess.run(bazel + ["build", "//:core", "//:app", "//:inlined", *sys.argv[1:],
-                        f"--@rules_elide//config/{config}:abi_compile_avoidance=true",
-                        f"--@rules_elide//config/{config}:abi_from_compile=true",
+                        f"--@rules_elide//config/{config}:abi_compile_avoidance={global_abi}",
+                        f"--@rules_elide//config/{config}:abi_from_compile={global_abi}",
                         "--@rules_elide//elide:use_workers=" + workers,
                         "--@rules_elide//config/javac:classpath_cache=" + classpath_cache,
                         "--@rules_elide//elide:prune_unused_inputs=" + pruning,
@@ -90,7 +94,7 @@ elide_%s_binary(name = "app", srcs = ["Main.%s"], deps = [":core"], main_class =
                     assert not any(a.get("mnemonic") == compiler + "Abi" for a in actions), actions
                     rebuilt = {a.get("targetLabel") for a in actions if a.get("mnemonic") == compiler}
                     digest = hashlib.sha256((work / "bazel-bin/core_abi.jar").read_bytes()).digest()
-                    context = (language, workers, pruning, classpath_cache, name)
+                    context = (language, workers, pruning, classpath_cache, abi_mode, name)
                     if previous is not None:
                         assert (digest != previous) == changed, (context, "header")
                         assert ("//:app" in rebuilt) == changed, (context, rebuilt)
@@ -106,4 +110,4 @@ elide_%s_binary(name = "app", srcs = ["Main.%s"], deps = [":core"], main_class =
                     assert result == expected, (context, "inlined", result, expected)
     finally:
         subprocess.run(bazel + ["shutdown"], cwd=work, check=False)
-print("Java/Kotlin fused ABI headers, edit propagation, and runtime outputs pass in both worker modes with pruning on/off; Java classpath caching invalidates changed dependency jars and resource edits preserve compile caches.")
+print("Java/Kotlin fused ABI headers, edit propagation, and runtime outputs pass in both worker modes with pruning on/off; Per-target combined mode overrides disabled global flags; Java classpath caching invalidates changed dependency jars and resource edits preserve compile caches.")

@@ -60,11 +60,43 @@ The [hosted comparison](../benchmarks/FUSED_ABI_RESULTS.md) records improvements
 and remaining slower cases. Its action counts establish rebuild scope; timings require an otherwise idle
 machine and repeated samples. Keep cold builds and warm edits as separate metrics.
 
+## Per-target ABI strategy
+
+Native Java/Kotlin libraries, binaries, and tests accept `abi_mode`. Its default,
+`"inherit"`, preserves the language's build-wide settings. `"off"` selects the
+normal full-compile plus ijar path, `"separate"` requests early source headers,
+and `"combined"` requests full and header output from one compiler action.
+Explicit choices enable or disable that strategy independently of global flags.
+The existing eligibility checks still apply: for example, a Kotlin target with
+resources falls back from combined emission to separate headers, and Java
+annotation processing retains the full-compile ijar path.
+
+```starlark
+elide_java_library(
+    name = "core",
+    srcs = glob(["core/*.java"]),
+    abi_mode = "separate",
+)
+
+elide_java_library(
+    name = "service",
+    srcs = glob(["service/*.java"]),
+    deps = [":core"],
+    abi_mode = "combined",
+)
+```
+
+This allows downstream compilation to start after Core's header is ready while
+avoiding a separate header pass for Service. It is a scheduling option, not a
+claim that this combination wins on every graph. Compare both strategies on real
+code; the experimental `elide_hybrid` benchmark mode uses this arrangement and
+must be selected explicitly with `--modes`.
+
 ## Remaining rule-side work
 
-1. **Target-level selection.** Allow libraries to select separate headers or
-   combined emission without changing the entire build. Large dependency roots
-   may benefit from early headers while small leaves benefit from fewer passes.
+1. **Mixed-strategy measurement.** Use per-target `abi_mode` to compare early
+   headers at dependency roots with combined emission at consumers. Measure
+   scheduling and memory costs before recommending a layout.
 2. **Wider correctness coverage.** Extend combined emission to resources, mixed
    sources, compiler plugins, processors, and friends only after proving header
    completeness and downstream runtime behavior. Test cache hits and remote

@@ -70,3 +70,10 @@ class BaselineTest(unittest.TestCase):
             root = Path(directory)
             fixture(root, "java", "elide_fused", 3, 2)
             self.assertIn('javac_opts=["--release", "21"]', (root / "core/BUILD.bazel").read_text())
+
+    def test_hybrid_uses_early_core_headers_and_combined_consumers(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            fixture(root, "java", "elide_hybrid", 3, 2)
+            self.assertIn('abi_mode="separate"', (root / "core/BUILD.bazel").read_text())
+            self.assertIn('abi_mode="combined"', (root / "facade/BUILD.bazel").read_text())

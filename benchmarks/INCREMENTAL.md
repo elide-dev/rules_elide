@@ -59,6 +59,11 @@ Kotlin modes.
 - `elide_fused`: language-specific ABI mode with `abi_from_compile=true`; emits full and
   header jars in one compiler action. Consumers wait for that action to finish.
 - `elide_fused_pruned`: Java/Kotlin combined emission plus unused-input pruning.
+- `elide_hybrid`: experimental, explicit selection only. Uses per-target
+  `abi_mode="separate"` for Core and `abi_mode="combined"` for all consumers and
+  Spare. Global ABI flags stay at defaults. Compare against uniform separate
+  and combined emission to evaluate overlap between Core code generation and
+  downstream compilation. It is excluded from the default matrix.
 - `elide_incremental`: Kotlin only, ABI mode plus experimental per-target
   incremental compilation. Pruning is deliberately off because IC is an opaque
   compile path. Compiler-action counts cannot show how many files IC recompiles

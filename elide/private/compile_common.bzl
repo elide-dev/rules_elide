@@ -223,6 +223,13 @@ def _run_elide_compile(ctx, mnemonic, subcommand, tool_args, inputs, outputs, pr
         )
     return metadata.files
 
+def _abi_selection(ctx, enabled_setting, combined_setting):
+    mode = ctx.attr.abi_mode
+    if mode == "inherit":
+        enabled = enabled_setting[BuildSettingInfo].value
+        return enabled, enabled and combined_setting[BuildSettingInfo].value
+    return mode != "off", mode == "combined"
+
 def run_javac(ctx, output_jar):
     """Runs `elide javac --jar` to compile `.java` sources into `output_jar`.
 
@@ -258,9 +265,10 @@ def run_javac(ctx, output_jar):
         for o in ctx.attr.javac_opts
         for prefix in ["-processor", "--processor", "-proc:", "-A", "-Xplugin"]
     ])
-    abi_avoidance = ctx.attr._java_abi_compile_avoidance[BuildSettingInfo].value and ctx.files.srcs and not processors and not processor_opts and not ctx.files.resource_jars
+    requested_abi, requested_combined = _abi_selection(ctx, ctx.attr._java_abi_compile_avoidance, ctx.attr._java_abi_from_compile)
+    abi_avoidance = requested_abi and ctx.files.srcs and not processors and not processor_opts and not ctx.files.resource_jars
     abi_jar = ctx.actions.declare_file(ctx.label.name + "_abi.jar") if abi_avoidance else None
-    fused_abi = abi_avoidance and ctx.attr._java_abi_from_compile[BuildSettingInfo].value
+    fused_abi = abi_avoidance and requested_combined
 
     # `elide javac --jar <class_jar> [--classpath-cache] -- -classpath <cp> <javac_opts> <srcs>`.
     javac_args = _tool_args(ctx, class_jar)
@@ -359,11 +367,12 @@ def run_kotlinc(ctx, output_jar):
     # keeping pruning sound (verified by //e2e/abi_avoidance). `--abi-only` emits
     # both the Kotlin ABI and the Java ABI (via the bundled Java header compiler),
     # so it covers mixed kt+java targets as well as kt-only ones.
-    abi_avoidance = ctx.attr._abi_compile_avoidance[BuildSettingInfo].value and has_kt
+    requested_abi, requested_combined = _abi_selection(ctx, ctx.attr._abi_compile_avoidance, ctx.attr._abi_from_compile)
+    abi_avoidance = requested_abi and has_kt
 
     # Combined emission saves a compiler pass, but delays downstream compilation
     # until code generation finishes. Keep unvalidated configurations separate.
-    fused_abi = abi_avoidance and ctx.attr._abi_from_compile[BuildSettingInfo].value
+    fused_abi = abi_avoidance and requested_combined
     fused_abi = fused_abi and single_kt_only and not incremental
     fused_abi = fused_abi and not ctx.attr.plugins and not friend_path_strs
     fused_abi = fused_abi and not getattr(ctx.attr, "builtin_plugins", []) and not _has_exported_processors(ctx.attr.deps)
@@ -873,6 +882,15 @@ def build_test_launcher(ctx, output_jar):
 # Common attribute sets used by Java and Kotlin compile rules.
 
 COMMON_LIBRARY_ATTRS = {
+    "abi_mode": attr.string(
+        default = "inherit",
+        values = ["inherit", "off", "separate", "combined"],
+        doc = "Per-target ABI strategy. inherit uses the language build settings; " +
+              "off uses full compilation plus ijar; separate requests an early header action; " +
+              "combined requests full and header jars in one action. Explicit modes override " +
+              "build settings. Existing processor, resource, mixed-source, plugin, friend, " +
+              "and incremental-compiler safety fallbacks still apply.",
+    ),
     "data": attr.label_list(
         doc = "Files made available to this target's runfiles at action time.",
         allow_files = True,
