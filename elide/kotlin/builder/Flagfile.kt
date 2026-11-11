@@ -34,6 +34,8 @@ data class CompileRequest(
     val kspClasses: String? = null,
     val processorOptions: List<String> = emptyList(),
     val jvmTarget: String? = null,
+    /** Compiler plugins delivered through rules_kotlin's `--plugins_payload`. */
+    val payloadPlugins: List<PayloadPlugin> = emptyList(),
     val raw: Map<String, List<String>> = emptyMap(),
 )
 
@@ -84,6 +86,7 @@ object Flagfile {
             kspClasses = first("--generated_classes_output"),
             processorOptions = list("--ksp_options") + list("--javacopts").filter { it.startsWith("-A") }.map { it.removePrefix("-A") },
             jvmTarget = first("--kotlin_jvm_target") ?: first("--jvm_target"),
+            payloadPlugins = list("--plugins_payload").flatMap(PluginsPayload::parse),
             raw = map.mapValues { it.value.toList() },
         )
     }
