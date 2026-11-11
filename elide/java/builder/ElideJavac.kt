@@ -20,7 +20,14 @@ object ElideJavac {
      * Builds the command. [errorProneJars] supplies Error Prone itself (rules_java bundles it in
      * JavaBuilder_deploy.jar); [extraSources] are `.java` files unpacked from `--source_jars`.
      */
-    fun plan(req: Request, elide: String, errorProneJars: List<String>, extraSources: List<String>, sep: String): List<String> {
+    fun plan(
+        req: Request,
+        elide: String,
+        errorProneJars: List<String>,
+        extraSources: List<String>,
+        sep: String,
+        generatedSources: String? = null,
+    ): List<String> {
         val cmd = mutableListOf(elide, "javac", "--jar", req.output)
         req.depsProto?.let { cmd += listOf("--jdeps", it) }
         req.targetLabel?.let { cmd += listOf("--target-label", it) }
@@ -34,11 +41,13 @@ object ElideJavac {
         }
         if (req.classpath.isNotEmpty()) cmd += listOf("-classpath", req.classpath.joinToString(sep))
         // JavaBuilder never discovers processors implicitly: only declared --processors run.
-        cmd += "-proc:none"
-        if (plugin != null) {
-            cmd += listOf("-processorpath", (errorProneJars + req.processorpath).joinToString(sep))
-            cmd += plugin
+        if (req.processors.isEmpty()) cmd += "-proc:none" else cmd += listOf("-processor", req.processors.joinToString(","))
+        if (generatedSources != null) cmd += listOf("-s", generatedSources)
+        val processorpath = (if (plugin != null) errorProneJars else emptyList()) + req.processorpath
+        if (processorpath.isNotEmpty() && (plugin != null || req.processors.isNotEmpty())) {
+            cmd += listOf("-processorpath", processorpath.joinToString(sep))
         }
+        if (plugin != null) cmd += plugin
         cmd += req.sources
         cmd += extraSources
         return cmd

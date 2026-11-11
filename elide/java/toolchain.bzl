@@ -148,6 +148,7 @@ def elide_java_toolchain(
         toolchain_definition = False,
         **toolchain_kwargs
     )
+
     # Mirrors default_java_toolchain's definitions: one for --java_language_version=<source_version>, and for
     # rules_java's default language version also one for an unset --java_language_version.
     versions = {name + "_definition": settings["source_version"]}

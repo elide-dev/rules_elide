@@ -24,7 +24,10 @@ class RouterTest {
     }
 
     @Test fun processorsAndUnknownFlagsUseStock() {
-        assertEquals(Route.STOCK, Router.decide(req("--processors", "p.P", "--generated_sources_output", "g.jar"), plugins).route)
+        val processors = req("--processors", "p.P", "--processorpath", "p.jar", "--generated_sources_output", "g.jar")
+        assertEquals(Route.STOCK, Router.decide(processors, Capabilities.NONE).route)
+        assertEquals(Route.ELIDE, Router.decide(processors, noPlugins).route)
+        assertEquals(Route.STOCK, Router.decide(req("--generated_class_output", "c.jar"), plugins).route)
         assertEquals(Route.STOCK, Router.decide(req("--reduce_classpath_mode", "JAVABUILDER_REDUCED"), plugins).route)
         assertEquals(Route.ELIDE, Router.decide(req("--reduce_classpath_mode", "BAZEL_REDUCED"), plugins).route)
         assertEquals(Route.STOCK, Router.decide(req("--injecting_rule_kind", "x", "--unknown_flag"), plugins).route)

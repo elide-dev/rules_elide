@@ -33,4 +33,16 @@ class ElideJavacTest {
         assertEquals("boot.jar", cmd[cmd.indexOf("-bootclasspath") + 1])
         assertEquals(listOf("A.java", "gen/G.java"), cmd.takeLast(2))
     }
+
+    @Test fun annotationProcessors() {
+        val req = Request.parse(listOf(
+            "--output", "out.jar", "--processorpath", "proc.jar", "--processors", "p.A", "p.B",
+            "--generated_sources_output", "gen.jar", "--sources", "A.java",
+        ))
+        val cmd = ElideJavac.plan(req, "elide", listOf("ep.jar"), emptyList(), ":", "gensrc")
+        assertFalse("-proc:none" in cmd)
+        assertEquals("p.A,p.B", cmd[cmd.indexOf("-processor") + 1])
+        assertEquals("proc.jar", cmd[cmd.indexOf("-processorpath") + 1])
+        assertEquals("gensrc", cmd[cmd.indexOf("-s") + 1])
+    }
 }

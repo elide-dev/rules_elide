@@ -47,4 +47,16 @@ object Outputs {
             temp.delete()
         }
     }
+
+    /** Packs the files under [dir] into a source jar at [path], sorted and with normalized timestamps. */
+    fun writeSourceJar(dir: File, path: String) {
+        File(path).parentFile?.mkdirs()
+        ZipOutputStream(File(path).outputStream().buffered()).use { out ->
+            dir.walkTopDown().filter { it.isFile }.map { it.relativeTo(dir).invariantSeparatorsPath }.sorted().forEach { name ->
+                out.putNextEntry(ZipEntry(name).apply { timeLocal = NORMALIZED_TIME })
+                File(dir, name).inputStream().use { it.copyTo(out) }
+                out.closeEntry()
+            }
+        }
+    }
 }

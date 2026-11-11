@@ -13,16 +13,18 @@ object Router {
 
     private val NATIVE_METHOD = Regex("""\bnative\b[^;{=]*\(""")
 
+    /**
+     * Error Prone runs for `-Xep…` options, or for a processor path without declared processors: that is how
+     * `java_plugin`s without a processor class (e.g. NullAway) reach JavaBuilder's Error Prone.
+     */
     fun needsErrorProne(req: Request): Boolean =
-        req.javacopts.any { it.startsWith("-Xep") } || req.processorpath.isNotEmpty()
+        req.javacopts.any { it.startsWith("-Xep") } || (req.processorpath.isNotEmpty() && req.processors.isEmpty())
 
     fun decide(req: Request, caps: Capabilities): Decision {
         if (req.unknown.isNotEmpty()) return Decision(Route.STOCK, "unsupported JavaBuilder flags ${req.unknown}")
         if (req.reduceClasspathMode == "JAVABUILDER_REDUCED") return Decision(Route.STOCK, "JavaBuilder classpath reduction")
-        if (req.processors.isNotEmpty()) return Decision(Route.STOCK, "annotation processors")
-        if (req.generatedSourcesOutput != null || req.generatedClassOutput != null) {
-            return Decision(Route.STOCK, "generated source/class outputs")
-        }
+        if (req.processors.isNotEmpty() && !caps.annotationProcessing) return Decision(Route.STOCK, "annotation processors")
+        if (req.generatedClassOutput != null) return Decision(Route.STOCK, "generated class output")
         if (req.sources.isEmpty() && req.sourceJars.isEmpty()) return Decision(Route.STOCK, "no sources")
         req.javacopts.firstOrNull { o -> UNSUPPORTED_JAVACOPTS.any { o == it || o.startsWith("$it:") || (it == "-J" && o.startsWith(it)) } }
             ?.let { return Decision(Route.STOCK, "javac option $it") }
