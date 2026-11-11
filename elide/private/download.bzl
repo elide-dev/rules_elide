@@ -20,16 +20,29 @@ package(default_visibility = ["//visibility:public"])
 # `<JAVA_HOME>/bin/java` (and friends) as native-image expects.
 exports_files(["{binary_path}"])
 
-# Minimal input set for JVM compile actions (elide javac, kotlinc, jar). Includes
-# conf/ (java.security etc.): `elide java` fails to start without it, notably on
-# remote executors that receive only declared inputs.
+# The elide binary with its distribution as runfiles: pass this (not the bare
+# `{binary_path}` file) wherever elide runs as a tool outside the toolchain,
+# e.g. `register_elide_kotlin_toolchain(elide = ...)`. The executable stays the
+# real `{binary_path}`, so elide still resolves its home from its own path, and
+# remote executors receive lib/ and conf/ alongside it. A bare file has no
+# runfiles: `elide java` then fails with "Error loading java.security file".
+filegroup(
+    name = "elide",
+    srcs = ["{binary_path}"],
+    data = [":elide_compile_files"],
+)
+
+# Minimal input set for JVM compile actions (elide javac, kotlinc, jar, and
+# `elide java`, which loads conf/security/java.security from its home).
 # Excludes: doc/ (HTML docs), lib/svm/ + lib/truffle/ + lib/static/ (native-image),
 #           lib/llvm/ + lib/resources/jextract/ (C tools), Python runtime, Maven.
 filegroup(
     name = "elide_compile_files",
     srcs = glob(
-        ["bin/**", "lib/**", "conf/**"],
+        ["bin/**", "conf/**", "lib/**"],
         exclude = [
+            # Component markers (e.g. Python's) stay with their own filegroups.
+            "conf/components/**",
             "lib/llvm/**",
             "lib/resources/jextract/**",
             "lib/static/**",

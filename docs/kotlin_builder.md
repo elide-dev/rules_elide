@@ -32,7 +32,7 @@ load("@rules_elide//elide/kotlin:toolchain.bzl", "register_elide_kotlin_toolchai
 
 register_elide_kotlin_toolchain(
     name = "elide_kt",
-    elide = "@elide_linux_amd64//:bin/elide",   # platform-specific — see caveats
+    elide = "@elide_linux_amd64//:elide",   # platform-specific — see caveats
     fallback_builder = "@rules_kotlin//src/main/kotlin:build",
     language_version = "2.4",
     api_version = "2.4",
@@ -135,17 +135,25 @@ processor implementation.
 appear as a `bazel_dep` in any module that loads this file, even if no
 `kt_jvm_*` rules are used directly.
 
+**Pass `@elide_<os>_<cpu>//:elide`, not the bare `:bin/elide` file.**
+The `:elide` target is the same binary with the distribution's `bin/`, `lib/`
+and `conf/` as runfiles. The launcher ships only the `elide` target's runfiles,
+so with the bare file a remote executor (or any sandbox that materializes only
+declared inputs) receives the binary alone, and `elide java` fails with
+`Error loading java.security file`. Local unsandboxed builds hide this because
+the extracted distribution sits next to the file.
+
 **The `elide` binary label is platform-specific.**
-Each platform variant is exposed as `@elide_<os>_<cpu>//:bin/elide` by the
-`elide` module extension. There is no host-agnostic alias yet. To support
-multiple execution platforms, use a `select()`:
+Each platform variant is exposed as `@elide_<os>_<cpu>//:elide` by the
+`elide` module extension (`use_repo` the platforms you need). There is no
+host-agnostic alias yet. To support multiple execution platforms, use a `select()`:
 
 ```python
 register_elide_kotlin_toolchain(
     name = "elide_kt",
     elide = select({
-        "@platforms//os:linux": "@elide_linux_amd64//:bin/elide",
-        "@platforms//os:macos": "@elide_macos_arm64//:bin/elide",
+        "@platforms//os:linux": "@elide_linux_amd64//:elide",
+        "@platforms//os:macos": "@elide_macos_arm64//:elide",
     }),
     fallback_builder = "@rules_kotlin//src/main/kotlin:build",
     language_version = "2.4",
