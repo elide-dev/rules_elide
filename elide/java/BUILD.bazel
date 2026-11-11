@@ -1,0 +1,18 @@
+load("@bazel_skylib//rules:common_settings.bzl", "bool_flag")
+
+package(default_visibility = ["//visibility:public"])
+
+exports_files(["toolchain.bzl"])
+
+# Set by elide_java_toolchain's launcher while it builds the JavaBuilder shim, so the shim
+# compiles with the stock Java toolchain instead of the Elide one it implements.
+bool_flag(
+    name = "shim_build",
+    build_setting_default = False,
+    visibility = ["//visibility:public"],
+)
+
+config_setting(
+    name = "not_shim_build",
+    flag_values = {":shim_build": "False"},
+)
