@@ -23,6 +23,8 @@ data class Request(
     val strictJavaDeps: String,
     val targetLabel: String?,
     val injectingRuleKind: String?,
+    /** Bazel's `--experimental_java_classpath` handling: NONE, BAZEL_REDUCED, BAZEL_FALLBACK or JAVABUILDER_REDUCED. */
+    val reduceClasspathMode: String,
     /** Flags this shim does not understand; any of them routes the request to the stock JavaBuilder. */
     val unknown: List<String>,
 ) {
@@ -37,7 +39,7 @@ data class Request(
         private val SINGLES = setOf(
             "--output", "--native_header_output", "--output_manifest_proto", "--output_deps_proto",
             "--generated_sources_output", "--generated_class_output", "--system", "--strict_java_deps",
-            "--target_label", "--injecting_rule_kind", "--experimental_fix_deps_tool",
+            "--target_label", "--injecting_rule_kind", "--experimental_fix_deps_tool", "--reduce_classpath_mode",
         )
 
         /** Boolean flags with no value that do not change the result (jar compression is always on). */
@@ -58,7 +60,7 @@ data class Request(
             }
         }
 
-        internal fun unquote(line: String): String =
+        fun unquote(line: String): String =
             if (line.length >= 2 && line.startsWith("'") && line.endsWith("'")) {
                 line.substring(1, line.length - 1).replace("'\\''", "'")
             } else line
@@ -109,6 +111,7 @@ data class Request(
                 strictJavaDeps = singles["--strict_java_deps"] ?: "OFF",
                 targetLabel = singles["--target_label"],
                 injectingRuleKind = singles["--injecting_rule_kind"],
+                reduceClasspathMode = singles["--reduce_classpath_mode"] ?: "NONE",
                 unknown = unknown,
             )
         }

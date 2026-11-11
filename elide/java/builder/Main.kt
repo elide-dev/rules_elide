@@ -59,7 +59,15 @@ object Main {
             File(req.output).parentFile?.mkdirs()
             val cmd = ElideJavac.plan(req, cfg.elide, cfg.errorProneJars, extra, File.pathSeparator)
             val (code, out) = ElideJavac.run(cmd, File("."))
+            if (code != 0 && req.reduceClasspathMode == "BAZEL_REDUCED") {
+                // The failure may only reflect Bazel's reduced classpath. The stock JavaBuilder reports either the
+                // real error or the fallback request that makes Bazel retry with the full classpath.
+                val (stockCode, stockOut) = if (inputs != null) stock.forward(args, inputs) else stock.run(args, File("."))
+                val note = if (cfg.logRoutes) "[elide-javabuilder] STOCK: retrying a reduced-classpath failure\n" else ""
+                return stockCode to (prefix + note + stockOut)
+            }
             if (code != 0) return code to (prefix + out)
+            Outputs.normalizeJar(req.output)
             req.nativeHeaderOutput?.let(Outputs::writeEmptyJar)
             req.manifestProto?.let(Outputs::writeEmptyManifestProto)
             val (depsCode, diagnostic) = StrictDeps.check(req)

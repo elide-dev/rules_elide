@@ -18,6 +18,9 @@ visibility("public")
 
 _SHIM_BUILD = str(Label("//elide/java:shim_build"))
 
+# rules_java's default_java_toolchain language version (an unset --java_language_version selects it).
+_DEFAULT_JAVA_LANGUAGE_VERSION = "11"
+
 def _shim_build_impl(_settings, _attr):
     return {_SHIM_BUILD: True}
 
@@ -104,7 +107,9 @@ def elide_java_toolchain(
 
     Args:
         name: Toolchain name. Creates `<name>` (the java_toolchain), `<name>_javabuilder`
-            (the launcher) and `<name>_definition` (the `toolchain()` to register).
+            (the launcher) and `<name>_definition` (the `toolchain()` to register; with rules_java's
+            default language version also `<name>_default_definition`, for an unset
+            `--java_language_version`). Register them ahead of the stock Java toolchains.
         elide: The execution platform's `@elide_<os>_<cpu>//:elide` (binary plus distribution).
         configuration: Base `default_java_toolchain` configuration.
         target_settings: Extra settings gating the definition, e.g. a killswitch flag.
@@ -143,16 +148,22 @@ def elide_java_toolchain(
         toolchain_definition = False,
         **toolchain_kwargs
     )
-    native.config_setting(
-        name = name + "_version_setting",
-        values = {"java_language_version": settings["source_version"]},
-        visibility = ["//visibility:private"],
-    )
-    native.toolchain(
-        name = name + "_definition",
-        toolchain_type = Label("@bazel_tools//tools/jdk:toolchain_type"),
-        target_settings = [name + "_version_setting", Label("//elide/java:not_shim_build")] + target_settings,
-        toolchain = name,
-        exec_compatible_with = exec_compatible_with,
-        target_compatible_with = target_compatible_with,
-    )
+    # Mirrors default_java_toolchain's definitions: one for --java_language_version=<source_version>, and for
+    # rules_java's default language version also one for an unset --java_language_version.
+    versions = {name + "_definition": settings["source_version"]}
+    if settings["source_version"] == _DEFAULT_JAVA_LANGUAGE_VERSION:
+        versions[name + "_default_definition"] = ""
+    for definition, version in versions.items():
+        native.config_setting(
+            name = definition + "_version_setting",
+            values = {"java_language_version": version},
+            visibility = ["//visibility:private"],
+        )
+        native.toolchain(
+            name = definition,
+            toolchain_type = Label("@bazel_tools//tools/jdk:toolchain_type"),
+            target_settings = [definition + "_version_setting", Label("//elide/java:not_shim_build")] + target_settings,
+            toolchain = name,
+            exec_compatible_with = exec_compatible_with,
+            target_compatible_with = target_compatible_with,
+        )

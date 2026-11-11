@@ -18,6 +18,7 @@ object Router {
 
     fun decide(req: Request, caps: Capabilities): Decision {
         if (req.unknown.isNotEmpty()) return Decision(Route.STOCK, "unsupported JavaBuilder flags ${req.unknown}")
+        if (req.reduceClasspathMode == "JAVABUILDER_REDUCED") return Decision(Route.STOCK, "JavaBuilder classpath reduction")
         if (req.processors.isNotEmpty()) return Decision(Route.STOCK, "annotation processors")
         if (req.generatedSourcesOutput != null || req.generatedClassOutput != null) {
             return Decision(Route.STOCK, "generated source/class outputs")
