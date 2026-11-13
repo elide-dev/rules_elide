@@ -47,6 +47,34 @@ filegroup(
     srcs = [":elide_compile_files"] + glob(["lib/llvm/**", "lib/resources/jextract/**"]),
 )
 
+# Bundled LLVM C toolchain (clang driver, lld, compiler-rt/libc++/libunwind,
+# clang resource headers, and the glibc sysroot) for elide_cc_binary. The
+# target-prefixed driver auto-loads its sibling <triple>.cfg, which selects the
+# sysroot, lld, compiler-rt, and libunwind, so no host compiler, headers, or
+# libraries are consulted. Empty on distributions without lib/llvm/toolchain.
+filegroup(
+    name = "elide_cc_compiler",
+    srcs = glob(
+        ["lib/llvm/toolchain/bin/*-unknown-linux-gnu-clang"],
+        allow_empty = True,
+    ),
+)
+
+filegroup(
+    name = "elide_cc_files",
+    srcs = glob(
+        [
+            "lib/llvm/toolchain/bin/*-unknown-linux-gnu-clang",
+            "lib/llvm/toolchain/bin/*-unknown-linux-gnu.cfg",
+            "lib/llvm/toolchain/bin/ld.lld",
+            "lib/llvm/toolchain/lib/clang/**",
+            "lib/llvm/toolchain/lib/*-unknown-linux-gnu/**",
+            "lib/llvm/toolchain/sysroot/*-unknown-linux-gnu/**",
+        ],
+        allow_empty = True,
+    ),
+)
+
 # Full tool set for elide native-image: compile files + GraalVM SVM + C headers.
 # Excludes only the clearly irrelevant: doc/, Python runtime, Maven tools.
 filegroup(
@@ -72,6 +100,24 @@ filegroup(
     srcs = glob(["lib/resources/kotlin/*/lib/kotlin-stdlib.jar"]),
 )
 """
+
+def _chmod_tool(ctx):
+    # Repository rules see the client PATH, which may be minimal (e.g. builds
+    # that deliberately hide host compilers). Fall back to standard locations.
+    chmod = ctx.which("chmod")
+    if chmod:
+        return chmod
+    for candidate in ["/bin/chmod", "/usr/bin/chmod"]:
+        if ctx.path(candidate).exists:
+            return ctx.path(candidate)
+    fail("rules_elide: chmod is required to restore executable bits in the Elide distribution, but was not found on PATH, /bin, or /usr/bin")
+
+def _make_executable(ctx, chmod, paths, required = False):
+    # Missing optional wrappers (they differ between releases) are tolerated;
+    # required tools, such as the bundled LLVM binaries, must be fixed.
+    result = ctx.execute([chmod, "+x"] + paths)
+    if required and result.return_code != 0:
+        fail("rules_elide: chmod +x failed for {}: {}".format(paths, result.stderr))
 
 def _elide_download_impl(ctx):
     os = ctx.attr.os
@@ -101,6 +147,7 @@ def _elide_download_impl(ctx):
     # exec bit in the CDN archive; restore it so consumers (notably the
     # `elide native-image` JAVA_HOME probe) can invoke them.
     if os != "windows":
+        chmod = _chmod_tool(ctx)
         for name in [
             "elide",
             "google-java-format",
@@ -112,13 +159,25 @@ def _elide_download_impl(ctx):
             "kotlinc",
             "ktfmt",
         ]:
-            ctx.execute(["chmod", "+x", "bin/" + name])
+            _make_executable(ctx, chmod, ["bin/" + name])
         for name in ["native-image", "native-image-configure"]:
-            ctx.execute(["chmod", "+x", "lib/svm/bin/" + name])
+            _make_executable(ctx, chmod, ["lib/svm/bin/" + name])
 
         # The JDK's process launcher helper also lacks it; without it every
         # subprocess started from `elide java` fails with posix_spawn EACCES.
-        ctx.execute(["chmod", "+x", "lib/jspawnhelper"])
+        _make_executable(ctx, chmod, ["lib/jspawnhelper"])
+
+        # The bundled LLVM toolchain ships its multicall aliases (clang,
+        # <triple>-clang, ld.lld, llvm-ranlib, ...) as full copies without an
+        # exec bit (observed in the 1.6.3 linux-amd64 archive); only clang-<N>,
+        # lld, and a few others are executable. Restore it for every binary.
+        llvm_bin = ctx.path("lib/llvm/toolchain/bin")
+        if llvm_bin.exists:
+            _make_executable(ctx, chmod, [
+                str(entry)
+                for entry in llvm_bin.readdir()
+                if not entry.basename.endswith(".cfg")
+            ], required = True)
     bin_ext = binary_ext(os)
     binary_path = ctx.attr.binary_path or ("bin/elide" + bin_ext)
     ctx.file("BUILD.bazel", _BUILD_TEMPLATE.format(

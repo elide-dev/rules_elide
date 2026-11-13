@@ -4,7 +4,7 @@ set -euo pipefail
 repo="$(cd "$(dirname "$0")/.." && pwd)"
 suite="${1:-all}"
 if [[ $# -gt 0 ]]; then shift; fi
-case "$suite" in jvm|kotlin|python|all) ;; *) echo "Usage: $0 [jvm|kotlin|python|all] [Bazel build options...]" >&2; exit 2 ;; esac
+case "$suite" in jvm|kotlin|python|cc|all) ;; *) echo "Usage: $0 [jvm|kotlin|python|cc|all] [Bazel build options...]" >&2; exit 2 ;; esac
 if [[ "$suite" == jvm || "$suite" == all ]]; then
   (
     cd "$repo/e2e/integration"
@@ -58,5 +58,27 @@ if [[ "$suite" == python || "$suite" == all ]]; then
       exit 1
     fi
     echo "Bazel correctly rejects failing Python tests."
+  )
+fi
+if [[ "$suite" == cc || "$suite" == all ]]; then
+  (
+    cd "$repo/e2e/cc"
+    # Hide host compilers: actions run with an empty environment, but also prove
+    # the build never needs cc/gcc/clang/ld from PATH. Keep only Bazel itself.
+    tool_dir="$(mktemp -d)"
+    trap 'rm -rf "$tool_dir"' EXIT
+    bazel_path="$(command -v bazel)"
+    ln -s "$bazel_path" "$tool_dir/bazel"
+    sandbox=(--spawn_strategy=linux-sandbox)
+    # The hermetic sandbox exposes only declared inputs plus the loader/libc
+    # that the bundled clang binary itself links against.
+    if [[ "${ELIDE_CC_HERMETIC_SANDBOX:-1}" == 1 ]]; then
+      sandbox+=(--experimental_use_hermetic_linux_sandbox)
+      for dir in /lib64 /usr/lib64 /lib/x86_64-linux-gnu /usr/lib/x86_64-linux-gnu; do
+        if [[ -d "$dir" ]]; then sandbox+=("--sandbox_add_mount_pair=$dir"); fi
+      done
+    fi
+    PATH="$tool_dir" bazel build :hello "${sandbox[@]}" "$@"
+    python3 verify_hermetic_cc.py "$tool_dir/bazel"
   )
 fi

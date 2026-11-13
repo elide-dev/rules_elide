@@ -57,6 +57,13 @@ stardoc(
 )
 
 stardoc(
+    name = "cc_doc",
+    out = "cc.md",
+    input = "//elide/rules:cc.bzl",
+    deps = ["//elide/rules:cc"] + _DOC_DEPS,
+)
+
+stardoc(
     name = "format_doc",
     out = "format.md",
     input = "//elide/rules:format.bzl",
@@ -66,6 +73,7 @@ stardoc(
 filegroup(
     name = "all_docs",
     srcs = [
+        ":cc_doc",
         ":defs_doc",
         ":extensions_doc",
         ":format_doc",
