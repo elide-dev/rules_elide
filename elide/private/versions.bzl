@@ -53,6 +53,7 @@ DEFAULT_CHANNEL = "nightly"
 # Hashes verified 2026-06-28 against GitHub release tag 1.3.6+20260628.
 # Hashes verified 2026-10-18 against GitHub release tag v1.6.0.
 # 1.6.1/1.6.2 release and nightly hashes from GitHub asset digests, 2026-11-04.
+# 1.6.3 release hashes from GitHub asset digests, 2026-11-13.
 ELIDE_VERSIONS = {
     "1.2.0+20260602": {
         ("linux", "amd64"): "sha256-yIQZwU4nM0SN19Zj2rdikdWBpj9d+fVlJK0d10p3DRA=",
@@ -144,6 +145,12 @@ ELIDE_VERSIONS = {
         ("macos", "arm64"): "sha256-GnVUGQRvtprtA+yHMPyl2hd+0nOKnXlg6GS0TAZ5YVQ=",
         ("windows", "amd64"): "sha256-QGpc+878ce0fY1FCRGl26jPF/hpwfmI7K8kQzoz+WwU=",
     },
+    "1.6.3": {
+        ("linux", "amd64"): "sha256-uUwQe53xBwG5IG4sKWdRr3RxJWsHQOyBqYUPAb/iH6A=",
+        ("linux", "arm64"): "sha256-Oc6Y/Z1co3RhHvpqMxTU5UPeh/ifH30x/51e736lAvo=",
+        ("macos", "arm64"): "sha256-jT2svgXa+3vXpuWNLwqvm0D+hGNNIpXADvbILriQffI=",
+        ("windows", "amd64"): "sha256-mwroU519ot718Je2+GkLNx8PKty/oxvHds+Pae40QXQ=",
+    },
 }
 
 # Optional Python overlays, matched to the base release; GitHub asset digests.
@@ -178,6 +185,12 @@ PYTHON_VERSIONS = {
         ("macos", "arm64"): "sha256-OcgC4rg0spTC7jQjL1El57QXwL+EL/incoh7fpIR5ME=",
         ("windows", "amd64"): "sha256-hgxcgJCeTff+YsXLxZ3ImHxL3RhUeuK29FsfpQ2xkFY=",
     },
+    "1.6.3": {
+        ("linux", "amd64"): "sha256-9MqiAZFWjmZQzf/y5LZ/+gSi8MfKXWdSu8A4oyT2e60=",
+        ("linux", "arm64"): "sha256-VWgvmJiHJiWswcfoBCPZoVkBzzvcZ/V/qnrSzew+4wc=",
+        ("macos", "arm64"): "sha256-Oqj6mh6Ie9coVTjs529YmZzkwXc6rAznZUQ94oD6R4c=",
+        ("windows", "amd64"): "sha256-Pa++D23Jq980fO9HTCkGxZXOv6A4V+6rKcu5HjtP8z0=",
+    },
 }
 
 # Versions whose GitHub release tag differs from the version string. Nightly tags
@@ -187,6 +200,7 @@ RELEASE_TAGS = {
     "1.6.0": "v1.6.0",
     "1.6.1": "v1.6.1",
     "1.6.2": "v1.6.2",
+    "1.6.3": "v1.6.3",
 }
 
 def release_tag(version):

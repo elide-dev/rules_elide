@@ -42,6 +42,8 @@ def _release_tag_test_impl(ctx):
     asserts.equals(env, "v1.6.0", release_tag("1.6.0"))
     asserts.equals(env, "v1.6.1", release_tag("1.6.1"))
     asserts.equals(env, "v1.6.2", release_tag("1.6.2"))
+    asserts.equals(env, "v1.6.3", release_tag("1.6.3"))
+    asserts.true(env, "1.6.3" in ELIDE_VERSIONS and "1.6.3" in PYTHON_VERSIONS, "1.6.3 needs base and Python overlay rows")
     asserts.equals(env, "1.6.2+20261103", release_tag("1.6.2+20261103"))
     asserts.true(env, DEFAULT_VERSION in ELIDE_VERSIONS, "DEFAULT_VERSION has no integrity row")
     return unittest.end(env)

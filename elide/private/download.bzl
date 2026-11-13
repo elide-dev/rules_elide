@@ -20,13 +20,15 @@ package(default_visibility = ["//visibility:public"])
 # `<JAVA_HOME>/bin/java` (and friends) as native-image expects.
 exports_files(["{binary_path}"])
 
-# Minimal input set for JVM compile actions (elide javac, kotlinc, jar).
+# Minimal input set for JVM compile actions (elide javac, kotlinc, jar). Includes
+# conf/ (java.security etc.): `elide java` fails to start without it, notably on
+# remote executors that receive only declared inputs.
 # Excludes: doc/ (HTML docs), lib/svm/ + lib/truffle/ + lib/static/ (native-image),
 #           lib/llvm/ + lib/resources/jextract/ (C tools), Python runtime, Maven.
 filegroup(
     name = "elide_compile_files",
     srcs = glob(
-        ["bin/**", "lib/**"],
+        ["bin/**", "lib/**", "conf/**"],
         exclude = [
             "lib/llvm/**",
             "lib/resources/jextract/**",
@@ -50,7 +52,7 @@ filegroup(
 filegroup(
     name = "elide_native_image_files",
     srcs = glob(
-        ["bin/**", "lib/**", "include/**"],
+        ["bin/**", "lib/**", "conf/**", "include/**"],
         exclude = [
             "lib/resources/python/**",
             "lib/maven/**",

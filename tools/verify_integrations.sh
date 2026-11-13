@@ -42,7 +42,7 @@ if [[ "$suite" == python || "$suite" == all ]]; then
     cd "$repo/e2e/python_overlay"
     bazel test :runtime_test \
       --@rules_python//python/config_settings:bootstrap_impl=system_python "$@"
-    bazel test :runtime_test :versioned_test :other_version_test "$@"
+    bazel test :runtime_test :versioned_test :other_version_test :bazel_env_test "$@"
     bazel build :app :python :java "$@"
     python3 verify_no_host_python.py
     failure_log="$(mktemp)"

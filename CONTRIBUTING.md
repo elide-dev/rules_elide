@@ -98,7 +98,7 @@ For workflow/policy changes:
 ```sh
 python3 -m pip install -r requirements-dev.txt
 zizmor --offline --format plain .github/workflows
-python3 -m pytest tools/repository_policy_test.py tools/sbom_enrich_test.py
+python3 -m pytest tools/repository_policy_test.py tools/sbom_enrich_test.py tools/python_launcher_test.py
 ```
 
 [The OpenSSF plan](docs/openssf.md#useful-starter-contributions) lists small,
