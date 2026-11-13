@@ -184,14 +184,6 @@ _elide_kt_builder_launcher = rule(
             allow_files = True,
         ),
         "native_tools": attr.bool(default = True, doc = "Use Elide 1.6.2+ native ABI, jdeps, and processing APIs."),
-        "runtime_files": attr.label_list(
-            doc = "Extra files shipped as runfiles next to the elide binary, typically the " +
-                  "distribution's `lib/` and `conf/` trees. Needed when the action runs " +
-                  "somewhere the extracted distribution is not already adjacent to `bin/elide` " +
-                  "(remote execution).",
-            allow_files = True,
-            cfg = "exec",
-        ),
         "quiet_plugin_rewrite": attr.bool(
             default = False,
             doc = "Inject the shim's `--quiet_plugin_rewrite` flag to silence the " +
@@ -203,6 +195,14 @@ _elide_kt_builder_launcher = rule(
             doc = "Inject the shim's `--resident_worker` flag so kotlinc compiles " +
                   "are forwarded to one warm `elide kotlinc --persistent_worker` " +
                   "(keeping the native image + incremental caches hot).",
+        ),
+        "runtime_files": attr.label_list(
+            doc = "Extra files shipped as runfiles next to the elide binary, typically the " +
+                  "distribution's `lib/` and `conf/` trees. Needed when the action runs " +
+                  "somewhere the extracted distribution is not already adjacent to `bin/elide` " +
+                  "(remote execution).",
+            allow_files = True,
+            cfg = "exec",
         ),
         "shim": attr.label(
             doc = "The elide_kotlin_builder persistent-worker shim to exec.",
