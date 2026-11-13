@@ -5,9 +5,9 @@
 load(":providers.bzl", "ElideToolchainInfo")
 
 def _elide_toolchain_impl(ctx):
-    if len(ctx.files.cc_compiler) > 1:
-        fail("cc_compiler must provide at most one file, got: {}".format(ctx.files.cc_compiler))
-    cc_compiler = ctx.files.cc_compiler[0] if ctx.files.cc_compiler else None
+    # Exactly one driver or none. Never fail here: that would break analysis of every
+    # Elide rule for users who do not build C. elide_cc_binary reports the problem.
+    cc_compiler = ctx.files.cc_compiler[0] if len(ctx.files.cc_compiler) == 1 else None
     compile_tool_files = depset(
         direct = [ctx.executable.binary],
         transitive = [depset(ctx.files.compile_tool_files)],

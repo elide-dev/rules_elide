@@ -177,7 +177,7 @@ def _elide_download_impl(ctx):
                 str(entry)
                 for entry in llvm_bin.readdir()
                 if not entry.basename.endswith(".cfg")
-            ], required = True)
+            ])
     bin_ext = binary_ext(os)
     binary_path = ctx.attr.binary_path or ("bin/elide" + bin_ext)
     ctx.file("BUILD.bazel", _BUILD_TEMPLATE.format(

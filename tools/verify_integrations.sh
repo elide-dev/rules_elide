@@ -60,7 +60,8 @@ if [[ "$suite" == python || "$suite" == all ]]; then
     echo "Bazel correctly rejects failing Python tests."
   )
 fi
-if [[ "$suite" == cc || "$suite" == all ]]; then
+# The cc suite needs the Linux x86-64 distribution; run it under `all` only there.
+if [[ "$suite" == cc || ( "$suite" == all && "$(uname -sm)" == "Linux x86_64" ) ]]; then
   (
     cd "$repo/e2e/cc"
     # Hide host compilers: actions run with an empty environment, but also prove

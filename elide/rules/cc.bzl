@@ -24,6 +24,8 @@ def _object_path(ctx, src):
     # Mirror the source's package-relative path so same-named files in
     # different directories cannot collide.
     rel = src.short_path
+    if rel.startswith("../"):
+        rel = "external/" + rel[len("../"):]  # source from another repository
     pkg = ctx.label.package
     if pkg and rel.startswith(pkg + "/"):
         rel = rel[len(pkg) + 1:]

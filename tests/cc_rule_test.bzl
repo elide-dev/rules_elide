@@ -48,7 +48,14 @@ def _binary_test_impl(ctx):
     asserts.equals(env, link.outputs.to_list(), [executable])
     return analysistest.end(env)
 
-_binary_test = analysistest.make(_binary_test_impl)
+# Needs the stub toolchain's fake clang and sysroot; CI runs //tests:all without
+# --extra_toolchains, so select it explicitly.
+_binary_test = analysistest.make(
+    _binary_test_impl,
+    config_settings = {
+        "//command_line_option:extra_toolchains": [str(Label("//tests:_test_elide_toolchain"))],
+    },
+)
 
 def _missing_compiler_test_impl(ctx):
     env = analysistest.begin(ctx)
@@ -68,7 +75,13 @@ def _no_sources_test_impl(ctx):
     asserts.expect_failure(env, "at least one .c file")
     return analysistest.end(env)
 
-_no_sources_test = analysistest.make(_no_sources_test_impl, expect_failure = True)
+_no_sources_test = analysistest.make(
+    _no_sources_test_impl,
+    expect_failure = True,
+    config_settings = {
+        "//command_line_option:extra_toolchains": [str(Label("//tests:_test_elide_toolchain"))],
+    },
+)
 
 def cc_rule_test_suite(name):
     """Registers elide_cc_binary analysis tests.

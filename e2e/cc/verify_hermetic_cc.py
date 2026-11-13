@@ -24,10 +24,11 @@ for action in actions:
 binary = Path("bazel-bin/hello").absolute()
 # Linked by the bundled lld from bundled-clang objects. (The sysroot's own crt
 # objects carry a GCC .comment of the distribution's build host; that is expected.)
-if shutil.which("readelf"):
-    comment = subprocess.run(["readelf", "-p", ".comment", str(binary)],
-                             capture_output=True, text=True, check=True).stdout
-    assert "Linker: LLD" in comment and "clang version" in comment, comment
+if not shutil.which("readelf"):
+    raise SystemExit("readelf is required to verify the linker provenance of the binary")
+comment = subprocess.run(["readelf", "-p", ".comment", str(binary)],
+                         capture_output=True, text=True, check=True).stdout
+assert "Linker: LLD" in comment and "clang version" in comment, comment
 
 with tempfile.TemporaryDirectory(prefix="elide-no-cc-") as empty:
     environment = {"PATH": empty}
