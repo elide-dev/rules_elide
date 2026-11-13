@@ -54,6 +54,11 @@ removes 798 files (18,042,197 bytes) from each ordinary JVM compiler's tool inpu
 The C binding action retains those files. This is an input-size measurement,
 not a compilation-time speedup claim.
 
+C compilation (`elide_cc_binary`) uses a separate `cc_tool_files` set: the bundled
+clang driver and target config, lld, clang resource headers, LLVM runtimes, and
+the glibc sysroot under `lib/llvm/toolchain`. It excludes the `elide` launcher and
+JVM files; JVM and jextract actions exclude it. See [C toolchain](c.md).
+
 Custom `elide_toolchain` declarations may supply additional C binding inputs via
 `jextract_tool_files`. It always includes `compile_tool_files`; omitting the new
 attribute preserves the previous custom-toolchain input behavior. Python runtime

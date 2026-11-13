@@ -18,10 +18,12 @@ is not the same as checking the generated artifacts.
 | Combined ABI emission | Header digests, runtime outputs, body/API/constant/inline/resource edits, worker and one-shot modes, pruning, per-target combined mode with global ABI flags disabled, and Java classpath-cache reuse across consumer edits and invalidation across dependency edits | `e2e/integration/verify_fused_abi.py` |
 | Pruning correctness | Changing unused dependency ABI skips consumer compilation; changing used dependency ABI rebuilds it | `e2e/integration/verify_pruning.py` |
 | Processor execution | Generated Java/Kotlin compiled into output jars, processor options/resources, source jars, ABI and jdeps outputs | `e2e/kotlin_builder/verify_outputs.py` |
+| C toolchain | Per-source compile and link actions, declared toolchain/header inputs, empty environment, no `elide` launcher in C inputs, missing-compiler and no-source errors | `tests/cc_rule_test.bzl`, `tests/toolchain_test.bzl` |
+| C execution (local only, not yet in CI) | Build with only `bazel` on PATH in the hermetic Linux sandbox; bundled driver and LLD provenance; program output and exit codes with an empty PATH | `e2e/cc/` |
 | Python execution | Transitive imports, data, runtime identity, module mode, arguments, child exit codes, expected Bazel test failure, environment isolation, Python-version selection | `e2e/python_overlay/` |
 
 Run `tools/verify_integrations.sh all` from the repository root for the supported
-real-runtime fixtures, or choose `jvm`, `kotlin`, or `python`. See
+real-runtime fixtures, or choose `jvm`, `kotlin`, `python`, or `cc`. See
 [CONTRIBUTING.md](../CONTRIBUTING.md) for the faster root test commands.
 
 ## Runtime upgrade verification

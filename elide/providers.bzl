@@ -6,6 +6,8 @@ ElideToolchainInfo = provider(
     doc = "Resolved Elide toolchain information.",
     fields = {
         "binary": "File. The elide binary executable.",
+        "cc_compiler": "File or None. Bundled LLVM clang driver for C compile/link actions, if the distribution has one.",
+        "cc_tool_files": "depset[File]. Inputs for C compile/link actions: clang, lld, resource headers, runtimes, and sysroot.",
         "compile_tool_files": "depset[File]. Inputs for JVM compile actions (javac, kotlinc, jar). " +
                               "Excludes LLVM and native-image-only subtrees (lib/llvm, lib/static, lib/svm, lib/truffle, doc).",
         "jextract_tool_files": "depset[File]. JVM tools plus LLVM inputs needed for C binding generation.",

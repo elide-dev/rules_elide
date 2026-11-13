@@ -71,6 +71,7 @@ bzl_library(
     deps = [
         ":providers",
         ":toolchain",
+        "//elide/rules:cc",
         "//elide/rules:format",
         "//elide/rules:java",
         "//elide/rules:jvm_tools",

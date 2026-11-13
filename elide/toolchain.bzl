@@ -5,6 +5,9 @@
 load(":providers.bzl", "ElideToolchainInfo")
 
 def _elide_toolchain_impl(ctx):
+    # Exactly one driver or none. Never fail here: that would break analysis of every
+    # Elide rule for users who do not build C. elide_cc_binary reports the problem.
+    cc_compiler = ctx.files.cc_compiler[0] if len(ctx.files.cc_compiler) == 1 else None
     compile_tool_files = depset(
         direct = [ctx.executable.binary],
         transitive = [depset(ctx.files.compile_tool_files)],
@@ -17,6 +20,11 @@ def _elide_toolchain_impl(ctx):
     return [platform_common.ToolchainInfo(
         elide_info = ElideToolchainInfo(
             binary = ctx.executable.binary,
+            cc_compiler = cc_compiler,
+            cc_tool_files = depset(
+                direct = [cc_compiler] if cc_compiler else [],
+                transitive = [depset(ctx.files.cc_tool_files)],
+            ),
             compile_tool_files = compile_tool_files,
             jextract_tool_files = depset(ctx.files.jextract_tool_files, transitive = [compile_tool_files]),
             kotlin_stdlib_jars = kotlin_stdlib_jars,
@@ -35,6 +43,18 @@ elide_toolchain = rule(
             executable = True,
             cfg = "exec",
             allow_files = True,
+        ),
+        "cc_compiler": attr.label_list(
+            doc = "At most one file: the bundled clang driver used by elide_cc_binary. Downloaded " +
+                  "toolchains use elide_cc_compiler, which is empty when the distribution has no LLVM toolchain.",
+            allow_files = True,
+            cfg = "exec",
+        ),
+        "cc_tool_files": attr.label_list(
+            doc = "Inputs for C compile/link actions (lld, clang resource headers, runtimes, sysroot). " +
+                  "Downloaded toolchains use elide_cc_files.",
+            allow_files = True,
+            cfg = "exec",
         ),
         "compile_tool_files": attr.label_list(
             doc = "Inputs for JVM compile actions (javac, kotlinc, jar). " +
