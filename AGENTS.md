@@ -37,7 +37,7 @@ These instructions apply to this repository, including nested example workspaces
   references with `./tools/update_docs.sh`. Do not hand-edit generated API tables.
 - Workflow/security changes: install `requirements-dev.txt`, run
   `zizmor --offline --format plain .github/workflows` and
-  `python -m pytest tools/repository_policy_test.py tools/sbom_enrich_test.py`.
+  `python -m pytest tools/repository_policy_test.py tools/sbom_enrich_test.py tools/python_launcher_test.py`.
 - Performance work: run `python3 -m unittest discover -s benchmarks -p "*_test.py"`.
   Preserve raw samples and regressions; compare supported stock optimization modes.
   See `benchmarks/PERFORMANCE_TARGETS.md` before claiming a performance win.

@@ -51,6 +51,13 @@ py_test(
     deps = [":library"],
 )
 
+# Bazel's test environment must reach Python (TEST_TMPDIR, XML_OUTPUT_FILE, ...).
+py_test(
+    name = "bazel_env_test",
+    size = "small",
+    srcs = ["bazel_env_test.py"],
+)
+
 py_test(
     name = "versioned_test",
     size = "small",

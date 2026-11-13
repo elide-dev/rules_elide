@@ -125,7 +125,7 @@ launcher templates are POSIX `sh` only. See `Roadmap` below.
 `reproducible = True`).
 
 The default Elide version is **1.6.2**. Pins also include 1.6.0, 1.6.1,
-and the 1.6.2 nightlies dated 20261102 and 20261103.
+1.6.3, and the 1.6.2 nightlies dated 20261102 and 20261103.
 
 ## Python overlays
 

@@ -38,4 +38,4 @@ jobs:
       - name: Check release and integration shell entrypoints
         run: shellcheck .github/workflows/release_prep.sh tools/verify_integrations.sh
       - name: Check repository policies and SBOM tooling
-        run: python -m pytest tools/repository_policy_test.py tools/sbom_enrich_test.py
+        run: python -m pytest tools/repository_policy_test.py tools/sbom_enrich_test.py tools/python_launcher_test.py

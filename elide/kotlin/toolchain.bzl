@@ -17,6 +17,7 @@ See `register_elide_kotlin_toolchain` for the public entry point.
 
 load("@rules_java//java/common:java_common.bzl", "java_common")
 load("@rules_kotlin//kotlin:core.bzl", "define_kt_toolchain")
+load("//elide/private:compile_common.bzl", "TOOLCHAIN_TYPE")
 
 visibility("public")
 
@@ -81,6 +82,13 @@ exec "$(rlocation {shim})" \\
 {native_line}{resident_line}{record_line}{quiet_line}  "$@"
 """
 
+def _repo_of(f):
+    # Canonical repository of a File: its short_path is `../<repo>/...` outside the main repo.
+    sp = f.short_path
+
+    # Returns None for main-repository files so two of them never compare equal.
+    return sp[len("../"):].split("/")[0] if sp.startswith("../") else None
+
 def _elide_kt_builder_launcher_impl(ctx):
     launcher = ctx.actions.declare_file(ctx.label.name + ".sh")
 
@@ -100,6 +108,18 @@ def _elide_kt_builder_launcher_impl(ctx):
     # individual files. `java_home` is an exec-relative path; map its first
     # `external/<repo>` segment to the canonical `<repo>/...` rlocation form.
     jdk = ctx.attr._jdk[java_common.JavaRuntimeInfo]
+
+    # Ship the whole distribution (lib/, conf/, including the JVM libraries) next
+    # to bin/elide so remote executors, which only receive declared inputs, can
+    # start `elide java`. `elide` is usually a lone exported file with no runfiles.
+    # Take the files from the resolved Elide toolchain, but only when it is the same
+    # distribution: bin/elide locates lib/ relative to itself, so files from another
+    # repository would not be adjacent and would only add input weight.
+    dist_files = depset(ctx.files.runtime_files)
+    toolchain = ctx.toolchains[TOOLCHAIN_TYPE]
+    elide_repo = _repo_of(ctx.executable.elide)
+    if toolchain and elide_repo and _repo_of(toolchain.elide_info.binary) == elide_repo:
+        dist_files = depset(transitive = [dist_files, toolchain.elide_info.compile_tool_files])
     java_home = jdk.java_home
     if java_home.startswith("external/"):
         jdk_home_key = java_home[len("external/"):]
@@ -135,7 +155,7 @@ def _elide_kt_builder_launcher_impl(ctx):
             ctx.executable.elide,
             ctx.executable.fallback_builder,
         ],
-        transitive_files = jdk.files,
+        transitive_files = depset(transitive = [jdk.files, dist_files]),
     ).merge_all([
         ctx.attr.shim[DefaultInfo].default_runfiles,
         ctx.attr.elide[DefaultInfo].default_runfiles,
@@ -179,6 +199,14 @@ _elide_kt_builder_launcher = rule(
                   "are forwarded to one warm `elide kotlinc --persistent_worker` " +
                   "(keeping the native image + incremental caches hot).",
         ),
+        "runtime_files": attr.label_list(
+            doc = "Extra files shipped as runfiles next to the elide binary, typically the " +
+                  "distribution's `lib/` and `conf/` trees. Needed when the action runs " +
+                  "somewhere the extracted distribution is not already adjacent to `bin/elide` " +
+                  "(remote execution).",
+            allow_files = True,
+            cfg = "exec",
+        ),
         "shim": attr.label(
             doc = "The elide_kotlin_builder persistent-worker shim to exec.",
             mandatory = True,
@@ -200,7 +228,10 @@ _elide_kt_builder_launcher = rule(
         ),
     },
     executable = True,
-    toolchains = ["@bazel_tools//tools/jdk:toolchain_type"],
+    toolchains = [
+        "@bazel_tools//tools/jdk:toolchain_type",
+        config_common.toolchain_type(TOOLCHAIN_TYPE, mandatory = False),
+    ],
 )
 
 # Fields emitted by rules_kotlin's `_kotlin_toolchain_impl` (the stock
@@ -284,6 +315,7 @@ def register_elide_kotlin_toolchain(
         resident_worker = None,
         worker_record = "",
         native_tools = True,
+        runtime_files = None,
         **kwargs):
     """Defines an Elide-backed Kotlin toolchain.
 
@@ -317,9 +349,17 @@ def register_elide_kotlin_toolchain(
             shim tees the forwarded WorkRequest stream to this path for offline
             PGO replay. Default "" (disabled).
         native_tools: Use native ABI, dependency reports, KAPT, and KSP2 (Elide 1.6.2+). Set False for older Elide.
+        runtime_files: Optional label or list of labels shipped as runfiles with the launcher. The
+            launcher already ships the whole distribution (`lib/`, `conf/`, including the
+            JVM libraries) from the resolved Elide toolchain when it is the same distribution
+            as `elide`, so this is only needed for a bring-your-own `elide` binary that has
+            no matching registered toolchain (for example `@my_repo//:elide_compile_files`).
         **kwargs: Forwarded to `define_kt_toolchain` (language_version,
             api_version, jvm_target, etc.).
     """
+
+    # Accept a single label like register_elide_python_toolchain does.
+    runtime_files = [runtime_files] if type(runtime_files) == "string" else (runtime_files or [])
 
     # Default resident forwarding to the kotlinc incremental config flag: IC is
     # only useful with a warm resident worker, so `--@rules_elide//config/kotlinc:incremental`
@@ -339,6 +379,7 @@ def register_elide_kotlin_toolchain(
         fallback_builder = fallback_builder,
         resident_worker = resident_worker,
         native_tools = native_tools,
+        runtime_files = runtime_files,
         worker_record = worker_record,
         quiet_plugin_rewrite = select({
             Label("//config/kotlinc:warn_builtin_plugin_rewrite_disabled"): True,
@@ -353,6 +394,7 @@ def register_elide_kotlin_toolchain(
             elide = elide,
             fallback_builder = Label("@rules_kotlin//src/main/kotlin:ksp2"),
             native_tools = True,
+            runtime_files = runtime_files,
             resident_worker = resident_worker,
         )
 
