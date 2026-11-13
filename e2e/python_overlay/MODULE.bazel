@@ -9,7 +9,7 @@ local_path_override(
 elide = use_extension("@rules_elide//elide:extensions.bzl", "elide")
 elide.install(
     python = True,
-    version = "1.6.2",
+    version = "1.6.3",
 )
 use_repo(elide, "elide_linux_amd64", "elide_toolchains")
 
