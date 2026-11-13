@@ -135,7 +135,7 @@ def _elide_kt_builder_launcher_impl(ctx):
             ctx.executable.elide,
             ctx.executable.fallback_builder,
         ],
-        transitive_files = jdk.files,
+        transitive_files = depset(transitive = [jdk.files, depset(ctx.files.runtime_files)]),
     ).merge_all([
         ctx.attr.shim[DefaultInfo].default_runfiles,
         ctx.attr.elide[DefaultInfo].default_runfiles,
@@ -167,6 +167,14 @@ _elide_kt_builder_launcher = rule(
             allow_files = True,
         ),
         "native_tools": attr.bool(default = True, doc = "Use Elide 1.6.2+ native ABI, jdeps, and processing APIs."),
+        "runtime_files": attr.label_list(
+            doc = "Extra files shipped as runfiles next to the elide binary, typically the " +
+                  "distribution's `lib/` and `conf/` trees. Needed when the action runs " +
+                  "somewhere the extracted distribution is not already adjacent to `bin/elide` " +
+                  "(remote execution).",
+            allow_files = True,
+            cfg = "exec",
+        ),
         "quiet_plugin_rewrite": attr.bool(
             default = False,
             doc = "Inject the shim's `--quiet_plugin_rewrite` flag to silence the " +
@@ -284,6 +292,7 @@ def register_elide_kotlin_toolchain(
         resident_worker = None,
         worker_record = "",
         native_tools = True,
+        runtime_files = None,
         **kwargs):
     """Defines an Elide-backed Kotlin toolchain.
 
@@ -317,6 +326,10 @@ def register_elide_kotlin_toolchain(
             shim tees the forwarded WorkRequest stream to this path for offline
             PGO replay. Default "" (disabled).
         native_tools: Use native ABI, dependency reports, KAPT, and KSP2 (Elide 1.6.2+). Set False for older Elide.
+        runtime_files: Optional list of labels shipped as runfiles with the launcher. Pass
+            the distribution's `@elide_<os>_<cpu>//:elide_compile_files` (which includes
+            `lib/` and `conf/`) so remote executors receive a complete distribution instead
+            of a lone `bin/elide`. Not needed for local execution.
         **kwargs: Forwarded to `define_kt_toolchain` (language_version,
             api_version, jvm_target, etc.).
     """
@@ -339,6 +352,7 @@ def register_elide_kotlin_toolchain(
         fallback_builder = fallback_builder,
         resident_worker = resident_worker,
         native_tools = native_tools,
+        runtime_files = runtime_files or [],
         worker_record = worker_record,
         quiet_plugin_rewrite = select({
             Label("//config/kotlinc:warn_builtin_plugin_rewrite_disabled"): True,
@@ -353,6 +367,7 @@ def register_elide_kotlin_toolchain(
             elide = elide,
             fallback_builder = Label("@rules_kotlin//src/main/kotlin:ksp2"),
             native_tools = True,
+            runtime_files = runtime_files or [],
             resident_worker = resident_worker,
         )
 

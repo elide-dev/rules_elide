@@ -176,7 +176,7 @@ supported.
 Load path: `@rules_elide//elide/kotlin:toolchain.bzl`
 
 ```
-register_elide_kotlin_toolchain(name, elide, fallback_builder, native_tools = True, **kwargs)
+register_elide_kotlin_toolchain(name, elide, fallback_builder, native_tools = True, runtime_files = None, **kwargs)
 ```
 
 | Argument | Type | Description |
@@ -185,6 +185,7 @@ register_elide_kotlin_toolchain(name, elide, fallback_builder, native_tools = Tr
 | `elide` | label | The `elide` binary, resolved via runfiles rlocation and passed as `--elide` to the shim. |
 | `fallback_builder` | label | Stock `rules_kotlin` KotlinBuilder, passed as `--fallback_builder` to the shim (e.g. `@rules_kotlin//src/main/kotlin:build`). |
 | `native_tools` | `True` | Elide 1.6.2+ native ABI, jdeps, KAPT, and KSP2; False retains legacy behavior. |
+| `runtime_files` | `None` | Labels shipped as launcher runfiles. Under remote execution pass `@elide_<os>_<cpu>//:elide_compile_files` so executors get `lib/` and `conf/`, not a lone `bin/elide`. |
 | `**kwargs` | — | Forwarded to `define_kt_toolchain` (`language_version`, `api_version`, `jvm_target`, `experimental_use_abi_jars`, etc.). |
 
 The e2e workspace at `e2e/kotlin_builder/` exercises the macro, the plain
