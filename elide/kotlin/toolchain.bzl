@@ -85,7 +85,9 @@ exec "$(rlocation {shim})" \\
 def _repo_of(f):
     # Canonical repository of a File: its short_path is `../<repo>/...` outside the main repo.
     sp = f.short_path
-    return sp[len("../"):].split("/")[0] if sp.startswith("../") else ""
+
+    # Returns None for main-repository files so two of them never compare equal.
+    return sp[len("../"):].split("/")[0] if sp.startswith("../") else None
 
 def _elide_kt_builder_launcher_impl(ctx):
     launcher = ctx.actions.declare_file(ctx.label.name + ".sh")
@@ -115,7 +117,8 @@ def _elide_kt_builder_launcher_impl(ctx):
     # repository would not be adjacent and would only add input weight.
     dist_files = depset(ctx.files.runtime_files)
     toolchain = ctx.toolchains[TOOLCHAIN_TYPE]
-    if toolchain and _repo_of(toolchain.elide_info.binary) == _repo_of(ctx.executable.elide):
+    elide_repo = _repo_of(ctx.executable.elide)
+    if toolchain and elide_repo and _repo_of(toolchain.elide_info.binary) == elide_repo:
         dist_files = depset(transitive = [dist_files, toolchain.elide_info.compile_tool_files])
     java_home = jdk.java_home
     if java_home.startswith("external/"):
@@ -346,7 +349,7 @@ def register_elide_kotlin_toolchain(
             shim tees the forwarded WorkRequest stream to this path for offline
             PGO replay. Default "" (disabled).
         native_tools: Use native ABI, dependency reports, KAPT, and KSP2 (Elide 1.6.2+). Set False for older Elide.
-        runtime_files: Optional extra labels shipped as runfiles with the launcher. The
+        runtime_files: Optional label or list of labels shipped as runfiles with the launcher. The
             launcher already ships the whole distribution (`lib/`, `conf/`, including the
             JVM libraries) from the resolved Elide toolchain when it is the same distribution
             as `elide`, so this is only needed for a bring-your-own `elide` binary that has
@@ -354,6 +357,9 @@ def register_elide_kotlin_toolchain(
         **kwargs: Forwarded to `define_kt_toolchain` (language_version,
             api_version, jvm_target, etc.).
     """
+
+    # Accept a single label like register_elide_python_toolchain does.
+    runtime_files = [runtime_files] if type(runtime_files) == "string" else (runtime_files or [])
 
     # Default resident forwarding to the kotlinc incremental config flag: IC is
     # only useful with a warm resident worker, so `--@rules_elide//config/kotlinc:incremental`
@@ -373,7 +379,7 @@ def register_elide_kotlin_toolchain(
         fallback_builder = fallback_builder,
         resident_worker = resident_worker,
         native_tools = native_tools,
-        runtime_files = runtime_files or [],
+        runtime_files = runtime_files,
         worker_record = worker_record,
         quiet_plugin_rewrite = select({
             Label("//config/kotlinc:warn_builtin_plugin_rewrite_disabled"): True,
@@ -388,7 +394,7 @@ def register_elide_kotlin_toolchain(
             elide = elide,
             fallback_builder = Label("@rules_kotlin//src/main/kotlin:ksp2"),
             native_tools = True,
-            runtime_files = runtime_files or [],
+            runtime_files = runtime_files,
             resident_worker = resident_worker,
         )
 

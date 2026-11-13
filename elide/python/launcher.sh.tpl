@@ -13,7 +13,13 @@ elide="$(rlocation '@@ELIDE@@')"
 # Elide 1.6.2 honors PYTHONSAFEPATH but reports sys.flags.safe_path=False.
 # rules_python then deletes the first stdlib path. Let its bootstrap remove
 # the ordinary script-directory entry instead.
-unset PYTHONSAFEPATH VIRTUAL_ENV PYTHONHOME PYTHONUSERBASE
+unset VIRTUAL_ENV
+# --allow-env (below) forwards the host environment, so also drop every ambient
+# PYTHON* variable (PYTHONSTARTUP, PYTHONINSPECT, PYTHONHOME, ...) except the
+# PYTHONPATH filtered next; the exports after that set the ones we want.
+for _elide_var in $(compgen -v PYTHON); do
+  [ "$_elide_var" = PYTHONPATH ] || unset "$_elide_var"
+done
 # The legacy bootstrap passes declared import roots through PYTHONPATH.
 # Keep only entries inside this runfiles tree, dropping ambient host packages.
 _elide_pythonpath=""

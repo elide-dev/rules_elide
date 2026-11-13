@@ -8,7 +8,7 @@ import tempfile
 import unittest
 
 TEMPLATE = pathlib.Path(__file__).resolve().parent.parent / "elide/python/launcher.sh.tpl"
-BASHES = [b for b in ("/bin/bash", shutil.which("bash")) if b and os.path.exists(b)]
+BASHES = sorted({os.path.realpath(b) for b in ("/bin/bash", shutil.which("bash")) if b and os.path.exists(b)})
 
 
 class LauncherTest(unittest.TestCase):
@@ -22,7 +22,13 @@ class LauncherTest(unittest.TestCase):
             f'rlocation() {{ echo "{rf}/fake_elide"; }}\n'
         )
         fake = rf / "fake_elide"
-        fake.write_text('#!/bin/sh\necho "ARGS=$*"\necho "PYTHONPATH=$PYTHONPATH"\necho "TEST_TMPDIR=${TEST_TMPDIR-unset}"\n')
+        # Like real Elide: without --allow-env the host environment is hidden.
+        fake.write_text(
+            '#!/bin/sh\n'
+            'case " $* " in *" --allow-env "*) ;; *) exec env -i "$0" --allow-env "$@";; esac\n'
+            'echo "ARGS=$*"\necho "PYTHONPATH=$PYTHONPATH"\n'
+            'echo "TEST_TMPDIR=${TEST_TMPDIR-unset}"\necho "PYTHONSTARTUP=${PYTHONSTARTUP-unset}"\n'
+        )
         fake.chmod(0o755)
         script = TEMPLATE.read_text().replace("@@RUNFILES@@", "init.bash").replace("@@ELIDE@@", "fake_elide")
         self.launcher = self.tmp / "launcher.sh"
@@ -51,9 +57,16 @@ class LauncherTest(unittest.TestCase):
                 self.assertIn(f"PYTHONPATH={inside}:{self.rf}\n", out.stdout)
 
     def test_allows_bazel_test_environment(self):
-        out = self.run_launcher(BASHES[0])
-        self.assertIn("--allow-env", out.stdout)
-        self.assertIn("TEST_TMPDIR=/tmp/t", out.stdout)
+        for bash in BASHES:
+            with self.subTest(bash=bash):
+                out = self.run_launcher(bash)
+                self.assertIn("TEST_TMPDIR=/tmp/t", out.stdout)
+
+    def test_drops_ambient_python_variables(self):
+        for bash in BASHES:
+            with self.subTest(bash=bash):
+                out = self.run_launcher(bash, PYTHONSTARTUP="/host/startup.py")
+                self.assertIn("PYTHONSTARTUP=unset", out.stdout)
 
 
 if __name__ == "__main__":
