@@ -76,6 +76,18 @@ bootstrap verification runs with no Python on PATH and invalid ambient
 virtualenv settings. Pure-Python dependencies are the initial supported scope;
 this does not demonstrate native wheel compatibility.
 
+## Build C without a host compiler
+
+`elide_cc_binary` compiles and links with the LLVM toolchain bundled in Linux
+Elide distributions ([details](c.md)):
+
+```sh
+(cd e2e/cc && bazel run :hello)
+./tools/verify_integrations.sh cc
+```
+
+The program prints `hello from elide cc: sqrt(1764)=42 args=0`.
+
 ## Diagnose dependency use and validate pruning
 
 ```sh

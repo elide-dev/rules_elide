@@ -5,6 +5,41 @@ Public API entry point for rules_elide.
 Downstream users should load all symbols from this file. Internal paths under
 `elide/` are not part of the stable API.
 
+<a id="elide_cc_binary"></a>
+
+## elide_cc_binary
+
+<pre>
+load("@rules_elide//elide:defs.bzl", "elide_cc_binary")
+
+elide_cc_binary(<a href="#elide_cc_binary-name">name</a>, <a href="#elide_cc_binary-srcs">srcs</a>, <a href="#elide_cc_binary-data">data</a>, <a href="#elide_cc_binary-hdrs">hdrs</a>, <a href="#elide_cc_binary-copts">copts</a>, <a href="#elide_cc_binary-defines">defines</a>, <a href="#elide_cc_binary-linkopts">linkopts</a>)
+</pre>
+
+Compiles and links a C executable with Elide's bundled LLVM toolchain.
+
+Each `.c` source is compiled in its own action, then linked with lld against the
+distribution's glibc sysroot, compiler-rt, and libunwind. Actions use only the
+toolchain's declared `cc_tool_files`, run with an empty environment, and never
+consult a host compiler, headers, or libraries. Output targets the toolchain's
+own Linux platform; cross-compilation and C++ are not supported.
+
+`elide cc` itself is not used: in Elide 1.6.3 it only compiles a single
+freestanding source without system headers or linking.
+
+**ATTRIBUTES**
+
+
+| Name  | Description | Type | Mandatory | Default |
+| :------------- | :------------- | :------------- | :------------- | :------------- |
+| <a id="elide_cc_binary-name"></a>name |  A unique name for this target.   | <a href="https://bazel.build/concepts/labels#target-names">Name</a> | required |  |
+| <a id="elide_cc_binary-srcs"></a>srcs |  C sources and private headers.   | <a href="https://bazel.build/concepts/labels">List of labels</a> | required |  |
+| <a id="elide_cc_binary-data"></a>data |  Runtime data files.   | <a href="https://bazel.build/concepts/labels">List of labels</a> | optional |  `[]`  |
+| <a id="elide_cc_binary-hdrs"></a>hdrs |  Headers included by srcs. Include them by workspace-relative path.   | <a href="https://bazel.build/concepts/labels">List of labels</a> | optional |  `[]`  |
+| <a id="elide_cc_binary-copts"></a>copts |  Additional compiler options, e.g. `-O2` or `-Wall`.   | List of strings | optional |  `[]`  |
+| <a id="elide_cc_binary-defines"></a>defines |  Preprocessor definitions, NAME or NAME=VALUE.   | List of strings | optional |  `[]`  |
+| <a id="elide_cc_binary-linkopts"></a>linkopts |  Additional linker driver options, e.g. `-lm`.   | List of strings | optional |  `[]`  |
+
+
 <a id="elide_format"></a>
 
 ## elide_format
@@ -479,8 +514,8 @@ elide_native_image(<a href="#elide_native_image-name">name</a>, <a href="#elide_
 <pre>
 load("@rules_elide//elide:defs.bzl", "elide_toolchain")
 
-elide_toolchain(<a href="#elide_toolchain-name">name</a>, <a href="#elide_toolchain-binary">binary</a>, <a href="#elide_toolchain-compile_tool_files">compile_tool_files</a>, <a href="#elide_toolchain-jextract_tool_files">jextract_tool_files</a>, <a href="#elide_toolchain-kotlin_stdlib">kotlin_stdlib</a>,
-                <a href="#elide_toolchain-python_tool_files">python_tool_files</a>, <a href="#elide_toolchain-tool_files">tool_files</a>, <a href="#elide_toolchain-version">version</a>)
+elide_toolchain(<a href="#elide_toolchain-name">name</a>, <a href="#elide_toolchain-binary">binary</a>, <a href="#elide_toolchain-cc_compiler">cc_compiler</a>, <a href="#elide_toolchain-cc_tool_files">cc_tool_files</a>, <a href="#elide_toolchain-compile_tool_files">compile_tool_files</a>, <a href="#elide_toolchain-jextract_tool_files">jextract_tool_files</a>,
+                <a href="#elide_toolchain-kotlin_stdlib">kotlin_stdlib</a>, <a href="#elide_toolchain-python_tool_files">python_tool_files</a>, <a href="#elide_toolchain-tool_files">tool_files</a>, <a href="#elide_toolchain-version">version</a>)
 </pre>
 
 
@@ -492,6 +527,8 @@ elide_toolchain(<a href="#elide_toolchain-name">name</a>, <a href="#elide_toolch
 | :------------- | :------------- | :------------- | :------------- | :------------- |
 | <a id="elide_toolchain-name"></a>name |  A unique name for this target.   | <a href="https://bazel.build/concepts/labels#target-names">Name</a> | required |  |
 | <a id="elide_toolchain-binary"></a>binary |  Executable target for the elide binary.   | <a href="https://bazel.build/concepts/labels">Label</a> | required |  |
+| <a id="elide_toolchain-cc_compiler"></a>cc_compiler |  At most one file: the bundled clang driver used by elide_cc_binary. Downloaded toolchains use elide_cc_compiler, which is empty when the distribution has no LLVM toolchain.   | <a href="https://bazel.build/concepts/labels">List of labels</a> | optional |  `[]`  |
+| <a id="elide_toolchain-cc_tool_files"></a>cc_tool_files |  Inputs for C compile/link actions (lld, clang resource headers, runtimes, sysroot). Downloaded toolchains use elide_cc_files.   | <a href="https://bazel.build/concepts/labels">List of labels</a> | optional |  `[]`  |
 | <a id="elide_toolchain-compile_tool_files"></a>compile_tool_files |  Inputs for JVM compile actions (javac, kotlinc, jar). Should reference the elide_compile_files filegroup.   | <a href="https://bazel.build/concepts/labels">List of labels</a> | optional |  `[]`  |
 | <a id="elide_toolchain-jextract_tool_files"></a>jextract_tool_files |  Additional inputs for C binding generation, including LLVM. Combined with compile_tool_files; downloaded toolchains use elide_jextract_files.   | <a href="https://bazel.build/concepts/labels">List of labels</a> | optional |  `[]`  |
 | <a id="elide_toolchain-kotlin_stdlib"></a>kotlin_stdlib |  Kotlin stdlib jars bundled with this Elide release (from kotlin_stdlib_jars filegroup).   | <a href="https://bazel.build/concepts/labels">List of labels</a> | optional |  `[]`  |
@@ -527,8 +564,8 @@ Elide-specific metadata emitted by rules_elide build rules.
 <pre>
 load("@rules_elide//elide:defs.bzl", "ElideToolchainInfo")
 
-ElideToolchainInfo(<a href="#ElideToolchainInfo-binary">binary</a>, <a href="#ElideToolchainInfo-compile_tool_files">compile_tool_files</a>, <a href="#ElideToolchainInfo-jextract_tool_files">jextract_tool_files</a>, <a href="#ElideToolchainInfo-kotlin_stdlib_jars">kotlin_stdlib_jars</a>,
-                   <a href="#ElideToolchainInfo-python_tool_files">python_tool_files</a>, <a href="#ElideToolchainInfo-tool_files">tool_files</a>, <a href="#ElideToolchainInfo-version">version</a>)
+ElideToolchainInfo(<a href="#ElideToolchainInfo-binary">binary</a>, <a href="#ElideToolchainInfo-cc_compiler">cc_compiler</a>, <a href="#ElideToolchainInfo-cc_tool_files">cc_tool_files</a>, <a href="#ElideToolchainInfo-compile_tool_files">compile_tool_files</a>, <a href="#ElideToolchainInfo-jextract_tool_files">jextract_tool_files</a>,
+                   <a href="#ElideToolchainInfo-kotlin_stdlib_jars">kotlin_stdlib_jars</a>, <a href="#ElideToolchainInfo-python_tool_files">python_tool_files</a>, <a href="#ElideToolchainInfo-tool_files">tool_files</a>, <a href="#ElideToolchainInfo-version">version</a>)
 </pre>
 
 Resolved Elide toolchain information.
@@ -538,6 +575,8 @@ Resolved Elide toolchain information.
 | Name  | Description |
 | :------------- | :------------- |
 | <a id="ElideToolchainInfo-binary"></a>binary |  File. The elide binary executable.    |
+| <a id="ElideToolchainInfo-cc_compiler"></a>cc_compiler |  File or None. Bundled LLVM clang driver for C compile/link actions, if the distribution has one.    |
+| <a id="ElideToolchainInfo-cc_tool_files"></a>cc_tool_files |  depset[File]. Inputs for C compile/link actions: clang, lld, resource headers, runtimes, and sysroot.    |
 | <a id="ElideToolchainInfo-compile_tool_files"></a>compile_tool_files |  depset[File]. Inputs for JVM compile actions (javac, kotlinc, jar). Excludes LLVM and native-image-only subtrees (lib/llvm, lib/static, lib/svm, lib/truffle, doc).    |
 | <a id="ElideToolchainInfo-jextract_tool_files"></a>jextract_tool_files |  depset[File]. JVM tools plus LLVM inputs needed for C binding generation.    |
 | <a id="ElideToolchainInfo-kotlin_stdlib_jars"></a>kotlin_stdlib_jars |  depset[File]. Kotlin stdlib jar(s) bundled with this Elide release.    |

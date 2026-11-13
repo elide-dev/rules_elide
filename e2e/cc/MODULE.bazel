@@ -1,0 +1,13 @@
+module(name = "rules_elide_cc")
+
+bazel_dep(name = "rules_elide", version = "0.0.0")
+local_path_override(
+    module_name = "rules_elide",
+    path = "../..",
+)
+
+elide = use_extension("@rules_elide//elide:extensions.bzl", "elide")
+elide.install(version = "1.6.3")
+use_repo(elide, "elide_toolchains")
+
+register_toolchains("@elide_toolchains//:all")

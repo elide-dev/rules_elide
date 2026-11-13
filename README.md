@@ -89,6 +89,7 @@ bazel run //:app
 | `elide_kotlin_binary` | `_library` + launcher                                             | [docs/kotlin.md](docs/kotlin.md) |
 | `elide_kotlin_test`   | `_library` + JUnit Platform launcher                              | [docs/kotlin.md](docs/kotlin.md) |
 | `elide_native_image`  | Native AOT binary from JavaInfo deps (via `elide native-image`)   | [docs/native_image.md](docs/native_image.md) |
+| `elide_cc_binary`     | Hermetic C executable built with Elide's bundled clang/lld/sysroot (Linux) | [docs/c.md](docs/c.md) |
 | `elide_format`        | In-place format `.java` (google-java-format) or `.kt` (ktfmt)     | [docs/format.md](docs/format.md) |
 | `register_elide_python_toolchain` | Opt-in Python 3.13 runtime for ordinary rules_python targets | [docs/python.md](docs/python.md) |
 | `elide_toolchain`     | Wrap an elide binary as a Bazel toolchain                         | [docs/toolchain.md](docs/toolchain.md) |
