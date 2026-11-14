@@ -58,9 +58,12 @@ Run them with the pinned tools in `requirements-dev.txt`.
 
 ## What CI runs
 
-Pull requests get analysis tests on Linux/macOS with Bazel 8/9, smoke analysis,
-lint, and generated-doc freshness. The separate RBE job requires the configured
-BuildBuddy secret and is gated to trusted events.
+Pull requests get analysis tests on Linux with Bazel 8/9, smoke analysis, lint,
+and generated-doc freshness. The macOS Bazel 8/9 analysis tests run on a
+self-hosted pool, so they run for main pushes and same-repository pull requests
+only; fork pull requests do not get macOS coverage until they merge. The
+separate RBE job requires the configured BuildBuddy secret and is gated to
+trusted events in the same way.
 
 Main pushes additionally run KotlinBuilder unit/protocol execution, the JVM
 output/pruning checks, full native KAPT/KSP fixtures, and Python integration.
