@@ -93,13 +93,14 @@ def _merge_resources(ctx, class_jars, output_jar):
         for f in resources:
             args.add("%s:%s" % (f.path, _resource_jar_path(f, strip_prefix)))
 
+    packs = bool(resources or resource_jars) or len(class_jars) > 1
     ctx.actions.run(
-        mnemonic = "ElideResourceJar",
+        mnemonic = "ElideResourceJar" if packs else "ElideNormalizeJar",
         executable = java_toolchain.single_jar,
         arguments = [args],
         inputs = depset(direct = class_jars + resources + resource_jars),
         outputs = [output_jar],
-        progress_message = "Packing %{label} jar",
+        progress_message = "Packing %{label} jar" if packs else "Normalizing %{label} jar",
     )
 
 # Execution requirements opting compile actions into Bazel persistent workers.
@@ -254,9 +255,9 @@ def run_javac(ctx, output_jar):
     `--jar` alone produces the jar, no `-d` scratch dir needed). `--jar`
     requires the `--` separator that precedes the bare javac TOOL_ARGS.
 
-    When the target carries packaged resources, `--jar` writes an intermediate
-    class jar which `_merge_resources` then folds into `output_jar`; otherwise
-    `--jar` writes `output_jar` directly.
+    `--jar` writes an intermediate class jar, which `_merge_resources` repacks
+    (with any packaged resources) into `output_jar` with normalized entries:
+    javac's own jar uses wall-clock timestamps (elide-dev/runtime#2955).
 
     Args:
         ctx: rule context. Must expose srcs/deps/javac_opts/plugins.
@@ -270,8 +271,9 @@ def run_javac(ctx, output_jar):
     plugin_cp = _plugin_classpath(ctx.attr.plugins) if hasattr(ctx.attr, "plugins") else depset()
     sep = ctx.configuration.host_path_separator
 
-    has_res = _has_packaged_resources(ctx)
-    class_jar = ctx.actions.declare_file(ctx.label.name + "_classes.jar") if has_res else output_jar
+    # `elide javac --jar` stamps entries with the wall clock (elide-dev/runtime#2955), so the class jar is
+    # always repacked through singlejar --normalize (with any resources) for reproducible outputs.
+    class_jar = ctx.actions.declare_file(ctx.label.name + "_classes.jar")
 
     # Header compilation cannot reproduce arbitrary annotation processors or
     # classes supplied through resource_jars. Keep the full-compile ijar there.
@@ -316,8 +318,7 @@ def run_javac(ctx, output_jar):
         progress_message = "Compiling %{label} (elide javac)",
     )
 
-    if has_res:
-        _merge_resources(ctx, [class_jar], output_jar)
+    _merge_resources(ctx, [class_jar], output_jar)
 
     if abi_avoidance and not fused_abi:
         abi_args = _tool_args(ctx, abi_jar)

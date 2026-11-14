@@ -62,7 +62,7 @@ elide_java_library(name = "consumer", srcs = ["Consumer.java"], deps = [":used",
 
     try:
         assert "//:consumer" in build("initial"), "Initial compile was not recorded"
-        assert "spare-ijar.jar" in (work / "bazel-bin/consumer.jar.unused").read_text()
+        assert "spare-ijar.jar" in (work / "bazel-bin/consumer_classes.jar.unused").read_text()
         (work / "Spare.java").write_text("package spare; public class Spare { public int added() { return 2; } }")
         rebuilt = build("unused_changed")
         assert "//:spare" in rebuilt, rebuilt
