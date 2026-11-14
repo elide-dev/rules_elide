@@ -79,7 +79,12 @@ jobs:
       - name: bazel test //tests:all
         env:
           USE_BAZEL_VERSION: ${{ matrix.bazel }}
-        run: bazel test //tests:all --config=ci
+        # The runner's JAVA_HOME (a GraalVM JDK without bin/java) breaks Bazel's local JDK
+        # autoconfiguration; use the hermetic remote JDK as AGENTS.md prescribes.
+        run: >-
+          bazel test //tests:all --config=ci
+          --java_runtime_version=remotejdk_21
+          --tool_java_runtime_version=remotejdk_21
 
   e2e:
     name: e2e smoke (analysis)
