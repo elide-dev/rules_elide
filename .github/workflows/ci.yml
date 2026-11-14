@@ -66,6 +66,11 @@ jobs:
         bazel: ["8.x", "9.x"]
     steps:
       # No harden-runner here: it does not support self-hosted macOS runners.
+      - name: Harden the runner (Audit all outbound calls)
+        uses: step-security/harden-runner@1d88384fd173af6ecb012dfd0264a306b711241a # v2.22.4
+        with:
+          egress-policy: audit
+
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
         with:
           persist-credentials: false
