@@ -47,7 +47,7 @@ def install(work, generated, production, fanout):
         path = protocol / name.removeprefix("proto/") if name.endswith(".proto") else core / name
         sources[path] = data.decode("utf-8")
     (protocol / "BUILD.bazel").write_text('''load("@protobuf//bazel:java_proto_library.bzl", "java_proto_library")
-load("@rules_proto//proto:defs.bzl", "proto_library")
+load("@protobuf//bazel:proto_library.bzl", "proto_library")
 package(default_visibility=["//visibility:public"])
 ''' + "\n".join(
         f'proto_library(name="{name}_proto", srcs=["{name}.proto"])\n'

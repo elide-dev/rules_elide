@@ -303,8 +303,8 @@ safe adapter. No production behavior or defaults depend on this probe.
 
 `--kotlin-builder --languages kotlin` snapshots this checkout's complete
 `elide/kotlin/builder` module: nine Kotlin implementation files and its two
-protobuf definitions. Protocol Java targets use the same protobuf/rules_proto
-versions as the repository. The source revision and exact source digest are
+protobuf definitions. Protocol Java targets use the same protobuf
+version as the repository. The source revision and exact source digest are
 recorded, as with Commons Lang. Copies and edits remain in the temporary workspace.
 
 ```sh

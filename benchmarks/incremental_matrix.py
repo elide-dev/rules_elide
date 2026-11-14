@@ -276,8 +276,8 @@ def main():
         if args.kotlin_builder:
             module += '\nregister_toolchains("//:stock_kotlin")\n'
             root_module = (REPO / "MODULE.bazel").read_text()
-            report["protocol_rule_versions"] = dict(re.findall(r'bazel_dep\(name = "(protobuf|rules_proto)", version = "([^"]+)"', root_module))
-            module += "\n" + "\n".join(re.findall(r'^bazel_dep\(name = "(?:rules_proto|protobuf)"[^\n]+', root_module, re.M)) + "\n"
+            report["protocol_rule_versions"] = dict(re.findall(r'bazel_dep\(name = "(protobuf)", version = "([^"]+)"', root_module))
+            module += "\n" + "\n".join(re.findall(r'^bazel_dep\(name = "protobuf"[^\n]+', root_module, re.M)) + "\n"
         (work / "MODULE.bazel").write_text(module)
         (work / ".bazelversion").write_text((REPO / ".bazelversion").read_text())
         common = ["--disk_cache=", "--remote_cache=", "--remote_executor=", "--jobs=4",
