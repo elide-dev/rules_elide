@@ -71,7 +71,7 @@ wins over `rules_kotlin`'s default toolchain registration automatically.
 ```python
 module(name = "my_module")
 
-bazel_dep(name = "rules_elide", version = "0.0.0")
+bazel_dep(name = "rules_elide", version = "0.7.0")  # x-release-please-version
 bazel_dep(name = "rules_kotlin", version = "2.4.21")
 
 elide = use_extension("@rules_elide//elide:extensions.bzl", "elide")

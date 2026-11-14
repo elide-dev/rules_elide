@@ -38,17 +38,17 @@ To try the checked-out rules immediately:
 (cd e2e/integration && bazel run :app)
 ```
 
-This README follows `main`; features introduced since the latest release may
-require a checkout override until the next release is published.
-
-Replace the `0.0.0` placeholder with your selected release version. To try a local
-checkout, add `local_path_override(module_name = "rules_elide", path = "/path/to/rules_elide")`.
-The checked-in [sample workspaces](docs/examples.md) already use a local override.
+The snippet below pins the latest release from the
+[Bazel Central Registry](https://registry.bazel.build/modules/rules_elide).
+This README follows `main`; to use a feature that is not released yet, add
+`local_path_override(module_name = "rules_elide", path = "/path/to/rules_elide")`
+or a `git_override`. The checked-in [sample workspaces](docs/examples.md)
+already use a local override.
 
 `MODULE.bazel`:
 
 ```starlark
-bazel_dep(name = "rules_elide", version = "0.0.0")
+bazel_dep(name = "rules_elide", version = "0.7.0")  # x-release-please-version
 
 elide = use_extension("@rules_elide//elide:extensions.bzl", "elide")
 elide.install(version = "1.6.2")
