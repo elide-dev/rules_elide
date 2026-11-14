@@ -1,5 +1,41 @@
 # Changelog
 
+## [0.8.0](https://github.com/elide-dev/rules_elide/compare/v0.7.0...v0.8.0) (2026-11-14)
+
+
+### Features
+
+* add opt-in combined Kotlin compilation and ABI emission ([576a69f](https://github.com/elide-dev/rules_elide/commit/576a69feff702cae7cdee6bba75d9597c43dbf0b))
+* **cc:** build hermetic C executables with Elide's bundled LLVM ([#114](https://github.com/elide-dev/rules_elide/issues/114)) ([f22a00a](https://github.com/elide-dev/rules_elide/commit/f22a00a616108dce129ce476e71b19a84a508727))
+* emit Java ABI headers alongside full compilation ([1c4d231](https://github.com/elide-dev/rules_elide/commit/1c4d231716568ea490288e2ee179553c887bbb86))
+* **java:** JavaBuilder shim routing java_library compiles through elide javac ([#106](https://github.com/elide-dev/rules_elide/issues/106)) ([5376f65](https://github.com/elide-dev/rules_elide/commit/5376f65d82c7b6d3d284ef7909afbdf5b394fa25))
+* **kotlin:** run external compiler plugins on Elide when it supports them ([#109](https://github.com/elide-dev/rules_elide/issues/109)) ([e2dd95b](https://github.com/elide-dev/rules_elide/commit/e2dd95b826bbe46d2a25fb796f3a8b0e1823f1f8))
+* select ABI compilation strategy per JVM target ([f3de522](https://github.com/elide-dev/rules_elide/commit/f3de522d8ffcf5d25cfd1949fcba9300cad58505))
+* select Kotlin incremental compilation per target ([abbca75](https://github.com/elide-dev/rules_elide/commit/abbca7551de3104f8e4e26e49d18c5ebe129bd4c))
+
+
+### Bug Fixes
+
+* align Java benchmark targets and verify emitted bytecode ([0f5d896](https://github.com/elide-dev/rules_elide/commit/0f5d8960d1b50c23058794de6c87a43174f3f91a))
+* install Bazelisk explicitly for benchmark runner cleanup ([302506a](https://github.com/elide-dev/rules_elide/commit/302506ad9de0eb3397e0489d3dd39c25d3beff90))
+* **java:** make elide_java_* jars reproducible ([#108](https://github.com/elide-dev/rules_elide/issues/108)) ([5592606](https://github.com/elide-dev/rules_elide/commit/5592606576fcd1444a9ba37904cb597339a273fb)), closes [#119](https://github.com/elide-dev/rules_elide/issues/119)
+* **kotlin:** never drop compiler plugins delivered in --plugins_payload ([#107](https://github.com/elide-dev/rules_elide/issues/107)) ([2ce1a7f](https://github.com/elide-dev/rules_elide/commit/2ce1a7fa0275a219cf764e0039070a38b126613b))
+* **kotlin:** ship the elide distribution with the KotlinBuilder launcher ([#105](https://github.com/elide-dev/rules_elide/issues/105)) ([e681ddc](https://github.com/elide-dev/rules_elide/commit/e681ddc4180d83da00e21ad848edf861d5d3aabb))
+* preserve complete Kotlin incremental outputs across Bazel actions ([09b7e56](https://github.com/elide-dev/rules_elide/commit/09b7e5650c597b39108ee219dd5eb58794512e4c))
+* propagate Kotlin stdlib to Java consumers ([09e5049](https://github.com/elide-dev/rules_elide/commit/09e5049992d02e2e8e092a53ab1b21816c914c23))
+* Python launcher, remote Kotlin distribution, pin Elide 1.6.3 ([#113](https://github.com/elide-dev/rules_elide/issues/113)) ([cb9e0fd](https://github.com/elide-dev/rules_elide/commit/cb9e0fd20514e5647cfb15c94aeb3789794a1d66))
+* reuse verified Elide distribution in isolated CodSpeed fixtures ([7553d8b](https://github.com/elide-dev/rules_elide/commit/7553d8bb7dbc9dea1ba6b98f3c46bd68887febca))
+
+
+### Performance Improvements
+
+* activate eligible Java classpath cache requests ([66a71b7](https://github.com/elide-dev/rules_elide/commit/66a71b70ae5e61425b54fd383dd1b295729d8fb6))
+* exclude LLVM from JVM compiler action inputs ([a9a0e8e](https://github.com/elide-dev/rules_elide/commit/a9a0e8ebc038e5be1ce5052cfa066d8e4dbb607c))
+* isolate jextract resources from JVM compiler inputs ([9353ffc](https://github.com/elide-dev/rules_elide/commit/9353ffcc53509681002f9c827676671c95da8f1d))
+* omit native static libraries from JVM action inputs ([3abfccc](https://github.com/elide-dev/rules_elide/commit/3abfccc9b8c15603e7dff53371c15ae24db3a0a9))
+* remove protobuf bootstrap from native IC worker ([dcb303f](https://github.com/elide-dev/rules_elide/commit/dcb303fa5fd59a60c14b1dc258de998bd6ee21c2))
+* retain Kotlin incremental state across classpath updates ([b1d08e5](https://github.com/elide-dev/rules_elide/commit/b1d08e593c49a0be31c07d5ca8d481e1647a3e2a))
+
 ## [0.7.0](https://github.com/elide-dev/rules_elide/compare/v0.6.1...v0.7.0) (2026-11-04)
 
 
