@@ -48,4 +48,14 @@ class RouterTest {
         assertEquals(Route.FALLBACK, Router.route(CompileRequest(sources = listOf("A.kt"),
             compilerPluginClasspath = listOf("x/kotlin-compose-compiler-plugin-embeddable.jar"))).route)
     }
+
+    @Test fun externalPluginsStayOnElideWhenSupported() {
+        val compose = PayloadPlugin("androidx.compose.compiler.plugins.kotlin",
+            listOf("x/kotlin-compose-compiler-plugin-embeddable.jar"), emptyList(), listOf("PLUGIN_PHASE_COMPILE"))
+        val req = CompileRequest(sources = listOf("A.kt"), payloadPlugins = listOf(compose))
+        assertEquals(Route.FALLBACK, Router.route(req, true, externalPlugins = false).route)
+        assertEquals(Route.FAST, Router.route(req, true, externalPlugins = true).route)
+        assertEquals(Route.FAST, Router.route(CompileRequest(sources = listOf("A.kt"),
+            compilerPluginClasspath = listOf("x/kotlin-compose-compiler-plugin-embeddable.jar")), externalPlugins = true).route)
+    }
 }

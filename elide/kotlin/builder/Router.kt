@@ -21,11 +21,15 @@ object Router {
         plugin.options.isEmpty() && plugin.classpath.isNotEmpty() &&
             plugin.classpath.all { BuiltinPlugins.builtinFor(it) != null }
 
-    fun route(req: CompileRequest, nativeTools: Boolean = false): Routing {
-        req.payloadPlugins.firstOrNull { it.compiles && !isBuiltin(it) }?.let {
+    /**
+     * [externalPlugins]: the Elide reports `kotlinCompilerPlugins`, so it loads any `-Xplugin` jar and
+     * ElideCompile passes payload plugins and their options through.
+     */
+    fun route(req: CompileRequest, nativeTools: Boolean = false, externalPlugins: Boolean = false): Routing {
+        if (!externalPlugins) req.payloadPlugins.firstOrNull { it.compiles && !isBuiltin(it) }?.let {
             return Routing(Route.FALLBACK, "compiler plugin ${it.id.ifEmpty { it.classpath.joinToString() }} is not an Elide builtin")
         }
-        req.compilerPluginClasspath.firstOrNull {
+        if (!externalPlugins) req.compilerPluginClasspath.firstOrNull {
             "jvm-abi-gen" !in it && BuiltinPlugins.builtinFor(it) == null && KSP_MARKERS.none { m -> it.contains(m) }
         }?.let { return Routing(Route.FALLBACK, "compiler plugin ${BuiltinPlugins.basename(it)} is not an Elide builtin") }
         if (req.kaptSources != null && req.payloadPlugins.any { it.stubs }) {
