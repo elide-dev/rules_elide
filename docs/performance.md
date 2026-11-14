@@ -11,6 +11,22 @@ stock modes by median in all eight timing scenarios on the KotlinBuilder fixture
 but uses more sampled worker memory. No setting wins every dimension.
 Keep clean rebuilds separate from warm edits and first-install/download costs.
 
+## Worker processes
+
+Elide compiles one request at a time per process. The native rules therefore run
+`elide javac` and `elide kotlinc` as singleplex workers, and Bazel keeps a pool of
+them per compiler: four by default. On a machine with spare cores, raise the pool
+so more targets compile at once, at the cost of one warm Elide process each:
+
+```sh
+bazel build //... --worker_max_instances=8
+```
+
+`--@rules_elide//elide:multiplex_workers=true` restores a single multiplex process
+per compiler, which uses the least memory and compiles serially. Incremental
+Kotlin targets and the JavaBuilder/KotlinBuilder shims pool compilers themselves
+(up to eight) and need no flag.
+
 ## Combined Java ABI emission
 
 Combined Java headers are the default (Elide 1.6.2+). To compare against a

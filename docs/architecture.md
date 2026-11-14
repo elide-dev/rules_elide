@@ -80,4 +80,5 @@ Declared Bazel outputs are never used as persistent compiler state. Argument cha
 the target state. Native IC tracks classpath jar content changes; explicit plugin
 and friend-module configurations retain conservative full resets; compile/transport failures
 and worker restarts cannot reuse incomplete output. The adapter serves multiplex
-requests concurrently from a pool of resident compilers; ordinary native compilation uses Elide's direct multiplex worker protocol.
+requests concurrently from a pool of resident compilers; ordinary native compilation
+runs Elide directly as singleplex workers, which Bazel pools (`--worker_max_instances`).

@@ -21,6 +21,17 @@ bool_flag(
     build_setting_default = True,
 )
 
+# Off by default: Bazel runs a pool of singleplex Elide worker processes per
+# compiler (`--worker_max_instances`, 4 by default) and compiles in parallel
+# across them. Set true to run one multiplex process per compiler instead: Elide
+# compiles its requests one at a time, so this uses less memory and is slower on
+# builds with several compiles ready at once. Incremental Kotlin targets always
+# use one multiplex adapter, which pools compilers itself.
+bool_flag(
+    name = "multiplex_workers",
+    build_setting_default = False,
+)
+
 # On by default (Elide 1.6.2+): native compiler dependency metadata and input pruning.
 # Set either to false for older Elide versions.
 bool_flag(

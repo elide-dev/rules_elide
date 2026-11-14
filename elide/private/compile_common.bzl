@@ -105,17 +105,23 @@ def _merge_resources(ctx, class_jars, output_jar):
 
 # Execution requirements opting compile actions into Bazel persistent workers.
 # Elide's embedded javac/kotlinc workers speak the length-delimited protobuf
-# WorkRequest protocol, so we advertise `proto`. Multiplex workers are verified
-# working in Elide 1.3.1 (one process serves concurrent WorkRequests with
-# isolated, correct outputs — WHIPLASH #1004), so we advertise
-# `supports-multiplex-workers`. Bazel uses workers by default for actions
-# carrying these tags; users retain the standard kill-switches
+# WorkRequest protocol, so we advertise `proto`. Bazel uses workers by default
+# for actions carrying these tags; users retain the standard kill-switches
 # (`--strategy=ElideJavac=local`, `--worker_max_instances=0`).
+#
+# By default the actions are singleplex, so Bazel runs a pool of Elide
+# processes per mnemonic (`--worker_max_instances`, 4 by default) and compiles
+# in parallel across them.
 _WORKER_EXEC_REQUIREMENTS = {
     "requires-worker-protocol": "proto",
-    "supports-multiplex-workers": "1",
     "supports-workers": "1",
 }
+
+# One Elide process can also serve concurrent WorkRequests safely (WHIPLASH
+# #1004), but it compiles them one at a time. Advertised for
+# `//elide:multiplex_workers`, which trades parallel compiles for a single
+# process, and for the incremental adapter, which pools compilers itself.
+_MULTIPLEX_EXEC_REQUIREMENTS = dict(_WORKER_EXEC_REQUIREMENTS, **{"supports-multiplex-workers": "1"})
 
 # Signals to elide that it is running under Bazel, so it can adjust output
 # (suppress emoji/decorative status lines, drop color, project-relative paths,
@@ -179,7 +185,8 @@ def _run_elide_compile(ctx, mnemonic, subcommand, tool_args, inputs, outputs, pr
     Selected by the `//elide:use_workers` build setting:
 
     - workers on (default): the action advertises `supports-workers`; Bazel
-      appends `--persistent_worker` when it spawns the reusable process and
+      runs a pool of reusable processes (or one multiplex process with
+      `//elide:multiplex_workers`), appends `--persistent_worker` when it spawns the reusable process and
       delivers `tool_args` as a multiline params-file WorkRequest.
     - workers off: a one-shot `elide <subcommand> <tool_args>` process per
       target, with `tool_args` delivered inline. This is the supported way to
@@ -201,7 +208,8 @@ def _run_elide_compile(ctx, mnemonic, subcommand, tool_args, inputs, outputs, pr
     elide = ctx.toolchains[TOOLCHAIN_TYPE].elide_info
     lead = ctx.actions.args()
     executable = elide.binary
-    requirements = _WORKER_EXEC_REQUIREMENTS
+    multiplex = incremental or ctx.attr._multiplex_workers[BuildSettingInfo].value
+    requirements = _MULTIPLEX_EXEC_REQUIREMENTS if multiplex else _WORKER_EXEC_REQUIREMENTS
     if incremental:
         executable = ctx.attr._ic_worker[DefaultInfo].files_to_run
         lead.add("--elide=" + elide.binary.path)
@@ -955,6 +963,12 @@ COMMON_LIBRARY_ATTRS = {
         providers = [BuildSettingInfo],
     ),
     "_java_abi_from_compile": attr.label(default = Label("//config/javac:abi_from_compile"), providers = [BuildSettingInfo]),
+    "_multiplex_workers": attr.label(
+        default = Label("//elide:multiplex_workers"),
+        providers = [BuildSettingInfo],
+        doc = "Build setting running each compiler as one multiplex worker " +
+              "process instead of a pool of singleplex processes.",
+    ),
     "_prune_unused_inputs": attr.label(
         default = Label("//elide:prune_unused_inputs"),
         providers = [BuildSettingInfo],
