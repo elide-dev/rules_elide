@@ -36,7 +36,8 @@ update bots do not discover every embedded dependency. Scorecard publishes JSON
 results and an Actions artifact without CodeQL or a code-scanning upload step.
 It uses Git fetch mode because source archives intentionally omit `.github`.
 
-The self-hosted benchmark job accepts main pushes and same-repository PRs only.
+The self-hosted benchmark job and the self-hosted macOS test job (`macos-arm64-cipool`)
+accept main pushes and same-repository PRs only.
 That excludes forks, but trusted contributors can still change executable code.
 Keep that runner isolated from production systems and secrets; replace it with
 ephemeral infrastructure if the contributor trust model changes.
