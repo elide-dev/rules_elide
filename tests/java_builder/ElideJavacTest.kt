@@ -72,4 +72,20 @@ class ElideJavacTest {
         assertEquals(listOf("--output", "o.jar"), rest)
         assertEquals(false, Main.splitConfig(listOf("--elide=e")).first.resident)
     }
+
+    @Test fun stockRequestsCanDisableErrorProne() {
+        assertEquals(
+            listOf("--output", "o.jar", "--javacopts", "-XepDisableAllChecks", "-g", "--", "--sources", "A.java"),
+            Stock.disableErrorProne(listOf("--output", "o.jar", "--javacopts", "-g", "--", "--sources", "A.java")),
+        )
+        val added = Stock.disableErrorProne(listOf("--output", "o.jar", "--sources", "A.java"))
+        assertEquals(listOf("--javacopts", "-XepDisableAllChecks", "--"), added.takeLast(3))
+        assertEquals(listOf("-XepDisableAllChecks"), Request.parse(added).javacopts)
+        assertEquals(listOf("A.java"), Request.parse(added).sources)
+    }
+
+    @Test fun stockErrorProneIsAStartupSetting() {
+        assertEquals(false, Main.splitConfig(listOf("--elide=e")).first.stockErrorProne)
+        assertEquals(true, Main.splitConfig(listOf("--elide=e", "--stock_error_prone")).first.stockErrorProne)
+    }
 }

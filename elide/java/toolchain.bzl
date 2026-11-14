@@ -47,7 +47,7 @@ exec "$PWD/{elide}" java -- -cp "{classpath}" elide.java.builder.Main \\
   --elide="$PWD/{elide}" \\
   --stock_java="$JAVA_HOME/bin/java" \\
   --stock_javabuilder="$PWD/{stock}" \\
-{jvm_lines}{log_line}{resident_line}{workers_line}{system_line}  "$@"
+{jvm_lines}{log_line}{resident_line}{workers_line}{system_line}{error_prone_line}  "$@"
 """
 
 def _shell_quote(s):
@@ -71,6 +71,7 @@ def _launcher_impl(ctx):
         log_line = "  --log_routes \\\n" if ctx.attr.log_routes else "",
         resident_line = "  --resident_worker \\\n" if ctx.attr.resident_worker else "",
         system_line = "  --pass_system \\\n" if ctx.attr.pass_system else "",
+        error_prone_line = "  --stock_error_prone \\\n" if ctx.attr.stock_error_prone else "",
         workers_line = ("  --resident_workers=%d \\\n" % ctx.attr.resident_workers) if ctx.attr.resident_workers else "",
     )
     ctx.actions.write(output = launcher, content = content, is_executable = True)
@@ -95,6 +96,7 @@ _elide_javabuilder_launcher = rule(
         "resident_worker": attr.bool(default = True, doc = "Forward `elide javac` compiles to warm `elide javac --persistent_worker` processes."),
         "resident_workers": attr.int(default = 0, doc = "Most resident Elide processes per JavaBuilder worker; 0 picks a default."),
         "shim": attr.label(mandatory = True, providers = [JavaInfo], cfg = _shim_build),
+        "stock_error_prone": attr.bool(default = False, doc = "Keep default Error Prone checks on stock compiles of requests without Error Prone options."),
         "stock_javabuilder": attr.label(mandatory = True, allow_single_file = True),
     },
     executable = True,
@@ -111,6 +113,7 @@ def elide_java_toolchain(
         resident_worker = True,
         resident_workers = 0,
         pass_system = False,
+        stock_error_prone = False,
         **kwargs):
     """Defines and declares a Java toolchain whose JavaBuilder compiles through Elide.
 
@@ -137,6 +140,12 @@ def elide_java_toolchain(
             avoids re-opening the system image on every compile (elide-dev/runtime#2986). Turn it on
             when the toolchain's JDK is a different release than Elide's and code must compile
             against that JDK's API.
+        stock_error_prone: Some compiles fall back to the stock JavaBuilder (native headers, strict-deps
+            confirmation, unsupported options). JavaBuilder runs Error Prone's default checks even when
+            the request has no `-Xep` option or plugin, while `elide javac` runs none. By default the
+            shim passes `-XepDisableAllChecks` on those fallbacks so both routes accept the same code.
+            Set True to keep JavaBuilder's default checks there. Requests that do carry Error Prone
+            options always run it.
         **kwargs: Forwarded to `default_java_toolchain` (javacopts, jvm_opts, java_runtime, ...).
     """
     settings = dict(configuration)
@@ -149,6 +158,7 @@ def elide_java_toolchain(
         log_routes = log_routes,
         resident_worker = resident_worker,
         pass_system = pass_system,
+        stock_error_prone = stock_error_prone,
         resident_workers = resident_workers,
         shim = Label("//elide/java/builder:lib"),
         stock_javabuilder = settings["javabuilder"],

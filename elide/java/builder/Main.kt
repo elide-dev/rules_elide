@@ -18,6 +18,8 @@ import java.nio.file.Files
  *   --resident_worker (worker mode: forward `elide javac` compiles to warm
  *     `elide javac --persistent_worker` processes instead of starting Elide per compile)
  *   --pass_system (forward JavaBuilder's `--system` to javac; otherwise Elide's embedded JDK class library is used)
+ *   --stock_error_prone (keep JavaBuilder's default Error Prone checks on stock compiles of requests
+ *     that carry no Error Prone option; otherwise they are disabled, as on the `elide javac` route)
  *   --resident_workers=<n> (most resident processes to keep; one is used per concurrent request)
  */
 object Main {
@@ -31,10 +33,11 @@ object Main {
         val resident: Boolean = false,
         val residentWorkers: Int = 0,
         val passSystem: Boolean = false,
+        val stockErrorProne: Boolean = false,
     )
 
     fun splitConfig(argv: List<String>): Pair<Config, List<String>> {
-        var elide = ""; var java = ""; var jar = ""; var log = false; var resident = false; var workers = 0; var system = false
+        var elide = ""; var java = ""; var jar = ""; var log = false; var resident = false; var workers = 0; var system = false; var errorProne = false
         val opts = mutableListOf<String>(); val ep = mutableListOf<String>(); val rest = mutableListOf<String>()
         for (a in argv) when {
             a.startsWith("--elide=") -> elide = a.substringAfter("=")
@@ -45,10 +48,11 @@ object Main {
             a == "--log_routes" -> log = true
             a == "--resident_worker" -> resident = true
             a == "--pass_system" -> system = true
+            a == "--stock_error_prone" -> errorProne = true
             a.startsWith("--resident_workers=") -> workers = a.substringAfter("=").toInt()
             else -> rest += a
         }
-        return Config(elide, java, jar, opts, ep.ifEmpty { listOf(jar) }, log, resident, workers, system) to rest
+        return Config(elide, java, jar, opts, ep.ifEmpty { listOf(jar) }, log, resident, workers, system, errorProne) to rest
     }
 
     private var caps: Capabilities? = null
@@ -69,10 +73,14 @@ object Main {
         resident: ResidentPool? = null,
     ): Pair<Int, String> {
         val req = Request.parse(args)
+
+        // `elide javac` runs no Error Prone for a request without Error Prone options, so the stock JavaBuilder
+        // must not either, or the same code passes or fails depending on the route taken.
+        val stockArgs = if (cfg.stockErrorProne || Router.needsErrorProne(req)) args else Stock.disableErrorProne(args)
         val decision = Router.decide(req, capabilities(cfg))
         val prefix = if (cfg.logRoutes) "[elide-javabuilder] ${decision.route}${if (decision.reason.isEmpty()) "" else ": " + decision.reason}\n" else ""
         if (decision.route == Route.STOCK) {
-            val (code, out) = if (inputs != null) stock.forward(args, inputs) else stock.run(args, File("."))
+            val (code, out) = if (inputs != null) stock.forward(stockArgs, inputs) else stock.run(stockArgs, File("."))
             return code to (prefix + out)
         }
         val srcDir = if (req.sourceJars.isNotEmpty()) Files.createTempDirectory("elide-javabuilder-srcjars").toFile() else null
@@ -92,7 +100,7 @@ object Main {
             if (code != 0 && req.reduceClasspathMode == "BAZEL_REDUCED") {
                 // The failure may only reflect Bazel's reduced classpath. The stock JavaBuilder reports either the
                 // real error or the fallback request that makes Bazel retry with the full classpath.
-                val (stockCode, stockOut) = if (inputs != null) stock.forward(args, inputs) else stock.run(args, File("."))
+                val (stockCode, stockOut) = if (inputs != null) stock.forward(stockArgs, inputs) else stock.run(stockArgs, File("."))
                 val note = if (cfg.logRoutes) "[elide-javabuilder] STOCK: retrying a reduced-classpath failure\n" else ""
                 return stockCode to (prefix + note + stockOut)
             }
@@ -107,7 +115,7 @@ object Main {
                 // `elide javac --jdeps` marks every jar it loads from as EXPLICIT, including jars reached only
                 // through annotations or supertypes, which JavaBuilder accepts (elide-dev/runtime#2987). The
                 // report cannot confirm a violation, so the stock JavaBuilder decides and writes the outputs.
-                val (stockCode, stockOut) = if (inputs != null) stock.forward(args, inputs) else stock.run(args, File("."))
+                val (stockCode, stockOut) = if (inputs != null) stock.forward(stockArgs, inputs) else stock.run(stockArgs, File("."))
                 val note = if (cfg.logRoutes) "[elide-javabuilder] STOCK: confirming a possible strict-deps violation\n" else ""
                 return stockCode to (prefix + note + stockOut)
             }

@@ -34,4 +34,21 @@ class Stock(private val java: String, private val jar: String, private val jvmOp
         }
 
     override fun close() = child.close()
+
+    companion object {
+        /**
+         * [args] with Error Prone's checks turned off, by adding `-XepDisableAllChecks` to the request's
+         * `--javacopts` (JavaBuilder runs its default checks even when no `-Xep` option is given).
+         */
+        fun disableErrorProne(args: List<String>): List<String> {
+            val at = args.indexOf("--javacopts")
+            return if (at < 0) {
+                args + listOf("--javacopts", DISABLE_ERROR_PRONE, "--")
+            } else {
+                args.subList(0, at + 1) + DISABLE_ERROR_PRONE + args.subList(at + 1, args.size)
+            }
+        }
+
+        private const val DISABLE_ERROR_PRONE = "-XepDisableAllChecks"
+    }
 }
