@@ -58,17 +58,22 @@ Run them with the pinned tools in `requirements-dev.txt`.
 
 ## What CI runs
 
-Pull requests get analysis tests on Linux with Bazel 8/9, smoke analysis, lint,
-and generated-doc freshness. The macOS Bazel 8/9 analysis tests run on a
-self-hosted pool, so they run for main pushes and same-repository pull requests
-only; fork pull requests do not get macOS coverage until they merge. The
-separate RBE job requires the configured BuildBuddy secret and is gated to
-trusted events in the same way.
+Pull requests, including ones stacked on another pull request's branch, get
+analysis tests on Linux with Bazel 8/9, smoke analysis, lint, and generated-doc
+freshness. They also run the real-toolchain jobs: KotlinBuilder and JavaBuilder
+unit/protocol execution, the JavaBuilder shim fixture, the JVM output/pruning
+checks, full native KAPT/KSP fixtures, and Python integration. Those jobs use
+the same `tools/verify_integrations.sh` runner as local development. Real
+processor and Python adapter fixtures currently select Linux x86_64 explicitly.
 
-Main pushes additionally run KotlinBuilder unit/protocol execution, the JVM
-output/pruning checks, full native KAPT/KSP fixtures, and Python integration.
-Those jobs use the same integration runner as local development. Real processor
-and Python adapter fixtures currently select Linux x86_64 explicitly.
+The macOS Bazel 8/9 analysis tests run on a self-hosted pool, so they run for
+main pushes and same-repository pull requests only; fork pull requests do not
+get macOS coverage until they merge. The separate RBE job requires the
+configured BuildBuddy secret and is gated to trusted events in the same way.
+Compile benchmarks run only for pull requests that target `main`.
+
+Main pushes repeat every job above. Release-please pull requests skip them
+because they only touch the changelog and version files.
 
 ## Remaining gaps
 

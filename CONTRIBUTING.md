@@ -40,9 +40,10 @@ For runtime/rule changes, run the relevant real-toolchain checks:
 
 ```sh
 ./tools/verify_integrations.sh jvm
+./tools/verify_integrations.sh java_builder
 ./tools/verify_integrations.sh kotlin
 ./tools/verify_integrations.sh python
-# Or all three; extra arguments are forwarded to Bazel build/test commands:
+# Or every suite; extra arguments are forwarded to Bazel build/test commands:
 ./tools/verify_integrations.sh all --distdir=/path/to/archives
 ```
 
