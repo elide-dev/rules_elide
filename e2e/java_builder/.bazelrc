@@ -1,0 +1,4 @@
+common --enable_bzlmod
+# rules_elide depends on rules_kotlin, which pulls rules_android; its SDK extension validates any
+# ANDROID_HOME it finds. Empty, it stubs harmlessly.
+common --repo_env=ANDROID_HOME=

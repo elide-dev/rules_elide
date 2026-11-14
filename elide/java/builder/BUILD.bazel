@@ -1,0 +1,21 @@
+load("@rules_elide//elide:defs.bzl", "elide_kotlin_binary", "elide_kotlin_library")
+
+package(default_visibility = ["//visibility:public"])
+
+elide_kotlin_library(
+    name = "lib",
+    srcs = glob(["*.kt"]),
+    kotlinc_opts = ["-jvm-target=21"],
+    module_name = "elide_java_builder",
+    deps = [
+        "//elide/kotlin/builder/proto:deps_java_proto",
+        "//elide/kotlin/builder/proto:worker_protocol_java_proto",
+    ],
+)
+
+# A rules_java JavaBuilder replacement (see //elide/java:toolchain.bzl).
+elide_kotlin_binary(
+    name = "elide_java_builder",
+    main_class = "elide.java.builder.Main",
+    runtime_deps = [":lib"],
+)
