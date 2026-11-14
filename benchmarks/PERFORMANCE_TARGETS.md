@@ -21,8 +21,12 @@ Use the [incremental matrix](INCREMENTAL.md), [recorded baseline](INCREMENTAL_RE
 and [combined Kotlin comparison](FUSED_ABI_RESULTS.md) for reproducible evidence.
 Preserve regressions in reports. Compare modes within the same run, retain raw
 samples and compiler action sets, and keep correctness checks independent of
-wall-clock performance. Changes should remain opt-in until broader evidence
-supports changing defaults.
+wall-clock performance. ABI compile avoidance, combined header emission,
+dependency reports, and input pruning are on by default as of 2026-11-14, on the
+strength of the Kotlin results above and a maintainer decision to prefer
+wall-clock time over worker memory for now; the Java comparison has not been
+rerun with these defaults. Other changes should remain opt-in until broader
+evidence supports changing defaults.
 
 ## Workload priorities
 

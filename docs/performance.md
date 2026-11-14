@@ -13,13 +13,13 @@ Keep clean rebuilds separate from warm edits and first-install/download costs.
 
 ## Combined Java ABI emission
 
-With Elide 1.6.2, compare the default Java rules against separate and combined
-headers on your workload:
+Combined Java headers are the default (Elide 1.6.2+). To compare against a
+separate header action or no source headers on your workload, set these to false:
 
 ```sh
 bazel build //... \
   --@rules_elide//config/javac:abi_compile_avoidance=true \
-  --@rules_elide//config/javac:abi_from_compile=true
+  --@rules_elide//config/javac:abi_from_compile=false
 ```
 
 The full `ElideJavac` action writes both jars using `--emit-abi`, eliminating the
@@ -28,7 +28,7 @@ compile consumers use the header. Processor/plugin options and `resource_jars`
 retain the existing ijar fallback. Ordinary packaged resources are supported;
 resource-only edits do not recompile the library or its consumers.
 
-This is opt-in and requires Java ABI avoidance. Consumers wait for full
+This requires Java ABI avoidance. Consumers wait for full
 compilation, so saving an action can trade away useful graph parallelism.
 Use the Java `elide_fused` and `elide_fused_pruned` benchmark modes to compare.
 The [hosted Java results](../benchmarks/JAVA_FUSED_RESULTS.md) retain wins, regressions,
@@ -36,7 +36,7 @@ and timing outliers.
 
 ## Combined Kotlin ABI emission
 
-With Elide 1.6.2, try:
+Combined Kotlin headers are the default (Elide 1.6.2+):
 
 ```sh
 bazel build //... \
@@ -119,8 +119,8 @@ elide_kotlin_library(
 ```
 
 IC targets retain all inputs and use separate ABI emission even if combined
-emission is requested. Targets with IC off can use combined emission and
-`--@rules_elide//elide:prune_unused_inputs=true`, subject to the normal safety
+emission is requested. Targets with IC off use combined emission and input
+pruning (`--@rules_elide//elide:prune_unused_inputs`), subject to the normal safety
 fallbacks. This layout addresses the costs exposed by the
 [production Kotlin comparison](../benchmarks/KOTLIN_BUILDER_RESULTS.md), but is
 [a hosted selective-IC comparison](../benchmarks/KOTLIN_WORKER_RESULTS.md) now
@@ -138,7 +138,7 @@ explicitly with `--modes` locally or the hosted workflow's `modes` input.
    sources, compiler plugins, processors, and friends only after proving header
    completeness and downstream runtime behavior. Test cache hits and remote
    execution as well as local workers.
-3. **Incremental worker costs.** Native IC uses a singleplex Java adapter to keep
+3. **Incremental worker costs.** Native IC uses a multiplex Java adapter to keep
    compiled classes and cache together across edits, then writes the complete jar
    in the same action. This avoids Elide 1.6.2's missing-class behavior when Bazel
    deletes declared outputs. The adapter adds JVM startup and memory costs;

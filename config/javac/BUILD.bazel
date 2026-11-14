@@ -26,18 +26,19 @@ config_setting(
     flag_values = {":classpath_cache": "True"},
 )
 
-# Opt-in source header compilation via Elide javac --abi-only. Dependents
+# On by default (set false for Elide older than 1.6.2): source header compilation
+# via Elide javac --abi-only. Dependents
 # compile against the header while runtime consumers retain the full jar.
 # Annotation processors and resource_jars fall back to the full-compile ijar.
 bool_flag(
     name = "abi_compile_avoidance",
-    build_setting_default = False,
+    build_setting_default = True,
 )
 
-# Experimental: emit the ABI alongside full compilation, saving a compiler action.
+# On by default: emit the ABI alongside full compilation, saving a compiler action.
 # Requires abi_compile_avoidance. Processor/plugin and resource_jar configurations
 # retain their full-compile ijar fallback. Consumers wait for the full compile.
 bool_flag(
     name = "abi_from_compile",
-    build_setting_default = False,
+    build_setting_default = True,
 )

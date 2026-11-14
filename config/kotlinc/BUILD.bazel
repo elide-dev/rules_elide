@@ -5,8 +5,8 @@ package(default_visibility = ["//visibility:public"])
 # Tunables for the elide kotlinc compile path, flippable on the command line,
 # e.g. `--@rules_elide//config/kotlinc:incremental=true`.
 
-# Opt-in (default off): incremental Kotlin compilation. A singleplex adapter
-# forwards requests to a resident Elide compiler, retaining both classes and IC
+# Opt-in (default off): incremental Kotlin compilation. A multiplex adapter
+# forwards requests to resident Elide compilers, retaining both classes and IC
 # caches in worker-private scratch. It publishes a complete jar each time, so
 # Bazel output deletion cannot discard unchanged classes. Worker restart or
 # changed flags/non-source inputs starts fresh; one-shot execution is cold.
@@ -16,15 +16,14 @@ bool_flag(
     build_setting_default = False,
 )
 
-# Matches when `--@rules_elide//config/kotlinc:incremental=True`. Lets the Kotlin
-# toolchain default resident persistent-worker forwarding on whenever incremental
-# compilation is enabled (IC is only useful with a warm resident worker).
+# Matches when `--@rules_elide//config/kotlinc:incremental=True`, for `select()`s
+# that depend on incremental compilation.
 config_setting(
     name = "incremental_enabled",
     flag_values = {":incremental": "True"},
 )
 
-# Opt-in (default off): Karbine ABI compile-avoidance (WHIPLASH#1111, rules
+# On by default (set false for Elide older than 1.6.2): Karbine ABI compile-avoidance (WHIPLASH#1111, rules
 # issue #11). When true, a Kotlin or mixed Kotlin/Java target's `JavaInfo.compile_jar` is a
 # header jar produced by a dedicated `elide kotlinc --abi-only` action instead
 # of the `java_common.run_ijar`-derived jar. A method-*body* edit yields a
@@ -35,7 +34,7 @@ config_setting(
 # soundness with //e2e/abi_avoidance. Experimental.
 bool_flag(
     name = "abi_compile_avoidance",
-    build_setting_default = False,
+    build_setting_default = True,
 )
 
 # On (default): the KotlinBuilder shim emits a Bazel `[warning]` when it rewrites
@@ -54,11 +53,11 @@ config_setting(
     flag_values = {":warn_builtin_plugin_rewrite": "False"},
 )
 
-# Experimental: emit the ABI alongside full compilation, saving a compiler pass.
+# On by default: emit the ABI alongside full compilation, saving a compiler pass.
 # Requires abi_compile_avoidance. Pure Kotlin without resources, plugins, friends,
 # or incremental compilation only; other targets retain the separate header pass.
-# Dependents wait for the full compile, so benchmark your graph before enabling.
+# Dependents wait for the full compile; set false to restore the separate header pass.
 bool_flag(
     name = "abi_from_compile",
-    build_setting_default = False,
+    build_setting_default = True,
 )

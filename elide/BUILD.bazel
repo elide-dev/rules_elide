@@ -21,15 +21,16 @@ bool_flag(
     build_setting_default = True,
 )
 
-# Elide 1.6.2+: opt-in native compiler dependency metadata and input pruning.
+# On by default (Elide 1.6.2+): native compiler dependency metadata and input pruning.
+# Set either to false for older Elide versions.
 bool_flag(
     name = "emit_jdeps",
-    build_setting_default = False,
+    build_setting_default = True,
 )
 
 bool_flag(
     name = "prune_unused_inputs",
-    build_setting_default = False,
+    build_setting_default = True,
 )
 
 # Note: incremental Kotlin compilation is gated by

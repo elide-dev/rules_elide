@@ -169,33 +169,34 @@ Every compile rule returns a complete `JavaInfo`:
 - `source_jars` — sources packaged via `java_common.pack_sources`
   (IDE sync / Maven publish friendly).
 
-To enable source ABI compilation with Elide 1.6.2, pass:
+Source ABI compilation is on by default and needs Elide 1.6.2 or newer. To turn
+it off, pass:
 
 ```sh
 bazel build //... \
-  --@rules_elide//config/javac:abi_compile_avoidance=true \
-  --@rules_elide//config/kotlinc:abi_compile_avoidance=true
+  --@rules_elide//config/javac:abi_compile_avoidance=false \
+  --@rules_elide//config/kotlinc:abi_compile_avoidance=false
 ```
 
-These opt-in settings use separate `javac --abi-only` / `kotlinc --abi-only`
-actions for compile jars. Runtime jars still contain the full implementation.
+Compile jars are then ABI headers from `javac` / `kotlinc`. Runtime jars still
+contain the full implementation.
 Kotlin supports both Kotlin-only and mixed Kotlin/Java sources. Java targets
 with compiler plugins, annotation-processing options, or `resource_jars` retain
 `ijar` so their compile jars include generated or supplied classes. Both worker
-and one-shot compilation are supported. Leave the settings off for older Elide
+and one-shot compilation are supported. Turn the settings off for older Elide
 versions that do not support these ABI options.
 
-Java also supports experimental combined header emission with
-`--@rules_elide//config/javac:abi_from_compile=true` alongside Java ABI avoidance.
-It declares the full jar and ABI jar as outputs of one compiler action. Processor,
+Java emits the header from the full compile by default
+(`--@rules_elide//config/javac:abi_from_compile`); set it to false for a separate
+`javac --abi-only` action. Combined emission declares the full jar and ABI jar as outputs of one compiler action. Processor,
 plugin, and `resource_jars` configurations retain their existing `ijar` fallback.
 
-For pure Kotlin targets, experimental
-`--@rules_elide//config/kotlinc:abi_from_compile=true` additionally emits the header
+For pure Kotlin targets,
+`--@rules_elide//config/kotlinc:abi_from_compile` (on by default) emits the header
 from the full compile, saving the separate ABI compiler pass. It requires Kotlin
 ABI avoidance and Elide 1.6.2. Mixed sources, resources, plugins/processors, friend
 modules, and incremental compilation retain the separate pass. Dependents wait
-for full code generation, so compare both modes on your graph before adopting it.
+for full code generation, so compare both modes if your graph is deep.
 See the [performance guide](docs/performance.md) and
 [incremental benchmark modes](benchmarks/INCREMENTAL.md).
 
@@ -234,13 +235,13 @@ KotlinBuilder also supports native KAPT/KSP directly; see
 
 ## Compiler dependency metadata
 
-Elide 1.6.2+ native Java/Kotlin rules support:
+Native Java/Kotlin rules emit dependency reports and prune unused inputs by
+default (Elide 1.6.2+; set `--@rules_elide//elide:emit_jdeps=false` and
+`--@rules_elide//elide:prune_unused_inputs=false` to turn them off). To build the
+reports:
 
 ```sh
-bazel build //... \
-  --@rules_elide//elide:emit_jdeps=true \
-  --@rules_elide//elide:prune_unused_inputs=true \
-  --output_groups=+jdeps,+unused_inputs
+bazel build //... --output_groups=+jdeps,+unused_inputs
 ```
 
 Reports are available through `OutputGroupInfo.jdeps` and `unused_inputs`.

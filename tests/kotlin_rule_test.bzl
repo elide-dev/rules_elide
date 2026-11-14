@@ -124,11 +124,11 @@ def _abi_avoidance_test_impl(ctx):
         argv.index("--abi-only") < argv.index("--"),
         "`--abi-only` is an elide option; must precede the `--` separator",
     )
-    abi_out = abis[0].outputs.to_list()
+    abi_out = [f for f in abis[0].outputs.to_list() if f.extension == "jar"]
     asserts.true(
         env,
         len(abi_out) == 1 and abi_out[0].basename.endswith("_abi.jar"),
-        "abi action must output a single `_abi.jar`",
+        "abi action must output a single `_abi.jar` (dependency reports aside)",
     )
 
     # compile_jar is wired to the header jar, not an ijar.
@@ -143,7 +143,11 @@ def _abi_avoidance_test_impl(ctx):
 _abi_avoidance_test = analysistest.make(
     _abi_avoidance_test_impl,
     # See _library_action_no_worker_test re: the @@ canonical root ref.
-    config_settings = {"@@//config/kotlinc:abi_compile_avoidance": True},  # buildifier: disable=canonical-repository
+    # Combined emission is the default; this covers the separate header action.
+    config_settings = {
+        "@@//config/kotlinc:abi_compile_avoidance": True,  # buildifier: disable=canonical-repository
+        "@@//config/kotlinc:abi_from_compile": False,  # buildifier: disable=canonical-repository
+    },
 )
 
 def _fused_abi_test_impl(ctx):
@@ -192,7 +196,10 @@ def _abi_avoidance_mixed_test_impl(ctx):
 
 _abi_avoidance_mixed_test = analysistest.make(
     _abi_avoidance_mixed_test_impl,
-    config_settings = {"@@//config/kotlinc:abi_compile_avoidance": True},  # buildifier: disable=canonical-repository
+    config_settings = {
+        "@@//config/kotlinc:abi_compile_avoidance": True,  # buildifier: disable=canonical-repository
+        "@@//config/kotlinc:abi_from_compile": False,  # buildifier: disable=canonical-repository
+    },
 )
 
 def _builtin_plugins_test_impl(ctx):

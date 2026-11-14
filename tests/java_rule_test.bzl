@@ -99,23 +99,22 @@ def _abi_test_impl(ctx):
     asserts.true(env, header.argv.index("--abi-only") < header.argv.index("--"))
     asserts.true(env, "--jar" in header.argv)
     info = analysistest.target_under_test(env)[JavaInfo]
-    asserts.equals(env, header.outputs.to_list(), info.compile_jars.to_list())
+    asserts.equals(env, [f for f in header.outputs.to_list() if f.extension == "jar"], info.compile_jars.to_list())
     asserts.false(env, any([a.mnemonic == "JavaIjar" for a in actions]))
     asserts.true(env, any([a.mnemonic == "ElideJavac" for a in actions]))
     asserts.false(env, any([f.basename.endswith("_abi.jar") for f in info.transitive_runtime_jars.to_list()]))
     return analysistest.end(env)
 
-_abi_test = analysistest.make(
-    _abi_test_impl,
-    config_settings = {"@@//config/javac:abi_compile_avoidance": True},  # buildifier: disable=canonical-repository
-)
+# Combined emission is the default; these cover the separate header action.
+_SEPARATE_SETTINGS = {
+    "@@//config/javac:abi_compile_avoidance": True,  # buildifier: disable=canonical-repository
+    "@@//config/javac:abi_from_compile": False,  # buildifier: disable=canonical-repository
+}
+_abi_test = analysistest.make(_abi_test_impl, config_settings = _SEPARATE_SETTINGS)
 
 _abi_no_worker_test = analysistest.make(
     _abi_test_impl,
-    config_settings = {
-        "@@//config/javac:abi_compile_avoidance": True,  # buildifier: disable=canonical-repository
-        "@@//elide:use_workers": False,  # buildifier: disable=canonical-repository
-    },
+    config_settings = dict(_SEPARATE_SETTINGS, **{"@@//elide:use_workers": False}),  # buildifier: disable=canonical-repository
 )
 
 def _abi_fallback_test_impl(ctx):
@@ -126,10 +125,7 @@ def _abi_fallback_test_impl(ctx):
     asserts.false(env, any([f.basename.endswith("_abi.jar") for f in info.compile_jars.to_list()]))
     return analysistest.end(env)
 
-_abi_fallback_test = analysistest.make(
-    _abi_fallback_test_impl,
-    config_settings = {"@@//config/javac:abi_compile_avoidance": True},  # buildifier: disable=canonical-repository
-)
+_abi_fallback_test = analysistest.make(_abi_fallback_test_impl, config_settings = _SEPARATE_SETTINGS)
 
 def _fused_abi_test_impl(ctx):
     env = analysistest.begin(ctx)
@@ -156,7 +152,10 @@ _fused_no_worker_test = analysistest.make(
 _fused_fallback_test = analysistest.make(_abi_fallback_test_impl, config_settings = _FUSED_SETTINGS)
 _fused_disabled_test = analysistest.make(
     _abi_fallback_test_impl,
-    config_settings = {"@@//config/javac:abi_from_compile": True},  # buildifier: disable=canonical-repository
+    config_settings = {
+        "@@//config/javac:abi_compile_avoidance": False,  # buildifier: disable=canonical-repository
+        "@@//config/javac:abi_from_compile": True,  # buildifier: disable=canonical-repository
+    },
 )
 
 def _classpath_cache_test_impl(ctx):

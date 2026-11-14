@@ -17,6 +17,7 @@ assert "greet" in (out / "bytecode.txt").read_text()
 assert "java.base" in (out / "dependencies.txt").read_text()
 assert b"uses_one_dep" in (out / "uses_one_dep_classes.jar.jdeps").read_bytes()
 unused = (out / "uses_one_dep.unused.txt").read_text().splitlines()
-assert any(path.endswith("spare-ijar.jar") for path in unused), unused
-assert not any(path.endswith("lib-ijar.jar") for path in unused), unused
+# The header is `<name>_abi.jar` with ABI compile avoidance (the default) and `<name>-ijar.jar` without.
+assert any(path.endswith(("spare_abi.jar", "spare-ijar.jar")) for path in unused), unused
+assert not any(path.endswith(("lib_abi.jar", "lib-ijar.jar")) for path in unused), unused
 print("JVM tools, reproducible archives, and unused-dependency reporting passed.")
