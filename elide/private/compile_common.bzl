@@ -205,7 +205,6 @@ def _run_elide_compile(ctx, mnemonic, subcommand, tool_args, inputs, outputs, pr
     if incremental:
         executable = ctx.attr._ic_worker[DefaultInfo].files_to_run
         lead.add("--elide=" + elide.binary.path)
-        requirements = {"requires-worker-protocol": "proto", "supports-workers": "1"}
     else:
         lead.add(subcommand)
 

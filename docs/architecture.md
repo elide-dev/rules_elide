@@ -79,5 +79,5 @@ private temporary storage, and packages the complete jar before responding.
 Declared Bazel outputs are never used as persistent compiler state. Argument changes and non-source inputs outside ordinary classpath jars invalidate
 the target state. Native IC tracks classpath jar content changes; explicit plugin
 and friend-module configurations retain conservative full resets; compile/transport failures
-and worker restarts cannot reuse incomplete output. The adapter is singleplex;
-ordinary native compilation still uses Elide's direct multiplex worker protocol.
+and worker restarts cannot reuse incomplete output. The adapter serves multiplex
+requests concurrently from a pool of resident compilers; ordinary native compilation uses Elide's direct multiplex worker protocol.
