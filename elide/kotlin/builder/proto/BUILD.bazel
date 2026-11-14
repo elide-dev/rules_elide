@@ -24,6 +24,7 @@ java_proto_library(
         "//elide:__subpackages__",
         "//tests/java_builder:__pkg__",
         "//tests/kotlin_builder:__pkg__",
+        "//tests/worker:__pkg__",
     ],
     deps = [":worker_protocol_proto"],
 )

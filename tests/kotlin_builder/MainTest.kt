@@ -48,4 +48,11 @@ class MainTest {
         assertEquals(listOf("--flagfile=f"), rest)
         assertFalse(Main.splitConfig(emptyList()).first.nativeTools)
     }
+
+    @Test fun residentWorkersSetsThePoolLimit() {
+        val (cfg, rest) = Main.splitConfig(listOf("--resident_worker", "--resident_workers=3", "--flagfile=f"))
+        assertEquals(3, cfg.residentWorkers)
+        assertEquals(listOf("--flagfile=f"), rest)
+        assertEquals(0, Main.splitConfig(listOf("--resident_worker")).first.residentWorkers, "0 lets the shim pick")
+    }
 }

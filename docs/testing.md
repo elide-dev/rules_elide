@@ -10,7 +10,8 @@ is not the same as checking the generated artifacts.
 | Java/Kotlin rules | Providers, classpaths, ABI actions, resource and processor handling | `tests/java_rule_test.bzl`, `tests/kotlin_rule_test.bzl` |
 | JVM tools | Flags, declared headers/processors, outputs, invalid prefixes/empty requests/missing processors | `tests/jvm_tools_test.bzl` |
 | Compiler metadata | Reports, labels, output groups, pruning disabled around processors/plugins | `tests/compile_metadata_test.bzl` |
-| KotlinBuilder | Flag parsing, native/legacy routing, ABI/jdeps plans, strict-deps classifications, worker protocol | `tests/kotlin_builder/` |
+| KotlinBuilder | Flag parsing, native/legacy routing, ABI/jdeps plans, strict-deps classifications | `tests/kotlin_builder/` |
+| Builder workers | Singleplex and concurrent multiplex request handling, resident process request matching, restart after failure, process pool limits | `tests/worker/` |
 | Python adapter | Runtime identity/version, launcher and stdlib/helper input closure | `tests/python_toolchain_test.bzl` |
 | Kotlin/Java interoperability | Stock Java compile and runtime consumers inherit Kotlin stdlib through JavaInfo, including transitive exports, across worker and ABI modes | `e2e/integration/verify_kotlin_interop.py` |
 | JVM execution | Javadoc HTML, fixed archive timestamps, binding symbols, bytecode/dependency text, unused-vs-used reports in worker and one-shot modes | `e2e/integration/verify_jvm_tools.py` |

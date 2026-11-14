@@ -10,6 +10,7 @@ elide_kotlin_library(
     deps = [
         "//elide/kotlin/builder/proto:deps_java_proto",
         "//elide/kotlin/builder/proto:worker_protocol_java_proto",
+        "//elide/private/worker:lib",
     ],
 )
 

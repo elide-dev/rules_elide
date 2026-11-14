@@ -1,0 +1,25 @@
+load("@rules_elide//elide:defs.bzl", "elide_kotlin_test")
+
+# ResidentWorkerTest.kt also holds the fake worker process the pool test uses.
+[elide_kotlin_test(
+    name = name,
+    srcs = srcs,
+    kotlinc_opts = ["-jvm-target=21"],
+    test_class = "elide.builder.worker." + srcs[0].removesuffix(".kt"),
+    runtime_deps = [
+        "@kt_test_deps//:org_junit_platform_junit_platform_console_standalone",
+    ],
+    deps = [
+        "//elide/kotlin/builder/proto:worker_protocol_java_proto",
+        "//elide/private/worker:lib",
+        "@kt_test_deps//:org_jetbrains_kotlin_kotlin_test",
+        "@kt_test_deps//:org_jetbrains_kotlin_kotlin_test_junit5",
+    ],
+) for name, srcs in {
+    "resident_pool_test": [
+        "ResidentPoolTest.kt",
+        "ResidentWorkerTest.kt",
+    ],
+    "resident_worker_test": ["ResidentWorkerTest.kt"],
+    "worker_loop_test": ["WorkerLoopTest.kt"],
+}.items()]

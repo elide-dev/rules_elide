@@ -15,6 +15,10 @@ def snapshot(repo):
     root = repo / "elide/kotlin/builder"
     files = sorted([*root.glob("*.kt"), *root.glob("proto/*.proto")])
     sources = {p.relative_to(root).as_posix(): p.read_bytes() for p in files}
+    # The builder's shared worker plumbing compiles into the same fixture module.
+    for p in sorted((repo / "elide/private/worker").glob("*.kt")):
+        assert p.name not in sources, p.name
+        sources[p.name] = p.read_bytes()
     digest = hashlib.sha256()
     for name, data in sources.items():
         digest.update(name.encode() + b"\0" + data + b"\0")

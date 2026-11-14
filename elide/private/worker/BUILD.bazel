@@ -1,0 +1,15 @@
+load("@rules_elide//elide:defs.bzl", "elide_kotlin_library")
+
+# Worker plumbing shared by the JavaBuilder and KotlinBuilder shims.
+elide_kotlin_library(
+    name = "lib",
+    srcs = glob(["*.kt"]),
+    kotlinc_opts = ["-jvm-target=21"],
+    module_name = "elide_builder_worker",
+    visibility = [
+        "//elide/java/builder:__pkg__",
+        "//elide/kotlin/builder:__pkg__",
+        "//tests/worker:__pkg__",
+    ],
+    deps = ["//elide/kotlin/builder/proto:worker_protocol_java_proto"],
+)

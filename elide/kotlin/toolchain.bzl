@@ -79,7 +79,7 @@ export ELIDE_BAZEL=1
 exec "$(rlocation {shim})" \\
   --elide="$(rlocation {elide})" \\
   --fallback_builder="$(rlocation {fallback})" \\
-{native_line}{resident_line}{record_line}{quiet_line}  "$@"
+{native_line}{resident_line}{workers_line}{record_line}{quiet_line}  "$@"
 """
 
 def _repo_of(f):
@@ -137,6 +137,7 @@ def _elide_kt_builder_launcher_impl(ctx):
         # startup flag (not an env var) is required: Bazel scrubs the worker
         # environment, so an env toggle would never reach the shim.
         resident_line = "  --resident_worker \\\n" if ctx.attr.resident_worker else "",
+        workers_line = ("  --resident_workers=%d \\\n" % ctx.attr.resident_workers) if ctx.attr.resident_workers else "",
         # `--worker_record=<path>` tees the forwarded WorkRequest stream for
         # offline PGO replay (also a startup flag, for the same scrubbed-env reason).
         record_line = ("  --worker_record=\"%s\" \\\n" % ctx.attr.worker_record) if ctx.attr.worker_record else "",
@@ -194,10 +195,14 @@ _elide_kt_builder_launcher = rule(
                   "an Elide builtin is rewritten to `--plugins=`.",
         ),
         "resident_worker": attr.bool(
-            default = False,
+            default = True,
             doc = "Inject the shim's `--resident_worker` flag so kotlinc compiles " +
                   "are forwarded to one warm `elide kotlinc --persistent_worker` " +
                   "(keeping the native image + incremental caches hot).",
+        ),
+        "resident_workers": attr.int(
+            default = 0,
+            doc = "Most resident Elide processes the shim keeps; 0 picks a default.",
         ),
         "runtime_files": attr.label_list(
             doc = "Extra files shipped as runfiles next to the elide binary, typically the " +
@@ -312,7 +317,8 @@ def register_elide_kotlin_toolchain(
         name,
         elide,
         fallback_builder,
-        resident_worker = None,
+        resident_worker = True,
+        resident_workers = 0,
         worker_record = "",
         native_tools = True,
         runtime_files = None,
@@ -338,13 +344,14 @@ def register_elide_kotlin_toolchain(
         fallback_builder: Label of the stock rules_kotlin KotlinBuilder
             (e.g. `@rules_kotlin//src/main/kotlin:build`), passed as
             --fallback_builder.
-        resident_worker: If True, the launcher passes `--resident_worker` so the
-            shim forwards kotlinc compiles to a warm
-            `elide kotlinc --persistent_worker` (keeping the native image +
-            Elide's incremental caches hot across compiles). Defaults to the
-            value of `//config/kotlinc:incremental` (resident forwarding follows
-            incremental compilation, which needs a warm worker to be useful);
-            pass True/False to override.
+        resident_worker: The launcher passes `--resident_worker` so the shim forwards
+            kotlinc compiles to warm `elide kotlinc --persistent_worker` processes,
+            keeping the native image and its compiler hot across compiles. A failed forward falls back to a one-shot compile. Set False
+            to start Elide for every compile.
+        resident_workers: Most resident Elide processes the shim keeps. Elide compiles
+            one request at a time per process, and rules_kotlin sends concurrent
+            (multiplex) requests, so this bounds parallel Kotlin compiles. Processes
+            start on demand. 0 uses the number of CPUs, up to 8.
         worker_record: If set, the launcher passes `--worker_record=<path>` so the
             shim tees the forwarded WorkRequest stream to this path for offline
             PGO replay. Default "" (disabled).
@@ -361,15 +368,6 @@ def register_elide_kotlin_toolchain(
     # Accept a single label like register_elide_python_toolchain does.
     runtime_files = [runtime_files] if type(runtime_files) == "string" else (runtime_files or [])
 
-    # Default resident forwarding to the kotlinc incremental config flag: IC is
-    # only useful with a warm resident worker, so `--@rules_elide//config/kotlinc:incremental`
-    # turns forwarding on unless the caller sets resident_worker explicitly.
-    if resident_worker == None:
-        resident_worker = select({
-            Label("//config/kotlinc:incremental_enabled"): True,
-            "//conditions:default": False,
-        })
-
     # Silence the builtin-plugin rewrite warning when the user opted out via
     # //config/kotlinc:warn_builtin_plugin_rewrite=false (warn otherwise).
     _elide_kt_builder_launcher(
@@ -378,6 +376,7 @@ def register_elide_kotlin_toolchain(
         elide = elide,
         fallback_builder = fallback_builder,
         resident_worker = resident_worker,
+        resident_workers = resident_workers,
         native_tools = native_tools,
         runtime_files = runtime_files,
         worker_record = worker_record,
@@ -396,6 +395,7 @@ def register_elide_kotlin_toolchain(
             native_tools = True,
             runtime_files = runtime_files,
             resident_worker = resident_worker,
+            resident_workers = resident_workers,
         )
 
     # Materialize a stock toolchain. This creates `<name>_base_impl` (the

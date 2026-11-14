@@ -94,6 +94,22 @@ In native mode, supported KAPT and KSP2 requests also use Elide. Specialized
 processor options retain the stock worker fallback; legacy mode delegates all
 processing to the stock workers. Routing is automatic from the request payload.
 
+## Workers and parallelism
+
+`rules_kotlin` sends `KotlinCompile` requests to one multiplex worker. The shim
+handles those requests concurrently. By default it forwards each kotlinc compile
+to a warm `elide kotlinc --persistent_worker` process; Elide compiles one request
+at a time per process, so the shim keeps a pool of them, started on demand.
+
+| `register_elide_kotlin_toolchain` argument | Default | Effect |
+| --- | --- | --- |
+| `resident_worker` | `True` | Forward compiles to warm Elide processes. `False` starts `elide kotlinc` for every compile, which uses less memory and is somewhat slower. |
+| `resident_workers` | `0` | Most warm Elide processes, which bounds parallel Kotlin compiles. `0` uses the number of CPUs, up to 8. |
+
+A failed forward is retried as a one-shot compile, and the next request starts a
+fresh process. Setting `worker_record` uses a single process so the recording is
+one request stream.
+
 ## Native compiler and processor APIs
 
 `register_elide_kotlin_toolchain` defaults to `native_tools = True`, requiring
@@ -184,7 +200,7 @@ supported.
 Load path: `@rules_elide//elide/kotlin:toolchain.bzl`
 
 ```
-register_elide_kotlin_toolchain(name, elide, fallback_builder, native_tools = True, runtime_files = None, **kwargs)
+register_elide_kotlin_toolchain(name, elide, fallback_builder, resident_worker = True, resident_workers = 0, worker_record = "", native_tools = True, runtime_files = None, **kwargs)
 ```
 
 | Argument | Type | Description |
@@ -192,6 +208,9 @@ register_elide_kotlin_toolchain(name, elide, fallback_builder, native_tools = Tr
 | `name` | string | Base name for the generated targets (see target table above). |
 | `elide` | label | The `elide` binary, resolved via runfiles rlocation and passed as `--elide` to the shim. |
 | `fallback_builder` | label | Stock `rules_kotlin` KotlinBuilder, passed as `--fallback_builder` to the shim (e.g. `@rules_kotlin//src/main/kotlin:build`). |
+| `resident_worker` | `True` | Forward compiles to warm Elide processes; see [Workers and parallelism](#workers-and-parallelism). |
+| `resident_workers` | `0` | Most warm Elide processes; `0` uses the number of CPUs, up to 8. |
+| `worker_record` | `""` | Path to record forwarded requests to, for offline profile replay. |
 | `native_tools` | `True` | Elide 1.6.2+ native ABI, jdeps, KAPT, and KSP2; False retains legacy behavior. |
 | `runtime_files` | `None` | Extra launcher runfiles. Usually unnecessary: the launcher ships the full distribution (`lib/`, `conf/`) from the registered Elide toolchain when it is the same repository as `elide`, which remote execution needs. Use it for a bring-your-own binary with no matching toolchain. |
 | `**kwargs` | — | Forwarded to `define_kt_toolchain` (`language_version`, `api_version`, `jvm_target`, `experimental_use_abi_jars`, etc.). |

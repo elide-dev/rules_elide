@@ -47,7 +47,7 @@ exec "$PWD/{elide}" java -- -cp "{classpath}" elide.java.builder.Main \\
   --elide="$PWD/{elide}" \\
   --stock_java="$JAVA_HOME/bin/java" \\
   --stock_javabuilder="$PWD/{stock}" \\
-{jvm_lines}{log_line}  "$@"
+{jvm_lines}{log_line}{resident_line}{workers_line}{system_line}  "$@"
 """
 
 def _shell_quote(s):
@@ -69,6 +69,9 @@ def _launcher_impl(ctx):
         classpath = ":".join(["$here/%s_cp/%s" % (ctx.label.name, j.basename) for j in jars]),
         jvm_lines = "".join(["  " + _shell_quote("--stock_jvm_opt=" + o) + " \\\n" for o in ctx.attr.jvm_opts]),
         log_line = "  --log_routes \\\n" if ctx.attr.log_routes else "",
+        resident_line = "  --resident_worker \\\n" if ctx.attr.resident_worker else "",
+        system_line = "  --pass_system \\\n" if ctx.attr.pass_system else "",
+        workers_line = ("  --resident_workers=%d \\\n" % ctx.attr.resident_workers) if ctx.attr.resident_workers else "",
     )
     ctx.actions.write(output = launcher, content = content, is_executable = True)
     inputs = depset(
@@ -88,6 +91,9 @@ _elide_javabuilder_launcher = rule(
         "java_runtime": attr.label(mandatory = True, providers = [java_common.JavaRuntimeInfo]),
         "jvm_opts": attr.string_list(doc = "JVM options for the stock JavaBuilder (the toolchain's jvm_opts)."),
         "log_routes": attr.bool(default = False, doc = "Prefix each response with the route taken."),
+        "pass_system": attr.bool(default = False, doc = "Forward JavaBuilder's `--system` to `elide javac`."),
+        "resident_worker": attr.bool(default = True, doc = "Forward `elide javac` compiles to warm `elide javac --persistent_worker` processes."),
+        "resident_workers": attr.int(default = 0, doc = "Most resident Elide processes per JavaBuilder worker; 0 picks a default."),
         "shim": attr.label(mandatory = True, providers = [JavaInfo], cfg = _shim_build),
         "stock_javabuilder": attr.label(mandatory = True, allow_single_file = True),
     },
@@ -102,6 +108,9 @@ def elide_java_toolchain(
         exec_compatible_with = [],
         target_compatible_with = [],
         log_routes = False,
+        resident_worker = True,
+        resident_workers = 0,
+        pass_system = False,
         **kwargs):
     """Defines and declares a Java toolchain whose JavaBuilder compiles through Elide.
 
@@ -116,6 +125,18 @@ def elide_java_toolchain(
         exec_compatible_with: Execution platform constraints of the definition.
         target_compatible_with: Target platform constraints of the definition.
         log_routes: Prefix each compile's output with the route taken (debugging).
+        resident_worker: Forward `elide javac` compiles to warm `elide javac --persistent_worker`
+            processes, instead of starting Elide for every compile. A failed forward falls back to
+            a one-shot compile. Set False to always compile one-shot.
+        resident_workers: Most resident Elide processes each JavaBuilder worker keeps. One is used
+            per concurrent request. 0 uses the number of CPUs, up to 8. With
+            `javac_supports_multiplex_workers = False` Bazel runs several JavaBuilder workers
+            instead, each with a single resident process.
+        pass_system: Forward the toolchain's `--system` (its JDK class library) to `elide javac`.
+            Off by default: compiles then use the class library of the JDK embedded in Elide, which
+            avoids re-opening the system image on every compile (elide-dev/runtime#2986). Turn it on
+            when the toolchain's JDK is a different release than Elide's and code must compile
+            against that JDK's API.
         **kwargs: Forwarded to `default_java_toolchain` (javacopts, jvm_opts, java_runtime, ...).
     """
     settings = dict(configuration)
@@ -126,6 +147,9 @@ def elide_java_toolchain(
         java_runtime = settings["java_runtime"],
         jvm_opts = settings.get("jvm_opts", []),
         log_routes = log_routes,
+        resident_worker = resident_worker,
+        pass_system = pass_system,
+        resident_workers = resident_workers,
         shim = Label("//elide/java/builder:lib"),
         stock_javabuilder = settings["javabuilder"],
         tags = ["manual"],
@@ -140,8 +164,6 @@ def elide_java_toolchain(
     toolchain_kwargs["javabuilder"] = ":" + name + "_javabuilder"
     toolchain_kwargs["javabuilder_data"] = toolchain_kwargs.get("javabuilder_data", []) + [":" + name + "_javabuilder_inputs"]
 
-    # The shim handles one request at a time.
-    toolchain_kwargs.setdefault("javac_supports_multiplex_workers", False)
     default_java_toolchain(
         name = name,
         configuration = configuration,

@@ -171,7 +171,7 @@ jobs:
           disk-cache: ci-integration
           repository-cache: true
       - name: KotlinBuilder, JavaBuilder and native worker protocol tests
-        run: bazel test //tests/kotlin_builder:all //tests/java_builder:all //elide/private/ic_worker:worker_protocol_test --java_runtime_version=remotejdk_21 --tool_java_runtime_version=remotejdk_21
+        run: bazel test //tests/kotlin_builder:all //tests/java_builder:all //tests/worker:all //elide/private/ic_worker:worker_protocol_test --java_runtime_version=remotejdk_21 --tool_java_runtime_version=remotejdk_21
       - name: JavaBuilder shim e2e (java_library through elide javac)
         run: ./tools/verify_integrations.sh java_builder
       - name: JVM tools, metadata, and pruning

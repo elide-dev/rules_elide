@@ -48,6 +48,11 @@ if [[ "$suite" == java_builder || "$suite" == all ]]; then
       echo "java_library compiles were not routed through elide javac" >&2
       exit 1
     fi
+    if grep -q 'resident worker failed' "$log"; then
+      cat "$log" >&2
+      echo "elide javac compiles fell back from the resident worker to one-shot processes" >&2
+      exit 1
+    fi
     first="$(sha256sum "${jars[@]}")"
     compile "$@"
     if [[ "$first" != "$(sha256sum "${jars[@]}")" ]]; then

@@ -1,6 +1,9 @@
 package elide.kotlin.builder
 
 import com.google.devtools.build.lib.worker.WorkerProtocol.Input
+import elide.builder.worker.ResidentWorker
+import elide.builder.worker.ResidentPool
+import elide.builder.worker.WorkerLoop
 import java.io.File
 import java.io.FileOutputStream
 import java.nio.file.Files
@@ -25,28 +28,33 @@ object Main {
         // when //config/kotlinc:warn_builtin_plugin_rewrite=false.
         val quietPluginRewrite: Boolean = false,
         val nativeTools: Boolean = false,
+        // Most resident Elide processes to keep (`--resident_workers=<n>`); 0 picks a default.
+        val residentWorkers: Int = 0,
     )
 
     fun splitConfig(argv: List<String>): Pair<Config, List<String>> {
         var elide = ""; var fallback = ""; var resident = false; var record = ""
         var quietPluginRewrite = false
         var nativeTools = false
+        var residentWorkers = 0
         val rest = mutableListOf<String>()
         for (a in argv) when {
             a.startsWith("--elide=") -> elide = a.substringAfter("=")
             a.startsWith("--fallback_builder=") -> fallback = a.substringAfter("=")
             a == "--resident_worker" -> resident = true
+            a.startsWith("--resident_workers=") -> residentWorkers = a.substringAfter("=").toInt()
             a.startsWith("--worker_record=") -> record = a.substringAfter("=")
             a == "--quiet_plugin_rewrite" -> quietPluginRewrite = true
             a == "--native_tools" -> nativeTools = true
             else -> rest += a
         }
-        return Config(elide, fallback, resident, record, quietPluginRewrite, nativeTools) to rest
+        return Config(elide, fallback, resident, record, quietPluginRewrite, nativeTools, residentWorkers) to rest
     }
 
     // Probed once per elide binary (a worker serves one toolchain).
     private val probed = HashMap<String, Capabilities>()
 
+    @Synchronized
     private fun capabilities(elide: String): Capabilities =
         if (elide.isEmpty()) Capabilities.NONE else probed.getOrPut(elide) { Capabilities.probe(elide) }
 
@@ -54,7 +62,7 @@ object Main {
     internal fun handle(
         cfg: Config,
         rest: List<String>,
-        resident: ElideWorker? = null,
+        resident: ResidentPool? = null,
         inputs: List<Input> = emptyList(),
     ): Pair<Int, String> {
         val ff = rest.first { it.startsWith("--flagfile=") }.substringAfter("=")
@@ -116,7 +124,7 @@ object Main {
      */
     private fun compileCmds(
         cmds: List<List<String>>,
-        resident: ElideWorker?,
+        resident: ResidentPool?,
         inputs: List<Input>,
         wd: File,
     ): Pair<Int, String> {
@@ -140,15 +148,14 @@ object Main {
     fun main(argv: Array<String>) {
         val (cfg, rest) = splitConfig(argv.toList())
         if (rest.contains("--persistent_worker")) {
-            val stdin = System.`in`; val stdout = System.out
-            // Singleplex worker: requests are handled serially; we intentionally do not
-            // support multiplex or honor WorkRequest.cancel (rules_kotlin drives KotlinCompile singleplex).
-            // With `--resident_worker`, kotlinc compiles are forwarded to one warm
-            // `elide kotlinc --persistent_worker` (lazily created with the resolved elide path).
-            var resident: ElideWorker? = null
+            // Singleplex requests are handled serially and multiplex requests concurrently;
+            // WorkRequest.cancel is not honored. With `--resident_worker`, kotlinc compiles
+            // are forwarded to a pool of warm `elide kotlinc --persistent_worker` processes,
+            // created lazily with the resolved elide path and shared by every request.
+            var resident: ResidentPool? = null
+            val residentLock = Any()
             try {
-                while (true) {
-                    val wr = Worker.readRequest(stdin) ?: break
+                WorkerLoop.serve(System.`in`, System.out) { wr ->
                     val (cfg2, r) = splitConfig(wr.argumentsList)
                     val merged = Config(
                         cfg2.elide.ifEmpty { cfg.elide },
@@ -157,17 +164,22 @@ object Main {
                         cfg.record.ifEmpty { cfg2.record },
                         cfg.quietPluginRewrite || cfg2.quietPluginRewrite,
                         cfg.nativeTools || cfg2.nativeTools,
+                        cfg.residentWorkers,
                     )
-                    if (resident == null && merged.resident && merged.elide.isNotEmpty()) {
-                        // Record path: the `--worker_record=` startup flag (reaches the
-                        // worker), falling back to the env var for direct/replay runs.
-                        val recPath = merged.record.ifEmpty { System.getenv("ELIDE_WORKER_RECORD") ?: "" }
-                        val rec = if (recPath.isNotEmpty()) FileOutputStream(recPath) else null
-                        resident = ElideWorker(merged.elide, rec)
+                    val forward = synchronized(residentLock) {
+                        if (resident == null && merged.resident && merged.elide.isNotEmpty()) {
+                            // Record path: the `--worker_record=` startup flag (reaches the
+                            // worker), falling back to the env var for direct/replay runs.
+                            val recPath = merged.record.ifEmpty { System.getenv("ELIDE_WORKER_RECORD") ?: "" }
+                            val rec = if (recPath.isNotEmpty()) FileOutputStream(recPath) else null
+                            // A recording is one request stream, so it gets a single process.
+                            val size = if (rec != null) 1 else merged.residentWorkers.takeIf { it > 0 } ?: ResidentPool.defaultSize()
+                            resident = ResidentPool(size) { ResidentWorker(merged.elide, "kotlinc", rec) }
+                        }
+                        resident
                     }
-                    val (code, out) = runCatching { handle(merged, r, resident, wr.inputsList) }
+                    runCatching { handle(merged, r, forward, wr.inputsList) }
                         .getOrElse { 1 to (it.message ?: "error") }
-                    Worker.writeResponse(stdout, code, out, wr.requestId)
                 }
             } finally {
                 resident?.close() // clean stdin EOF → Elide exits (flushes any PGO profile)

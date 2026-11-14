@@ -19,6 +19,7 @@ object ElideJavac {
     /**
      * Builds the command. [errorProneJars] supplies Error Prone itself (rules_java bundles it in
      * JavaBuilder_deploy.jar); [extraSources] are `.java` files unpacked from `--source_jars`.
+     * [passSystem] forwards JavaBuilder's `--system` (the toolchain's JDK class library) to javac.
      */
     fun plan(
         req: Request,
@@ -27,6 +28,7 @@ object ElideJavac {
         extraSources: List<String>,
         sep: String,
         generatedSources: String? = null,
+        passSystem: Boolean = false,
     ): List<String> {
         val cmd = mutableListOf(elide, "javac", "--jar", req.output)
         req.depsProto?.let { cmd += listOf("--jdeps", it) }
@@ -36,7 +38,9 @@ object ElideJavac {
         val (opts, plugin) = if (plugins) errorProneArgs(req.javacopts) else req.javacopts to null
         cmd += opts
         when {
-            req.system != null -> cmd += listOf("--system", req.system)
+            // Without [passSystem] the compile uses the class library of the JDK embedded in Elide, which
+            // skips the per-compile cost of opening the toolchain's system image (elide-dev/runtime#2986).
+            req.system != null -> if (passSystem) cmd += listOf("--system", req.system)
             req.bootclasspath.isNotEmpty() -> cmd += listOf("-bootclasspath", req.bootclasspath.joinToString(sep))
         }
         if (req.classpath.isNotEmpty()) cmd += listOf("-classpath", req.classpath.joinToString(sep))
@@ -52,6 +56,13 @@ object ElideJavac {
         cmd += extraSources
         return cmd
     }
+
+    /**
+     * Worker-form args for a resident `elide javac --persistent_worker`: the command from [plan]
+     * without the leading `elide javac`, which is the resident process itself. The `--` separator
+     * stays; the worker uses it to split Elide options from javac arguments.
+     */
+    fun workerArgs(cmd: List<String>): List<String> = cmd.drop(2)
 
     /** Unpacks the `.java` entries of [jars] under [dir]; returns their paths. */
     fun extractSourceJars(jars: List<String>, dir: File): List<String> {
