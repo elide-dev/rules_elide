@@ -87,6 +87,13 @@ object Main {
         val genDir = if (req.generatedSourcesOutput != null) Files.createTempDirectory("elide-javabuilder-gensrc").toFile() else null
         try {
             val extra = srcDir?.let { ElideJavac.extractSourceJars(req.sourceJars, it) }.orEmpty()
+            if (req.sources.isEmpty() && extra.isEmpty()) {
+                // Source jars without Java sources (rules_kotlin passes Kotlin-only ones): javac has nothing to
+                // compile and rejects the request, while JavaBuilder writes its empty outputs.
+                val (stockCode, stockOut) = if (inputs != null) stock.forward(stockArgs, inputs) else stock.run(stockArgs, File("."))
+                val note = if (cfg.logRoutes) "[elide-javabuilder] STOCK: source jars hold no Java sources\n" else ""
+                return stockCode to (prefix + note + stockOut)
+            }
             File(req.output).parentFile?.mkdirs()
             val cmd = ElideJavac.plan(req, cfg.elide, cfg.errorProneJars, extra, File.pathSeparator, genDir?.path, cfg.passSystem)
             var note = ""

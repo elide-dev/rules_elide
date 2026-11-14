@@ -90,11 +90,26 @@ java_library(
     deps = [":labeled"],
 )
 
+# A source jar with no Java sources, as rules_kotlin passes for Kotlin-only source jars. JavaBuilder writes an
+# empty jar for it; so must the shim.
+genrule(
+    name = "kotlin_only_srcjar",
+    outs = ["kotlin_only.srcjar"],
+    cmd = "echo 'package k' > $(@D)/K.kt && $(location @bazel_tools//tools/zip:zipper) c $@ k/K.kt=$(@D)/K.kt",
+    tools = ["@bazel_tools//tools/zip:zipper"],
+)
+
+java_library(
+    name = "kotlin_only",
+    srcs = [":kotlin_only_srcjar"],
+)
+
 java_binary(
     name = "app",
     main_class = "app.App",
     runtime_deps = [
         ":app_lib",
+        ":kotlin_only",
         ":labeled_user",
     ],
 )
