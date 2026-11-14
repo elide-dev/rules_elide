@@ -31,7 +31,7 @@ These instructions apply to this repository, including nested example workspaces
 
 - Analysis only: `bazel test //tests:all --extra_toolchains=//tests:_test_elide_toolchain`.
 - Full root: `bazel test //... --java_runtime_version=remotejdk_21 --tool_java_runtime_version=remotejdk_21`.
-- Real fixtures: `./tools/verify_integrations.sh jvm|kotlin|python` (choose one,
+- Real fixtures: `./tools/verify_integrations.sh jvm|java_builder|kotlin|python|cc` (choose one,
   or use `all`). Never run execution tests with the stub toolchain.
 - Public API changes: update examples, `bzl_library`/Stardoc deps, and regenerate
   references with `./tools/update_docs.sh`. Do not hand-edit generated API tables.
