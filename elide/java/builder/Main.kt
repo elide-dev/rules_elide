@@ -103,6 +103,14 @@ object Main {
             req.nativeHeaderOutput?.let(Outputs::writeEmptyJar)
             req.manifestProto?.let(Outputs::writeEmptyManifestProto)
             val (depsCode, diagnostic) = StrictDeps.check(req)
+            if (diagnostic.isNotEmpty()) {
+                // `elide javac --jdeps` marks every jar it loads from as EXPLICIT, including jars reached only
+                // through annotations or supertypes, which JavaBuilder accepts (elide-dev/runtime#2987). The
+                // report cannot confirm a violation, so the stock JavaBuilder decides and writes the outputs.
+                val (stockCode, stockOut) = if (inputs != null) stock.forward(args, inputs) else stock.run(args, File("."))
+                val note = if (cfg.logRoutes) "[elide-javabuilder] STOCK: confirming a possible strict-deps violation\n" else ""
+                return stockCode to (prefix + note + stockOut)
+            }
             val timing = if (cfg.logRoutes) {
                 val done = System.nanoTime()
                 "[elide-javabuilder] timing: compile ${(compiled - started) / 1_000_000} ms, outputs and deps ${(done - compiled) / 1_000_000} ms\n"

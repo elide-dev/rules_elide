@@ -71,8 +71,30 @@ java_library(
     ],
 )
 
+java_library(
+    name = "stability",
+    srcs = ["src/stability/Stable.java"],
+)
+
+java_library(
+    name = "labeled",
+    srcs = ["src/labeled/Labeled.java"],
+    deps = [":stability"],
+)
+
+# Strict deps: `:stability` is on the classpath only as an indirect dependency, and the compiler loads it for
+# Labeled's annotation. JavaBuilder accepts that; so must the shim.
+java_library(
+    name = "labeled_user",
+    srcs = ["src/labeleduser/LabeledUser.java"],
+    deps = [":labeled"],
+)
+
 java_binary(
     name = "app",
     main_class = "app.App",
-    runtime_deps = [":app_lib"],
+    runtime_deps = [
+        ":app_lib",
+        ":labeled_user",
+    ],
 )

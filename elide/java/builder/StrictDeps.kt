@@ -4,7 +4,13 @@ import com.google.devtools.build.lib.view.proto.Deps
 import java.io.File
 import java.util.jar.JarFile
 
-/** JavaBuilder's strict-deps check over the `.jdeps` that `elide javac --jdeps` writes. */
+/**
+ * JavaBuilder's strict-deps check over the `.jdeps` that `elide javac --jdeps` writes.
+ *
+ * A reported violation is only a candidate: Elide records a jar as EXPLICIT when the compiler loaded a class
+ * from it for any reason, where JavaBuilder requires the source to name a type from it
+ * (elide-dev/runtime#2987). Callers confirm candidates with the stock JavaBuilder.
+ */
 object StrictDeps {
     /** Returns (exit code, diagnostic). */
     fun check(req: Request): Pair<Int, String> {
