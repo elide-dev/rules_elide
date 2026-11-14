@@ -9,9 +9,10 @@ register_elide_kotlin_toolchain(
     name = "elide_kt",
     api_version = "2.4",
     # TODO(e2e): platform-pinned label. The elide binary is exposed per-platform
-    # by @elide_toolchains as @elide_<os>_<cpu>//:bin/elide. This smoke test runs
-    # on linux/amd64. The e2e task should make this select() on the exec platform.
-    elide = "@elide_linux_amd64//:bin/elide",
+    # by @elide_toolchains as @elide_<os>_<cpu>//:elide (the binary plus its
+    # distribution as runfiles). This smoke test runs on linux/amd64. The e2e
+    # task should make this select() on the exec platform.
+    elide = "@elide_linux_amd64//:elide",
     experimental_use_abi_jars = True,
     fallback_builder = "@rules_kotlin//src/main/kotlin:build",
     jvm_target = "21",

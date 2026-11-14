@@ -1,0 +1,77 @@
+load("@rules_elide//elide:defs.bzl", "elide_kotlin_test")
+
+elide_kotlin_test(
+    name = "request_test",
+    srcs = ["RequestTest.kt"],
+    kotlinc_opts = ["-jvm-target=21"],
+    test_class = "elide.java.builder.RequestTest",
+    runtime_deps = [
+        "@kt_test_deps//:org_junit_platform_junit_platform_console_standalone",
+    ],
+    deps = [
+        "//elide/java/builder:lib",
+        "@kt_test_deps//:org_jetbrains_kotlin_kotlin_test",
+        "@kt_test_deps//:org_jetbrains_kotlin_kotlin_test_junit5",
+    ],
+)
+
+elide_kotlin_test(
+    name = "router_test",
+    srcs = ["RouterTest.kt"],
+    kotlinc_opts = ["-jvm-target=21"],
+    test_class = "elide.java.builder.RouterTest",
+    runtime_deps = [
+        "@kt_test_deps//:org_junit_platform_junit_platform_console_standalone",
+    ],
+    deps = [
+        "//elide/java/builder:lib",
+        "@kt_test_deps//:org_jetbrains_kotlin_kotlin_test",
+        "@kt_test_deps//:org_jetbrains_kotlin_kotlin_test_junit5",
+    ],
+)
+
+elide_kotlin_test(
+    name = "elide_javac_test",
+    srcs = ["ElideJavacTest.kt"],
+    kotlinc_opts = ["-jvm-target=21"],
+    test_class = "elide.java.builder.ElideJavacTest",
+    runtime_deps = [
+        "@kt_test_deps//:org_junit_platform_junit_platform_console_standalone",
+    ],
+    deps = [
+        "//elide/java/builder:lib",
+        "@kt_test_deps//:org_jetbrains_kotlin_kotlin_test",
+        "@kt_test_deps//:org_jetbrains_kotlin_kotlin_test_junit5",
+    ],
+)
+
+elide_kotlin_test(
+    name = "strict_deps_test",
+    srcs = ["StrictDepsTest.kt"],
+    kotlinc_opts = ["-jvm-target=21"],
+    test_class = "elide.java.builder.StrictDepsTest",
+    runtime_deps = [
+        "@kt_test_deps//:org_junit_platform_junit_platform_console_standalone",
+    ],
+    deps = [
+        "//elide/java/builder:lib",
+        "//elide/kotlin/builder/proto:deps_java_proto",
+        "@kt_test_deps//:org_jetbrains_kotlin_kotlin_test",
+        "@kt_test_deps//:org_jetbrains_kotlin_kotlin_test_junit5",
+    ],
+)
+
+elide_kotlin_test(
+    name = "outputs_test",
+    srcs = ["OutputsTest.kt"],
+    kotlinc_opts = ["-jvm-target=21"],
+    test_class = "elide.java.builder.OutputsTest",
+    runtime_deps = [
+        "@kt_test_deps//:org_junit_platform_junit_platform_console_standalone",
+    ],
+    deps = [
+        "//elide/java/builder:lib",
+        "@kt_test_deps//:org_jetbrains_kotlin_kotlin_test",
+        "@kt_test_deps//:org_jetbrains_kotlin_kotlin_test_junit5",
+    ],
+)

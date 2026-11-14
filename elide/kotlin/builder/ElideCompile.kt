@@ -91,6 +91,7 @@ object ElideCompile {
         extraSources: List<String> = emptyList(),
         usedDepsReport: String? = null,
         nativeTools: Boolean = true,
+        externalPlugins: Boolean = false,
     ): List<List<String>> {
         val cmds = mutableListOf<List<String>>()
         val sep = File.pathSeparator
@@ -173,6 +174,23 @@ object ElideCompile {
         for (opt in req.compilerPluginOptions) {
             kt += "-P"
             kt += "plugin:$opt"
+        }
+        // rules_kotlin 2.4's --plugins_payload. Builtin-duplicating jars are enabled through `--plugins=`
+        // above; other jars load as -Xplugin only when Elide supports external plugins (Router otherwise
+        // falls back). Options apply either way, as `-P plugin:<id>:<key>=<value>`.
+        for (plugin in req.payloadPlugins.filter { it.compiles }) {
+            if (externalPlugins) {
+                for (jar in plugin.classpath) {
+                    if (jar in rewrittenJars) continue
+                    val flag = "-Xplugin=$jar"
+                    if (flag !in req.passthroughFlags && flag !in kt) kt += flag
+                }
+            }
+            for (option in plugin.options) {
+                val o = option as? Map<*, *> ?: continue
+                kt += "-P"
+                kt += "plugin:${plugin.id}:${o["key"]}=${o["value"] ?: ""}"
+            }
         }
         // Requested Kotlin api/language version (#8); without these elide kotlinc
         // falls back to its built-in default (warns + can change semantics).

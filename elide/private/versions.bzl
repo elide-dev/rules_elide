@@ -151,6 +151,12 @@ ELIDE_VERSIONS = {
         ("macos", "arm64"): "sha256-jT2svgXa+3vXpuWNLwqvm0D+hGNNIpXADvbILriQffI=",
         ("windows", "amd64"): "sha256-mwroU519ot718Je2+GkLNx8PKty/oxvHds+Pae40QXQ=",
     },
+    "1.6.3+20261111": {
+        ("linux", "amd64"): "sha256-XpNUcMR2nVsxT/KtCvPJkSlWndNLKYC0878qzQ1F0GQ=",
+        ("linux", "arm64"): "sha256-4MeVT0CJxl9G60rYl+VBSuaM6VNHGCT+lkjbc/od3uA=",
+        ("macos", "arm64"): "sha256-cJuojKZXSr2YjotZHokzQzCCpMvT05X7EDSTwfO1JeU=",
+        ("windows", "amd64"): "sha256-53lWiltaJWKUitnBBMJbwRmSB1bLa3WWgsbrxQQOwOE=",
+    },
 }
 
 # Optional Python overlays, matched to the base release; GitHub asset digests.
@@ -190,6 +196,12 @@ PYTHON_VERSIONS = {
         ("linux", "arm64"): "sha256-VWgvmJiHJiWswcfoBCPZoVkBzzvcZ/V/qnrSzew+4wc=",
         ("macos", "arm64"): "sha256-Oqj6mh6Ie9coVTjs529YmZzkwXc6rAznZUQ94oD6R4c=",
         ("windows", "amd64"): "sha256-Pa++D23Jq980fO9HTCkGxZXOv6A4V+6rKcu5HjtP8z0=",
+    },
+    "1.6.3+20261111": {
+        ("linux", "amd64"): "sha256-6M4WTxoyDkHtpgFCNHGGiojIRcAw8fJvJ9P/282K3tc=",
+        ("linux", "arm64"): "sha256-/j2q/Evwrp7L6G/J89oggd01vt2Zp95OEvvWuB6wI2Y=",
+        ("macos", "arm64"): "sha256-tx0klzlrolqLVZmfMfNF1ievOC+NfKNuPYJDCoW119w=",
+        ("windows", "amd64"): "sha256-/yqr60Q4TRhuBUtv8xXOgMpts9H/63FeI8F8CwXy0k0=",
     },
 }
 

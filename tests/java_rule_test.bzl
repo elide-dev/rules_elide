@@ -77,6 +77,15 @@ def _library_action_test_impl(ctx):
         javacs[0].env.get("ELIDE_BAZEL", ""),
         "ElideJavac must run with ELIDE_BAZEL=1 (Bazel signal for elide output; WHIPLASH#1131)",
     )
+
+    # javac's jar carries wall-clock timestamps (elide-dev/runtime#2955): its class jar is an intermediate,
+    # repacked by singlejar --normalize into the declared output.
+    normalize = [a for a in actions if a.mnemonic == "ElideNormalizeJar"]
+    asserts.equals(env, 1, len(normalize), "expected one ElideNormalizeJar action")
+    javac_jar = argv[argv.index("--jar") + 1]
+    asserts.true(env, javac_jar.endswith("_classes.jar"), "javac must write the intermediate class jar")
+    asserts.true(env, javac_jar in [f.path for f in normalize[0].inputs.to_list()], "normalization must read javac's jar")
+    asserts.true(env, "--normalize" in normalize[0].argv, "expected singlejar --normalize")
     return analysistest.end(env)
 
 _library_action_test = analysistest.make(_library_action_test_impl)

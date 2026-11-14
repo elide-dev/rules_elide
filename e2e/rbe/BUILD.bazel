@@ -6,6 +6,8 @@ load(
     "elide_kotlin_library",
     "elide_kotlin_test",
 )
+load("@rules_elide//elide/kotlin:toolchain.bzl", "register_elide_kotlin_toolchain")
+load("@rules_kotlin//kotlin:jvm.bzl", "kt_jvm_library")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -66,4 +68,47 @@ elide_kotlin_test(
         ":kt_lib",
         "@maven//:org_junit_jupiter_junit_jupiter_api",
     ],
+)
+
+# rules_kotlin's kt_jvm_library compiled through the Elide KotlinBuilder shim.
+# The shim runs on `elide java`, which needs the distribution's lib/ and conf/
+# on the executor: `@elide_<os>_<cpu>//:elide` carries them as runfiles, while
+# the bare `:bin/elide` file would fail with "Error loading java.security file".
+[config_setting(
+    name = "exec_" + platform,
+    constraint_values = constraints,
+) for platform, constraints in {
+    "linux_amd64": [
+        "@platforms//os:linux",
+        "@platforms//cpu:x86_64",
+    ],
+    "linux_arm64": [
+        "@platforms//os:linux",
+        "@platforms//cpu:aarch64",
+    ],
+    "macos_arm64": [
+        "@platforms//os:macos",
+        "@platforms//cpu:aarch64",
+    ],
+}.items()]
+
+register_elide_kotlin_toolchain(
+    name = "elide_kt",
+    api_version = "2.4",
+    # The launcher is built for the execution platform, so this selects the
+    # executor's distribution.
+    elide = select({
+        ":exec_linux_amd64": "@elide_linux_amd64//:elide",
+        ":exec_linux_arm64": "@elide_linux_arm64//:elide",
+        ":exec_macos_arm64": "@elide_macos_arm64//:elide",
+    }),
+    experimental_use_abi_jars = True,
+    fallback_builder = "@rules_kotlin//src/main/kotlin:build",
+    jvm_target = "21",
+    language_version = "2.4",
+)
+
+kt_jvm_library(
+    name = "kt_builder_lib",
+    srcs = ["sample/BuilderGreeting.kt"],
 )

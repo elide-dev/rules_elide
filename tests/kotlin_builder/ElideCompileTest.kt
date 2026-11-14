@@ -253,4 +253,20 @@ class ElideCompileTest {
         assertEquals(0, code)
         assertTrue(out.contains("ok"))
     }
+
+    @Test fun payloadPluginsBecomeXpluginAndOptions() {
+        val allOpen = PayloadPlugin("org.jetbrains.kotlin.allopen", listOf("x/kotlin-allopen-compiler-plugin-embeddable.jar"),
+            listOf(mapOf("key" to "preset", "value" to "spring")), listOf("PLUGIN_PHASE_COMPILE"))
+        val serialization = PayloadPlugin("org.jetbrains.kotlinx.serialization",
+            listOf("x/kotlin-serialization-compiler-plugin-embeddable.jar"), emptyList(), listOf("PLUGIN_PHASE_COMPILE"))
+        val stubsOnly = PayloadPlugin("stubs.only", listOf("x/stubs.jar"), emptyList(), listOf("PLUGIN_PHASE_STUBS"))
+        val req = CompileRequest(output = "out.jar", sources = listOf("A.kt"), payloadPlugins = listOf(allOpen, serialization, stubsOnly))
+        val kt = ElideCompile.plan(req, elidePath = "/bin/elide", externalPlugins = true).first { it.contains("kotlinc") }
+        assertTrue(kt.hasAll("-Xplugin=x/kotlin-allopen-compiler-plugin-embeddable.jar", "-P", "plugin:org.jetbrains.kotlin.allopen:preset=spring"))
+        assertTrue("--plugins=serialization" in kt)
+        assertTrue("-Xplugin=x/kotlin-serialization-compiler-plugin-embeddable.jar" !in kt)
+        assertTrue("-Xplugin=x/stubs.jar" !in kt)
+        val withoutCapability = ElideCompile.plan(req, elidePath = "/bin/elide").first { it.contains("kotlinc") }
+        assertTrue(withoutCapability.none { it.startsWith("-Xplugin=x/kotlin-allopen") })
+    }
 }

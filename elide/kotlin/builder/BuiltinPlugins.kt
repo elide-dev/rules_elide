@@ -32,7 +32,7 @@ object BuiltinPlugins {
     internal fun basename(path: String): String =
         path.substringAfterLast('/').substringAfterLast('\\')
 
-    private fun builtinFor(jar: String): String? {
+    internal fun builtinFor(jar: String): String? {
         val base = basename(jar)
         for ((needle, name) in MAP) {
             if (needle in base) return name
@@ -53,7 +53,8 @@ object BuiltinPlugins {
             .filter { it.startsWith("-Xplugin=") }
             .map { it.removePrefix("-Xplugin=") }
         val byJar = LinkedHashMap<String, Rewrite>()
-        for (jar in req.compilerPluginClasspath + passthroughJars) {
+        val payloadJars = req.payloadPlugins.filter { it.compiles }.flatMap { it.classpath }
+        for (jar in req.compilerPluginClasspath + passthroughJars + payloadJars) {
             val name = builtinFor(jar) ?: continue
             byJar.putIfAbsent(jar, Rewrite(jar, name))
         }

@@ -126,7 +126,8 @@ launcher templates are POSIX `sh` only. See `Roadmap` below.
 `reproducible = True`).
 
 The default Elide version is **1.6.2**. Pins also include 1.6.0, 1.6.1,
-1.6.3, and the 1.6.2 nightlies dated 20261102 and 20261103.
+1.6.3, the 1.6.2 nightlies dated 20261102 and 20261103, and the 1.6.3
+nightly dated 20261111.
 
 ## Python overlays
 
@@ -136,7 +137,7 @@ Enable the matching Python runtime when installing a pinned release:
 elide.install(version = "1.6.2", python = True)
 ```
 
-Python overlays are pinned for 1.6.0, 1.6.1, 1.6.2, and the supported 1.6.2
+Python overlays are pinned for 1.6.0, 1.6.1, 1.6.2, the 1.6.3 nightly, and the supported 1.6.2
 nightlies on all four release platforms. The overlay is verified separately and
 extracted after the base archive, replacing its executable and adding Python
 resources and the component marker. Missing overlay pins fail during module

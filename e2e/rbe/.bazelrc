@@ -50,3 +50,7 @@ common:remote --config=rbe
 
 # Local user overrides (incl. the BuildBuddy API key — keep out of git).
 try-import %workspace%/user.bazelrc
+
+# rules_kotlin (for the KotlinBuilder target) pulls rules_android, whose SDK
+# extension validates any ANDROID_HOME it finds; empty, it stubs harmlessly.
+common --repo_env=ANDROID_HOME=

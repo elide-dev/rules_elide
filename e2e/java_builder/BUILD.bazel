@@ -1,0 +1,78 @@
+load("@rules_elide//elide/java:toolchain.bzl", "elide_java_toolchain")
+load("@rules_java//java:defs.bzl", "java_binary", "java_library", "java_plugin")
+
+# java_library/java_binary compile through rules_elide's JavaBuilder shim. This toolchain has no Error Prone
+# javacopts, so plain compiles take the `elide javac` route; `log_routes` prefixes each action's output with
+# the route taken.
+[config_setting(
+    name = "exec_" + platform,
+    constraint_values = constraints,
+) for platform, constraints in {
+    "linux_amd64": [
+        "@platforms//os:linux",
+        "@platforms//cpu:x86_64",
+    ],
+    "linux_arm64": [
+        "@platforms//os:linux",
+        "@platforms//cpu:aarch64",
+    ],
+    "macos_arm64": [
+        "@platforms//os:macos",
+        "@platforms//cpu:aarch64",
+    ],
+}.items()]
+
+elide_java_toolchain(
+    name = "elide_java",
+    elide = select({
+        ":exec_linux_amd64": "@elide_linux_amd64//:elide",
+        ":exec_linux_arm64": "@elide_linux_arm64//:elide",
+        ":exec_macos_arm64": "@elide_macos_arm64//:elide",
+    }),
+    log_routes = True,
+    # rules_java's default javacopts without the Error Prone ones (`-Xep…`), which need Elide's javacPlugins.
+    misc = [
+        "-XDskipDuplicateBridges=true",
+        "-g",
+        "-parameters",
+    ],
+)
+
+java_library(
+    name = "greeter",
+    srcs = ["src/greeter/Greeter.java"],
+)
+
+java_library(
+    name = "greet",
+    srcs = ["src/greet/Greet.java"],
+)
+
+java_library(
+    name = "greeting_processor",
+    srcs = ["src/processor/GreetingProcessor.java"],
+)
+
+# Runs through `elide javac` (Elide reports javaAnnotationProcessing); its generated source jar is the
+# --generated_sources_output JavaBuilder must produce.
+java_plugin(
+    name = "greeting",
+    processor_class = "processor.GreetingProcessor",
+    deps = [":greeting_processor"],
+)
+
+java_library(
+    name = "app_lib",
+    srcs = ["src/app/App.java"],
+    plugins = [":greeting"],
+    deps = [
+        ":greet",
+        ":greeter",
+    ],
+)
+
+java_binary(
+    name = "app",
+    main_class = "app.App",
+    runtime_deps = [":app_lib"],
+)

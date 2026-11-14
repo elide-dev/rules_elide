@@ -44,6 +44,12 @@ object Main {
         return Config(elide, fallback, resident, record, quietPluginRewrite, nativeTools) to rest
     }
 
+    // Probed once per elide binary (a worker serves one toolchain).
+    private val probed = HashMap<String, Capabilities>()
+
+    private fun capabilities(elide: String): Capabilities =
+        if (elide.isEmpty()) Capabilities.NONE else probed.getOrPut(elide) { Capabilities.probe(elide) }
+
     /** Handle one unit of work. Returns (exitCode, capturedOutput). */
     internal fun handle(
         cfg: Config,
@@ -54,7 +60,10 @@ object Main {
         val ff = rest.first { it.startsWith("--flagfile=") }.substringAfter("=")
         val req = Flagfile.parse(Flagfile.readTokens(Paths.get(ff)))
         val wd = File(".")
-        if (Router.route(req, cfg.nativeTools).route == Route.FALLBACK) return Fallback.run(cfg.fallback, ff, wd)
+        val caps = capabilities(cfg.elide)
+        if (Router.route(req, cfg.nativeTools, caps.kotlinCompilerPlugins).route == Route.FALLBACK) {
+            return Fallback.run(cfg.fallback, ff, wd)
+        }
 
         // -Xplugin jars duplicating an Elide builtin are rewritten to `--plugins=`
         // in ElideCompile.plan; surface that once as a Bazel `[warning]` (unless
@@ -74,7 +83,7 @@ object Main {
         }
         try {
             val extraSources = srcJarDir?.let { ElideCompile.extractSourceJars(req.sourceJars, it) } ?: emptyList()
-            val cmds = ElideCompile.plan(req, cfg.elide, extraSources, usedReport?.path, cfg.nativeTools)
+            val cmds = ElideCompile.plan(req, cfg.elide, extraSources, usedReport?.path, cfg.nativeTools, caps.kotlinCompilerPlugins)
             val (code, compileOut) = compileCmds(cmds, resident, inputs, wd)
             val out = rewriteWarning + compileOut
             if (code == 0 && !cfg.nativeTools) req.jdeps?.let { jdeps ->
