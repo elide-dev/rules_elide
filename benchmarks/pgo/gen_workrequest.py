@@ -64,6 +64,35 @@ def fields(data):
         yield tag >> 3, value
 
 
+def encode(decoded):
+    """Re-serialize `fields` output: bytes as length-delimited, ints as varints."""
+    return b"".join(_field(n, v) if isinstance(v, bytes) else _varint(n * 8) + _varint(v)
+                    for n, v in decoded)
+
+
+def read_frame(stream):
+    """Read one length-delimited message body from a binary stream; None at EOF."""
+    size, shift = 0, 0
+    while True:
+        byte = stream.read(1)
+        if not byte:
+            if shift:
+                raise ValueError("truncated protobuf varint")
+            return None
+        size |= (byte[0] & 127) << shift
+        shift += 7
+        if byte[0] < 128:
+            break
+    body = stream.read(size)
+    if len(body) != size:
+        raise ValueError("truncated protobuf message")
+    return body
+
+
+def frame(body):
+    return _varint(len(body)) + body
+
+
 def check_responses(data, expected):
     """Fail on compiler errors, cancellation, truncated streams, or lost replies."""
     offset, count = 0, 0

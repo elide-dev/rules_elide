@@ -209,6 +209,7 @@ def main():
     parser.add_argument("--scenarios", nargs="+", choices=SCENARIOS, default=None)
     parser.add_argument("--output", type=Path, default=REPO / "benchmarks/results/incremental")
     parser.add_argument("--distdir", action="append", default=[])
+    parser.add_argument("--elide-local-path", type=Path, help="Use this extracted Elide distribution instead of the pinned download (see pgo/capture.py)")
     parser.add_argument("--cold-server", action="store_true", help="Shut down Bazel before each timed build; preserves disk outputs and downloads")
     args = parser.parse_args()
     production = None
@@ -254,7 +255,7 @@ def main():
               "jvm_rule_versions": dict(re.findall(r'bazel_dep\(name = "(rules_java|rules_kotlin)", version = "([^"]+)"', (REPO / "benchmarks/MODULE.bazel").read_text())),
               "isolated_mode_servers": True,
               "java_release": 21,
-              "parameters": vars(args) | {"output": str(output)}, "results": []}
+              "parameters": {k: str(v) if isinstance(v, Path) else v for k, v in vars(args).items()} | {"output": str(output)}, "results": []}
     report["cache_conditions"] = {
         "downloads_and_filesystem": "warm",
         "timed_server": "fresh" if args.cold_server else "warm",
@@ -273,6 +274,10 @@ def main():
         work = Path(directory)
         command = [bazel, "--output_base=" + str(work / "cache")]
         module = (REPO / "benchmarks/MODULE.bazel").read_text().replace('path = ".."', 'path = ' + json.dumps(str(REPO)))
+        if args.elide_local_path:
+            module = commons_lang_fixture.replace_once(
+                module, 'elide.install(channel = "nightly")',
+                "elide.use(local_path = " + json.dumps(str(args.elide_local_path.resolve())) + ")")
         if args.kotlin_builder:
             module += '\nregister_toolchains("//:stock_kotlin")\n'
             root_module = (REPO / "MODULE.bazel").read_text()
