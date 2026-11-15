@@ -103,7 +103,7 @@ def package(record, output, substitutions):
 def main():
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--elide-dist", type=Path, required=True)
-    parser.add_argument("--output", type=Path, required=True, help="Case directory to create; <output>.tar.gz is written beside it")
+    parser.add_argument("--output", type=Path, required=True, help="Case directory to create; <output>.tar.zst is written beside it")
     workload = parser.add_mutually_exclusive_group(required=True)
     workload.add_argument("--commons-lang", type=Path, help="Commons Lang checkout (Java)")
     workload.add_argument("--kotlin-builder", action="store_true", help="This checkout's KotlinBuilder module (Kotlin)")
@@ -143,7 +143,7 @@ def main():
         # Arguments that still name this machine, and inputs that were not captured.
         "absolute_paths": absolute, "missing_inputs": missing,
     }, indent=2) + "\n")
-    with tarfile.open(str(output) + ".tar.gz", "w:gz") as archive:
+    with tarfile.open(str(output) + ".tar.zst", "w:zst", level=19) as archive:  # Python 3.14+
         archive.add(output, arcname=output.name)
     for stream in streams:
         print(f"{stream['name']}: {stream['requests']} requests")

@@ -59,9 +59,28 @@ benchmarks/pgo/capture.py --elide-dist DIST --output /tmp/cases/kotlin --kotlin-
 python3 /tmp/cases/java/replay.py --elide INSTRUMENTED/bin/elide --profiles PROFILES
 ```
 
+Captured cases are committed under `cases/` as Git LFS objects, so training
+does not need a capture first:
+
+```bash
+git lfs pull --include 'benchmarks/pgo/cases/*'
+tar --zstd -xf benchmarks/pgo/cases/java.tar.zst -C /tmp
+python3 /tmp/java/replay.py --elide INSTRUMENTED/bin/elide --profiles PROFILES
+```
+
+| case | rules | workload |
+|------|-------|----------|
+| `java` | `elide_java_library` | Apache Commons Lang |
+| `java-shim` | `java_library` through the `JavaBuilder` shim | Apache Commons Lang |
+| `kotlin` | `elide_kotlin_library` | this repository's KotlinBuilder sources |
+| `kotlin-shim` | `kt_jvm_library` through the `KotlinBuilder` shim | this repository's KotlinBuilder sources |
+
+Each archive's `manifest.json` records the Elide version, rules_elide commit
+and workload revision it was captured from.
+
 Capture runs `incremental_matrix.py` (clean build, then every edit scenario)
 with `bin/elide` replaced by `record_proxy.py`. Each case is a directory, also
-written as `<output>.tar.gz`:
+written as `<output>.tar.zst` (capture needs Python 3.14 for zstd):
 
 | path | contents |
 |------|----------|
