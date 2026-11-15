@@ -76,7 +76,9 @@ python3 /tmp/java/replay.py --elide INSTRUMENTED/bin/elide --profiles PROFILES
 | `kotlin-shim` | `kt_jvm_library` through the `KotlinBuilder` shim | this repository's KotlinBuilder sources |
 
 Each archive's `manifest.json` records the Elide version, rules_elide commit
-and workload revision it was captured from.
+and workload revision it was captured from. Profiles are named
+`<case>-<tool>-worker.iprof`, so all four cases can share one `--profiles`
+directory; the shim cases each add a `kotlinc` stream.
 
 Capture runs `incremental_matrix.py` (clean build, then every edit scenario)
 with `bin/elide` replaced by `record_proxy.py`. Each case is a directory, also

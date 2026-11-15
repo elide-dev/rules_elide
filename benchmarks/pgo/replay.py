@@ -10,7 +10,8 @@ with that request's inputs restored first. Any failed compile fails the replay.
     python3 replay.py --elide /abs/path/to/bin/elide [--loops 3] [--profiles DIR]
 
 With `--profiles`, the binary must be PGO-instrumented: each stream's
-`default.iprof` is collected as `<DIR>/<stream>-worker.iprof`.
+`default.iprof` is collected as `<DIR>/<case>-<stream>-worker.iprof`, where
+`<case>` is the case directory's name (`java-shim-javac-worker.iprof`).
 
 This file and gen_workrequest.py are copied into every case, so a case replays
 with nothing but Python 3 and the Elide binary.
@@ -156,7 +157,7 @@ def main():
                 profile = root / "default.iprof"
                 if not profile.is_file() or not profile.stat().st_size:
                     raise SystemExit(f"{stream['name']}: no default.iprof; is {args.elide} PGO-instrumented?")
-                shutil.copyfile(profile, args.profiles / f"{stream['name']}-worker.iprof")
+                shutil.copyfile(profile, args.profiles / f"{case.name}-{stream['name']}-worker.iprof")
     finally:
         if not args.work:
             shutil.rmtree(work, ignore_errors=True)
