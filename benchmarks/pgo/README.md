@@ -66,7 +66,7 @@ written as `<output>.tar.gz`:
 | path | contents |
 |------|----------|
 | `streams/<tool>.bin` | every WorkRequest sent to that tool's workers, in order |
-| `cas/<digest>` | each input file version those requests read |
+| `cas/<digest>` | each input file version those requests' arguments name |
 | `manifest.json` | streams, Elide version, rules_elide commit, workload revision |
 | `replay.py`, `gen_workrequest.py` | the replay; needs only Python 3 |
 
@@ -84,5 +84,10 @@ makes replay a Bazel-free measure of warm worker throughput.
   after changing how compile actions are built.
 - Capture fails if any argument still names the capturing machine or an input
   was not captured; `manifest.json` lists them.
-- Only the native rules are captured. The `JavaBuilder` and `KotlinBuilder`
-  shims send differently shaped requests and have no case yet.
+- Inputs that no argument names are not stored either. The shims forward every
+  builder input (whole JDKs, the stock Kotlin compiler) with each request; the
+  compiler cannot reach a file it was never pointed at.
+- Add `--modes elide_shim` to capture the `JavaBuilder`/`KotlinBuilder` shims:
+  the same workloads built as stock `java_library`/`kt_jvm_library` targets
+  through the Elide toolchains. Those cases also hold the `kotlinc` requests
+  that compile the shims themselves.

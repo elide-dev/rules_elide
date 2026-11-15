@@ -23,7 +23,10 @@ SCENARIOS = (
     "public_module_api", "multi_file_body", "multi_module_body",
     "multi_module_api", "unused_dependency_api", "inline_or_constant",
 )
-MODES = ("vanilla", "vanilla_abi", "elide_default", "elide", "elide_abi", "elide_pruned", "elide_incremental", "elide_fused", "elide_fused_pruned", "elide_hybrid", "elide_selective", "elide_parallel")
+MODES = ("vanilla", "vanilla_abi", "elide_shim", "elide_default", "elide", "elide_abi", "elide_pruned", "elide_incremental", "elide_fused", "elide_fused_pruned", "elide_hybrid", "elide_selective", "elide_parallel")
+# Modes that build stock java_library/kt_jvm_library targets. `elide_shim` compiles them through
+# rules_elide's JavaBuilder/KotlinBuilder toolchains instead of the stock builders.
+STOCK_RULES = ("vanilla", "vanilla_abi", "elide_shim")
 COMPILERS = {"Javac", "KotlinCompile", "ElideJavac", "ElideKotlinc"}
 
 
@@ -87,7 +90,7 @@ def fixture(work, language, mode, size, fanout):
     extension = "java" if language == "java" else "kt"
     rule = "java_library" if language == "java" else "kt_jvm_library"
     load = "@rules_java//java:defs.bzl" if language == "java" else "@rules_kotlin//kotlin:jvm.bzl"
-    if mode not in ("vanilla", "vanilla_abi"):
+    if mode not in STOCK_RULES:
         rule = f"elide_{'java' if language == 'java' else 'kotlin'}_library"
         load = "@rules_elide//elide:defs.bzl"
     sources = {}
@@ -97,7 +100,7 @@ def fixture(work, language, mode, size, fanout):
         directory.mkdir(exist_ok=True)
         build = directory / "BUILD.bazel"
         prefix = f'load("{load}", "{rule}")\npackage(default_visibility=["//visibility:public"])\n'
-        options = ", javac_opts=[\"--release\", \"21\"]" if language == "java" and mode != "vanilla" else ""
+        options = ", javac_opts=[\"--release\", \"21\"]" if language == "java" and mode not in STOCK_RULES else ""
         if mode == "elide_hybrid":
             options += ', abi_mode="' + ("separate" if package == "core" else "combined") + '"'
         if mode == "elide_selective":
@@ -117,6 +120,19 @@ def fixture(work, language, mode, size, fanout):
     target("app", "app", {"App": " + ".join(f"clients.Client{i}.value()" for i in range(fanout))},
            [f"//clients:client{i}" for i in range(fanout)])
     return sources
+
+
+def shim_toolchains(language, elide):
+    """Root BUILD and MODULE text that route stock rules through the Elide shims."""
+    if language == "java":
+        return (f'''load("@rules_elide//elide/java:toolchain.bzl", "elide_java_toolchain")
+elide_java_toolchain(name="elide_java", elide="{elide}", source_version="21", target_version="21",
+    misc=["-XDskipDuplicateBridges=true", "-g", "-parameters"])
+''', 'register_toolchains("//:elide_java_definition")\n')
+    return (f'''load("@rules_elide//elide/kotlin:toolchain.bzl", "register_elide_kotlin_toolchain")
+register_elide_kotlin_toolchain(name="elide_kt", elide="{elide}", jvm_target="21",
+    fallback_builder="@rules_kotlin//src/main/kotlin:build", experimental_use_abi_jars=True)
+''', 'register_toolchains("//:elide_kt")\n')
 
 
 def mutate(sources, scenario, language, nonce):
@@ -278,12 +294,16 @@ def main():
             module = commons_lang_fixture.replace_once(
                 module, 'elide.install(channel = "nightly")',
                 "elide.use(local_path = " + json.dumps(str(args.elide_local_path.resolve())) + ")")
+        # The shims take the execution platform's Elide repository by name.
+        machine = {"x86_64": "amd64", "aarch64": "arm64"}.get(platform.machine().lower(), platform.machine().lower())
+        elide_repo = "elide_" + {"darwin": "macos"}.get(platform.system().lower(), platform.system().lower()) + "_" + machine
+        module += f'\nuse_repo(elide, "{elide_repo}")\n'
         if args.kotlin_builder:
             module += '\nregister_toolchains("//:stock_kotlin")\n'
             root_module = (REPO / "MODULE.bazel").read_text()
             report["protocol_rule_versions"] = dict(re.findall(r'bazel_dep\(name = "(protobuf)", version = "([^"]+)"', root_module))
             module += "\n" + "\n".join(re.findall(r'^bazel_dep\(name = "protobuf"[^\n]+', root_module, re.M)) + "\n"
-        (work / "MODULE.bazel").write_text(module)
+        (work / "MODULE.bazel").write_text(module)  # rewritten per mode below
         (work / ".bazelversion").write_text((REPO / ".bazelversion").read_text())
         common = ["--disk_cache=", "--remote_cache=", "--remote_executor=", "--jobs=4",
                   "--java_runtime_version=remotejdk_21", "--tool_java_runtime_version=remotejdk_21",
@@ -308,16 +328,23 @@ def main():
                     run(["clean"], output / "clean.log")
                     for package in ("core", "spare", "facade", "clients", "app", "protocol"):
                         shutil.rmtree(work / package, ignore_errors=True)
+                    root_build = work / "BUILD.bazel"
+                    root_build.unlink(missing_ok=True)
                     sources = fixture(work, language, mode, 3 if production is not None else args.sources, args.fanout)
                     if production is not None:
                         sources = workload.install(work, sources, production, args.fanout)
+                    shim_build, shim_module = shim_toolchains(language, f"@{elide_repo}//:elide") if mode == "elide_shim" else ("", "")
+                    if shim_build:
+                        root_build.write_text((root_build.read_text() if root_build.exists() else "") + shim_build)
+                    # Toolchains registered first win, so the shim goes ahead of everything else.
+                    (work / "MODULE.bazel").write_text(module.replace("register_toolchains(", shim_module + "register_toolchains(", 1))
                     flags = list(common)
                     if args.commons_lang and mode == "vanilla":
                         # Upstream builds with javac, without Bazel's extra Error Prone policy.
                         flags.append("--javacopt=-XepDisableAllChecks")
                     if mode == "vanilla_abi":
                         flags.append("--define=experimental_use_abi_jars=1")
-                    if mode.startswith("elide") and mode != "elide_default":
+                    if mode.startswith("elide") and mode not in ("elide_default", "elide_shim"):
                         # Pin every setting a mode is defined by, so its meaning does not move with
                         # the ruleset's defaults. `elide_default` passes none and measures the defaults.
                         config = "javac" if language == "java" else "kotlinc"
@@ -376,9 +403,9 @@ def main():
                                 raise AssertionError(f"No-op recompiled targets: {compiled}")
                             if scenario != "no_op" and not compiled:
                                 raise AssertionError(f"Edit compiled no targets: {stem}")
-                            if production is not None and mode not in ("elide", "vanilla") and scenario in ("body", "private_member", "multi_file_body") and compiled != ["//core:core"]:
+                            if production is not None and mode not in ("elide", "vanilla", "elide_shim") and scenario in ("body", "private_member", "multi_file_body") and compiled != ["//core:core"]:
                                 raise AssertionError(f"Implementation edit escaped the library ABI boundary: {compiled}")
-                            if args.commons_lang and mode == "vanilla" and scenario in ("body", "private_member", "multi_file_body") and compiled != ["//core:core"]:
+                            if args.commons_lang and mode in STOCK_RULES and scenario in ("body", "private_member", "multi_file_body") and compiled != ["//core:core"]:
                                 raise AssertionError(f"Implementation edit escaped the library ABI boundary: {compiled}")
                             if index >= args.warmups:
                                 row["samples"].append({"seconds": elapsed, "compile_targets": compiled,

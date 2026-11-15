@@ -56,6 +56,9 @@ class CaseTest(unittest.TestCase):
         (root / "bazel-out/bin").mkdir(parents=True)
         (root / "bazel-out/deep").mkdir()
         (root / "external").mkdir()
+        jdk = root / "external/rules_java++toolchains+remotejdk21_linux/lib"
+        jdk.mkdir(parents=True)
+        (jdk / "modules").write_text("a stock JDK image")
         (root / "external/elide").symlink_to(self.work / "wrapped")
         process = subprocess.Popen([str(self.work / "wrapped/bin/elide"), "javac", "--persistent_worker"],
                                    cwd=root, stdin=subprocess.PIPE, stdout=subprocess.PIPE)
@@ -80,8 +83,9 @@ class CaseTest(unittest.TestCase):
 
     def test_replay_restores_the_inputs_each_request_saw(self):
         tool = ("external/elide/lib/tool.jar", b"t")
+        jdk = ("external/rules_java++toolchains+remotejdk21_linux/lib/modules", b"j")
         root, replies = self.record([
-            (request(["A.java", "bazel-out/bin/a.out"], [("A.java", b"1"), tool]), {"A.java": "first"}),
+            (request(["A.java", "bazel-out/bin/a.out"], [("A.java", b"1"), tool, jdk]), {"A.java": "first"}),
             (request(["A.java", "bazel-out/bin/a.out"], [("A.java", b"2"), tool]), {"A.java": "second"}),
             (request(["external/elide/lib/tool.jar", DEEP], [tool]), {}),
         ])
@@ -90,9 +94,11 @@ class CaseTest(unittest.TestCase):
         self.assertEqual((absolute, missing), ([], []))
         self.assertEqual([(s["name"], s["requests"]) for s in streams], [("javac", 3)])
         # Distribution files are neither stored nor listed as inputs, and are relocated in arguments.
-        self.assertEqual(sorted(p.name for p in (case / "cas").iterdir()), ["31", "32"])
+        # An input no argument names (a forwarded JDK) stays listed but is not stored.
         with (case / "streams/javac.bin").open("rb") as stream:
             bodies = [read_frame(stream) for _ in range(3)]
+        self.assertEqual(sorted(p.name for p in (case / "cas").iterdir()), ["31", "32"])
+        self.assertEqual([p for p, _ in record_proxy.inputs(bodies[0])], ["A.java", jdk[0]])
         self.assertEqual([v for n, v in fields(bodies[2])], [b"@@ELIDE_DIST@@/lib/tool.jar", DEEP.encode()])
         fresh = self.work / "fresh"
         fresh.mkdir()
@@ -108,6 +114,13 @@ class CaseTest(unittest.TestCase):
         self.assertEqual(len(seconds), 2)
         self.assertEqual((fresh / DEEP).read_text(), "tool")
 
+    def test_only_compiler_workers_are_recorded(self):
+        capture.wrap(self.dist, self.work / "wrapped", self.work / "record")
+        result = subprocess.run([str(self.work / "wrapped/bin/elide"), "java", "--", "Main", "--persistent_worker"],
+                                cwd=self.work, input=frame(request(["dist/lib/tool.jar", "out"], [])), stdout=subprocess.PIPE)
+        self.assertEqual(result.returncode, 0)
+        self.assertFalse((self.work / "record").exists())
+
     def test_failed_compile_fails_the_replay(self):
         root, _ = self.record([(request(["fail"], []), {})])
         case, streams, _, _ = self.package(root)
@@ -115,7 +128,7 @@ class CaseTest(unittest.TestCase):
             replay.replay(self.dist / "bin/elide", case, streams[0], self.work, 1, log)
 
     def test_machine_specific_arguments_and_uncaptured_inputs_are_reported(self):
-        root, _ = self.record([(request(["A.java", "bazel-out/bin/a.out", "--flag=/somewhere/else"],
+        root, _ = self.record([(request(["A.java", "bazel-out/bin/a.out", "--flag=/somewhere/else", "-cp", "x.jar:gone.jar"],
                                         [("A.java", b"1"), ("gone.jar", b"9")]), {"A.java": "x"})])
         _, _, absolute, missing = self.package(root)
         self.assertEqual((absolute, missing), (["/somewhere/else"], ["gone.jar"]))

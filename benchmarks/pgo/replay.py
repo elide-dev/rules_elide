@@ -74,7 +74,8 @@ def prepare(body, stage, substitutions):
         elif number == 2:
             entry = dict(fields(value))
             path, key = entry.get(1, b"").decode(), entry.get(2, b"").hex()
-            if key and not os.path.isabs(path):
+            # Inputs no argument names are listed, as in the real request, but not part of the case.
+            if key and not os.path.isabs(path) and (stage.cas / key).is_file():
                 stage.place(path, key)
         decoded.append((number, value))
     return encode(decoded)

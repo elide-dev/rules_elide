@@ -8,8 +8,8 @@ then packages what the Elide workers were asked to do:
 
     <output>/manifest.json      streams, provenance, anything not relocatable
     <output>/streams/<tool>.bin WorkRequests, in the order they were sent
-    <output>/cas/<digest>       every input file those requests read, except the
-                                Elide distribution's own, which replay supplies
+    <output>/cas/<digest>       every input file those requests' arguments name,
+                                except the Elide distribution's own
     <output>/replay.py          Bazel-free replay (plus gen_workrequest.py)
 
     capture.py --elide-dist DIST --output cases/java --commons-lang CHECKOUT
@@ -32,10 +32,10 @@ import tempfile
 HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE))
 from gen_workrequest import encode, fields, frame, read_frame  # noqa: E402
-from record_proxy import inputs  # noqa: E402
+from record_proxy import inputs, referenced, references, tool  # noqa: E402
 from replay import DIST, ROOT  # noqa: E402
 
-ABSOLUTE = re.compile(r"(?:^|[=:,])(/[^=:,]+)")
+ABSOLUTE = re.compile(r"(?:^|[=:,])(/(?!/)[^=:,]+)")  # a path, not a `//label`
 
 
 def wrap(dist, wrapped, record):
@@ -53,10 +53,6 @@ def wrap(dist, wrapped, record):
     launcher.chmod(0o755)
 
 
-def tool(argv):
-    return next(a for a in argv if not a.startswith("-"))
-
-
 def package(record, output, substitutions):
     """Merge per-process recordings into one relocatable stream per tool."""
     streams, absolute, missing = {}, set(), set()
@@ -68,8 +64,10 @@ def package(record, output, substitutions):
         # Longest first, so a relocated path is never rewritten twice.
         replacements = dict(sorted((substitutions | {info["cwd"]: ROOT} | dict.fromkeys(info["tools"], DIST)).items(),
                                    key=lambda item: -len(item[0])))
-        stream = streams.setdefault(tool(info["argv"]), {"argv": info["argv"], "bodies": []})
-        if stream["argv"] != info["argv"]:
+        # Bazel starts native-rule workers without `--safe-close`, the shims with it; replay always adds it.
+        argv = [a for a in info["argv"] if a != "--safe-close"]
+        stream = streams.setdefault(tool(argv), {"argv": argv, "bodies": []})
+        if stream["argv"] != argv:
             raise ValueError(f"{tool(info['argv'])} workers started with differing arguments")
         with meta.with_suffix(".bin").open("rb") as source:
             while (body := read_frame(source)) is not None:
@@ -84,7 +82,10 @@ def package(record, output, substitutions):
                     elif number == 2 and dict(fields(value)).get(1, b"").decode().startswith(tools):
                         continue  # part of the Elide distribution; a replay supplies its own
                     decoded.append((number, value))
+                tokens = references(body, info["cwd"])
                 for path, key in inputs(encode(decoded)):
+                    if not referenced(path, tokens):
+                        continue  # stays listed in the request, as the compiler saw it, but is not stored
                     if key and (record / "cas" / key).is_file():
                         if not (output / "cas" / key).exists():
                             shutil.copyfile(record / "cas" / key, output / "cas" / key)
@@ -123,7 +124,11 @@ def main():
         matrix += (["--commons-lang", str(args.commons_lang), "--languages", "java"] if args.commons_lang
                    else ["--kotlin-builder", "--languages", "kotlin"])
         subprocess.run(matrix, check=True)
-        streams, absolute, missing = package(work / "record", output, {str(work / "dist"): DIST, str(dist): DIST})
+        try:
+            streams, absolute, missing = package(work / "record", output, {str(work / "dist"): DIST, str(dist): DIST})
+        except BaseException:
+            shutil.rmtree(output, ignore_errors=True)
+            raise
         report = json.loads((work / "results/results.json").read_text())
     if not streams:
         shutil.rmtree(output)

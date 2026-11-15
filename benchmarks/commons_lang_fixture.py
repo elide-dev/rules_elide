@@ -97,7 +97,7 @@ def mutate(sources, scenario, nonce):
 def verify(work, fanout, mode, java, log):
     jars = ["core/libcore.jar", "spare/libspare.jar", "facade/libfacade.jar", "app/libapp.jar",
             *[f"clients/libclient{i}.jar" for i in range(fanout)]]
-    if mode != "vanilla":
+    if mode not in ("vanilla", "elide_shim"):
         jars = [jar.replace("/lib", "/", 1) for jar in jars]
     paths = [work / "bazel-bin" / jar for jar in jars]
     for path in paths:
