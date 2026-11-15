@@ -48,7 +48,7 @@ already use a local override.
 `MODULE.bazel`:
 
 ```starlark
-bazel_dep(name = "rules_elide", version = "0.7.0")  # x-release-please-version
+bazel_dep(name = "rules_elide", version = "0.8.0")  # x-release-please-version
 
 elide = use_extension("@rules_elide//elide:extensions.bzl", "elide")
 elide.install(version = "1.6.2")
