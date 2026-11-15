@@ -23,7 +23,7 @@ SCENARIOS = (
     "public_module_api", "multi_file_body", "multi_module_body",
     "multi_module_api", "unused_dependency_api", "inline_or_constant",
 )
-MODES = ("vanilla", "vanilla_abi", "elide", "elide_abi", "elide_pruned", "elide_incremental", "elide_fused", "elide_fused_pruned", "elide_hybrid", "elide_selective", "elide_parallel")
+MODES = ("vanilla", "vanilla_abi", "elide_default", "elide", "elide_abi", "elide_pruned", "elide_incremental", "elide_fused", "elide_fused_pruned", "elide_hybrid", "elide_selective", "elide_parallel")
 COMPILERS = {"Javac", "KotlinCompile", "ElideJavac", "ElideKotlinc"}
 
 
@@ -312,12 +312,19 @@ def main():
                         flags.append("--javacopt=-XepDisableAllChecks")
                     if mode == "vanilla_abi":
                         flags.append("--define=experimental_use_abi_jars=1")
-                    if mode in ("elide_abi", "elide_pruned", "elide_incremental", "elide_fused", "elide_fused_pruned", "elide_parallel"):
-                        flags.append(f"--@rules_elide//config/{'javac' if language == 'java' else 'kotlinc'}:abi_compile_avoidance=true")
-                    if mode in ("elide_pruned", "elide_fused_pruned", "elide_selective", "elide_parallel"):
-                        flags += ["--@rules_elide//elide:emit_jdeps=true", "--@rules_elide//elide:prune_unused_inputs=true"]
-                    if mode in ("elide_fused", "elide_fused_pruned", "elide_parallel"):
-                        flags.append(f"--@rules_elide//config/{'javac' if language == 'java' else 'kotlinc'}:abi_from_compile=true")
+                    if mode.startswith("elide") and mode != "elide_default":
+                        # Pin every setting a mode is defined by, so its meaning does not move with
+                        # the ruleset's defaults. `elide_default` passes none and measures the defaults.
+                        config = "javac" if language == "java" else "kotlinc"
+                        abi = mode in ("elide_abi", "elide_pruned", "elide_incremental", "elide_fused", "elide_fused_pruned", "elide_parallel")
+                        pruned = mode in ("elide_pruned", "elide_fused_pruned", "elide_selective", "elide_parallel")
+                        fused = mode in ("elide_fused", "elide_fused_pruned", "elide_parallel")
+                        flags += [
+                            f"--@rules_elide//config/{config}:abi_compile_avoidance={str(abi).lower()}",
+                            f"--@rules_elide//config/{config}:abi_from_compile={str(fused).lower()}",
+                            f"--@rules_elide//elide:emit_jdeps={str(pruned).lower()}",
+                            f"--@rules_elide//elide:prune_unused_inputs={str(pruned).lower()}",
+                        ]
                     if mode == "elide_parallel":
                         # Elide multiplex requests serialize inside one compiler process.
                         # Separate workers can compile independent graph branches concurrently.
