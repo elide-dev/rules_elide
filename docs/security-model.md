@@ -47,7 +47,7 @@ ephemeral infrastructure if the contributor trust model changes.
 Ordinary action uses must have a full commit SHA. Two release calls retain tags:
 
 - `bazel-contrib/.github/.github/workflows/release_ruleset.yaml@v7.7.0`
-- `bazel-contrib/publish-to-bcr/.github/workflows/publish.yaml@v1.6.0`
+- `bazel-contrib/publish-to-bcr/.github/workflows/publish.yaml@v1.7.0`
 
 The existing BCR publication flow relies on tag-ref builder identities in its
 attestations; changing to a raw SHA previously made verification reject the ref.
