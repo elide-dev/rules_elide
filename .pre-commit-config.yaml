@@ -32,13 +32,13 @@ repos:
         args: *bzlargs
 
   - repo: https://github.com/commitizen-tools/commitizen
-    rev: v4.16.4
+    rev: v4.19.4
     hooks:
       - id: commitizen
         stages: [commit-msg]
 
   - repo: https://github.com/crate-ci/typos
-    rev: v1.47.2
+    rev: v1.52.2
     hooks:
       - id: typos
 
