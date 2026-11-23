@@ -158,6 +158,23 @@ def fixture(work, language, mode, size, fanout):
     return sources
 
 
+def mixed_core(work, sources):
+    """Add mutually dependent Java/Kotlin code and run it through a separate consumer."""
+    core = work / "core"
+    build = core / "BUILD.bazel"
+    build.write_text(build.read_text().replace('srcs=[', 'srcs=["JavaBridge.java", "Mixed.kt", ', 1))
+    sources[core / "JavaBridge.java"] = (
+        "package core; public class JavaBridge { public static int answer() { return Core1.INSTANCE.magic(); } }\n")
+    sources[core / "Mixed.kt"] = "package core\nobject Mixed { fun answer(): Int = JavaBridge.answer() }\n"
+    app = work / "app"
+    sources[app / "MixedConsumer.java"] = (
+        "package app; public class MixedConsumer { public static void main(String[] args) {"
+        " if (core.Mixed.INSTANCE.answer() != 1 || App.INSTANCE.value() <= 0) throw new AssertionError(); } }\n")
+    build = app / "BUILD.bazel"
+    build.write_text('load("@rules_java//java:defs.bzl", "java_binary")\n' + build.read_text() +
+                     'java_binary(name="verify", srcs=["MixedConsumer.java"], main_class="app.MixedConsumer", deps=[":app","//core"])\n')
+
+
 def shim_toolchains(language, elide):
     """Root BUILD and MODULE text that route stock rules through the Elide shims."""
     if language == "java":
@@ -251,6 +268,7 @@ def render(report):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     workload_args = parser.add_mutually_exclusive_group()
+    workload_args.add_argument("--mixed", action="store_true", help="Add mutually dependent Java/Kotlin sources to the generated Kotlin core and run a downstream consumer")
     workload_args.add_argument("--kotlin-builder", action="store_true", help="Benchmark this checkout's production KotlinBuilder module (Kotlin only)")
     workload_args.add_argument("--commons-lang", type=Path, help="Benchmark a local Commons Lang source checkout in an isolated copy (Java only)")
     parser.add_argument("--phase-times", action="store_true",
@@ -277,6 +295,8 @@ def main():
                         help="Use this candidate distribution only for unified modes")
     parser.add_argument("--cold-server", action="store_true", help="Shut down Bazel before each timed build; preserves disk outputs and downloads")
     args = parser.parse_args()
+    if args.mixed and args.languages != ["kotlin"]:
+        parser.error("--mixed requires --languages kotlin")
     production = None
     source_metadata = None
     java = None
@@ -396,6 +416,8 @@ def main():
                     root_build = work / "BUILD.bazel"
                     root_build.unlink(missing_ok=True)
                     sources = fixture(work, language, mode, 3 if production is not None else args.sources, args.fanout)
+                    if args.mixed:
+                        mixed_core(work, sources)
                     if production is not None:
                         sources = workload.install(work, sources, production, args.fanout)
                     shim_build, shim_module = shim_toolchains(language, f"@{elide_repo}//:elide") if mode == "elide_shim" else ("", "")
@@ -440,7 +462,7 @@ def main():
                     if mode == "elide_incremental":
                         flags += ["--@rules_elide//config/kotlinc:incremental=true"]
                     targets = ["//core", "//spare", "//facade", "//app", *[f"//clients:client{i}" for i in range(args.fanout)]]
-                    build_targets = targets + (["//app:verify"] if args.kotlin_builder else [])
+                    build_targets = targets + (["//app:verify"] if args.kotlin_builder or args.mixed else [])
                     for scenario in args.scenarios:
                         row = {"language": language, "mode": mode, "scenario": scenario, "samples": []}
                         for local_index in range(args.warmups + (1 if args.interleave else args.rounds)):
@@ -473,6 +495,9 @@ def main():
                             memory = worker_memory(work / "cache") if args.worker_memory else None
                             if production is not None:
                                 workload.verify(work, args.fanout, mode, java, output / (stem + ".runtime.log"))
+                            if args.mixed:
+                                with (output / (stem + ".runtime.log")).open("w") as stream:
+                                    subprocess.run([work / "bazel-bin/app/verify"], cwd=work, stdout=stream, stderr=subprocess.STDOUT, check=True)
                             actions = list(json_entries(execution))
                             compiled = sorted({entry["targetLabel"] for entry in actions if entry.get("mnemonic") in COMPILERS})
                             if scenario in ("clean", "compiler_cold", "full_rebuild"):
