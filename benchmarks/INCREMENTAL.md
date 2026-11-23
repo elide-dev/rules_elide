@@ -71,8 +71,7 @@ are process-cold measurements, not measurements after reboot or empty downloads.
 For full compilation with warm workers, explicitly select `--scenarios
 full_rebuild`. This appends a comment to every Java/Kotlin source in the workload
 and asserts that every fixture runtime target recompiles. Protocol/generated
-sources and external dependencies stay built. Native incremental modes are
-rejected for this scenario, so compiler work cannot silently become an IC no-op.
+sources and external dependencies stay built. The legacy incremental and selective modes are rejected for this scenario. The unified IC mode receives a changed digest for every source.
 It is excluded from the default scenario list.
 
 ```sh
@@ -134,6 +133,8 @@ parallel fan-out scaling, and remote execution need separate experiments.
   `--worker-memory` records Linux post-build PSS and process-lifetime RSS high-water marks per resident worker.
 - `compiler_cold` changes all target sources after preparing the graph, restarts the compiler workers and warms
   Bazel analysis before timing. External compiler tools and protobuf outputs remain available.
+- `--mixed --languages kotlin` adds mutually dependent Java and Kotlin sources to the generated core.
+  It verifies release 21 for both classfiles and runs a separate consumer after every build.
 - Javadoc and Rote facts stay disabled in these compile-time comparisons.
 
 Use a locally built distribution reporting `unifiedJvmCompile: 1` from
