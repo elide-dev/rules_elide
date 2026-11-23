@@ -90,7 +90,9 @@ def worker_memory(output_base):
                 continue
             pss = re.search(r"^Pss:\s+(\d+) kB$", (proc / "smaps_rollup").read_text(), re.M)
             peak = re.search(r"^VmHWM:\s+(\d+) kB$", (proc / "status").read_text(), re.M)
-            workers.append({"pid": int(proc.name), "post_build_pss_kib": int(pss[1]) if pss else None,
+            tool = next((arg.decode() for arg in args if arg in (b"javac", b"kotlinc")), None)
+            role = "unified" if b"--unified" in args else (tool or Path(os.fsdecode(args[0])).name)
+            workers.append({"pid": int(proc.name), "compiler": role, "post_build_pss_kib": int(pss[1]) if pss else None,
                             "lifetime_peak_rss_kib": int(peak[1]) if peak else None})
         except (OSError, RuntimeError):
             continue
