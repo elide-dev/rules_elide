@@ -126,7 +126,9 @@ parallel fan-out scaling, and remote execution need separate experiments.
   JAR. It disables optional dependency reporting to isolate the compiler path.
 - `elide_unified_jdeps` uses the same compiler and also requests a merged dependency
   report. Both modes retain the full declared classpath for invalidation.
-- `elide_unified_ic` enables per-target Kotlin state with implementation and ABI output.
+- `elide_unified_ic` enables per-target Kotlin or Java state with implementation and ABI output.
+  Use `--phase-times` in a separate probe to capture per-phase durations and selective compile counts.
+  The generated `client_batch` scenario edits every client in one request to measure independent work across the worker pool.
   Use `--unified-local-path` for the candidate and `--elide-local-path` for baseline modes.
   `--interleave` rotates the first mode between rounds, with fresh workers and discarded warm-ups for each block.
   `--worker-memory` records Linux post-build PSS and process-lifetime RSS high-water marks per resident worker.
@@ -136,7 +138,7 @@ parallel fan-out scaling, and remote execution need separate experiments.
 
 Use a locally built distribution reporting `unifiedJvmCompile: 1` from
 `elide javac --capabilities`. Run the stock and Elide modes with that same
-distribution path so both legacy Elide modes and the unified mode use its compiler.
+distribution path for a single-distribution comparison, or supply a separate candidate with `--unified-local-path`.
 
 ```sh
 python3 benchmarks/incremental_matrix.py \
