@@ -366,7 +366,7 @@ def main():
         "compiler_cold": "all target sources edited; fresh workers; prerequisites already built",
         "clean": "outputs removed; fresh compiler workers",
         "edits": "disk outputs retained; compiler state lost" if args.cold_server else "disk outputs and compiler workers retained",
-        "full_rebuild": "comment appended to every Java/Kotlin source; no native IC; workers retained unless cold-server",
+        "full_rebuild": "every declared source edited; selected compiler route retained; warm workers unless cold-server",
     }
     if source_metadata:
         report["source_workload"] = source_metadata
