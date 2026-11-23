@@ -268,6 +268,8 @@ def main():
     parser.add_argument("--output", type=Path, default=REPO / "benchmarks/results/incremental")
     parser.add_argument("--distdir", action="append", default=[])
     parser.add_argument("--elide-local-path", type=Path, help="Use this extracted Elide distribution instead of the pinned download (see pgo/capture.py)")
+    parser.add_argument("--unified-local-path", type=Path,
+                        help="Use this candidate distribution only for unified modes")
     parser.add_argument("--cold-server", action="store_true", help="Shut down Bazel before each timed build; preserves disk outputs and downloads")
     args = parser.parse_args()
     production = None
@@ -314,15 +316,21 @@ def main():
               "isolated_mode_servers": True,
               "java_release": 21, "kotlin_jdk_release": 21,
               "parameters": {k: str(v) if isinstance(v, Path) else v for k, v in vars(args).items()} | {"output": str(output)}, "results": []}
-    if args.elide_local_path:
-        local_elide = args.elide_local_path.resolve() / "bin" / ("elide.exe" if os.name == "nt" else "elide")
-        report["elide_version"] = subprocess.check_output([local_elide, "--version"], text=True).strip()
+    for key, path in (("baseline", args.elide_local_path), ("unified", args.unified_local_path)):
+        if not path:
+            continue
+        local_elide = path.resolve() / "bin" / ("elide.exe" if os.name == "nt" else "elide")
+        version = subprocess.check_output([local_elide, "--version"], text=True).strip()
+        binaries = {}
         for binary in (local_elide, *sorted((local_elide.parent.parent / "lib").glob("*jvmtools.*"))):
             with binary.open("rb") as stream:
                 digest = hashlib.sha256()
                 for chunk in iter(lambda: stream.read(1024 * 1024), b""):
                     digest.update(chunk)
-            report.setdefault("elide_sha256", {})[binary.name] = digest.hexdigest()
+            binaries[binary.name] = digest.hexdigest()
+        report.setdefault("local_distributions", {})[key] = {"version": version, "sha256": binaries}
+        if key == "baseline":
+            report["elide_version"] = version
     report["cache_conditions"] = {
         "downloads_and_filesystem": "warm",
         "timed_server": "fresh" if args.cold_server else "warm",
@@ -342,10 +350,6 @@ def main():
         work = Path(directory)
         command = [bazel, "--output_base=" + str(work / "cache")]
         module = (REPO / "benchmarks/MODULE.bazel").read_text().replace('path = ".."', 'path = ' + json.dumps(str(REPO)))
-        if args.elide_local_path:
-            module = commons_lang_fixture.replace_once(
-                module, 'elide.install(channel = "nightly")',
-                "elide.use(local_path = " + json.dumps(str(args.elide_local_path.resolve())) + ")")
         # The shims take the execution platform's Elide repository by name.
         machine = {"x86_64": "amd64", "aarch64": "arm64"}.get(platform.machine().lower(), platform.machine().lower())
         elide_repo = "elide_" + {"darwin": "macos"}.get(platform.system().lower(), platform.system().lower()) + "_" + machine
@@ -394,6 +398,11 @@ def main():
                         root_build.write_text((root_build.read_text() if root_build.exists() else "") + shim_build)
                     # Toolchains registered first win, so the shim goes ahead of everything else.
                     mode_module = module + ('\nregister_toolchains("//:stock_kotlin")\n' if language == "kotlin" else "")
+                    distribution = (args.unified_local_path if mode in UNIFIED_MODES else None) or args.elide_local_path
+                    if distribution:
+                        mode_module = commons_lang_fixture.replace_once(
+                            mode_module, 'elide.install(channel = "nightly")',
+                            "elide.use(local_path = " + json.dumps(str(distribution.resolve())) + ")")
                     (work / "MODULE.bazel").write_text(mode_module.replace("register_toolchains(", shim_module + "register_toolchains(", 1))
                     flags = list(common)
                     if args.commons_lang and mode == "vanilla":
