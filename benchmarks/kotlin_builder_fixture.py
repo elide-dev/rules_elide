@@ -80,10 +80,6 @@ object Facade {
     build = work / "app/BUILD.bazel"
     build.write_text('load("@rules_java//java:defs.bzl", "java_binary")\n' + build.read_text() +
                      '\njava_binary(name="verify", main_class="app.App", runtime_deps=[":app"])\n')
-    (work / "BUILD.bazel").write_text('load("@rules_kotlin//kotlin:core.bzl", "define_kt_toolchain")\ndefine_kt_toolchain(name="stock_kotlin", jvm_target="21")\n')
-    for package in ("core", "spare", "facade", "clients", "app"):
-        path = work / package / "BUILD.bazel"
-        path.write_text(path.read_text().replace('elide_kotlin_library(', 'elide_kotlin_library(kotlinc_opts=["-jvm-target=21"], '))
     core_build = core / "BUILD.bazel"
     core_build.write_text(core_build.read_text().replace('name="core",', 'name="core", module_name="elide_kotlin_builder",'))
     return sources

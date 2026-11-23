@@ -2,6 +2,7 @@
 """Measure edit propagation through a generated core -> facade -> clients -> app graph."""
 import argparse
 import gzip
+import hashlib
 from collections import Counter
 import json
 import os
@@ -19,11 +20,11 @@ import kotlin_builder_fixture
 
 REPO = Path(__file__).resolve().parents[1]
 SCENARIOS = (
-    "clean", "full_rebuild", "no_op", "comment", "body", "private_member", "internal_module_api",
+    "clean", "compiler_cold", "full_rebuild", "no_op", "comment", "body", "private_member", "internal_module_api",
     "public_module_api", "multi_file_body", "multi_module_body",
     "multi_module_api", "unused_dependency_api", "inline_or_constant",
 )
-UNIFIED_MODES = ("elide_unified", "elide_unified_jdeps")
+UNIFIED_MODES = ("elide_unified", "elide_unified_jdeps", "elide_unified_ic")
 MODES = ("vanilla", "vanilla_abi", "elide_shim", "elide_default", "elide", "elide_abi", "elide_pruned", "elide_incremental", "elide_fused", "elide_fused_pruned", "elide_hybrid", "elide_selective", "elide_parallel") + UNIFIED_MODES
 # Modes that build stock java_library/kt_jvm_library targets. `elide_shim` compiles them through
 # rules_elide's JavaBuilder/KotlinBuilder toolchains instead of the stock builders.
@@ -96,14 +97,25 @@ def fixture(work, language, mode, size, fanout):
         load = "@rules_elide//elide:defs.bzl"
     sources = {}
 
+    if language == "kotlin":
+        (work / "BUILD.bazel").write_text(
+            'load("@rules_kotlin//kotlin:core.bzl", "define_kt_toolchain", "kt_kotlinc_options")\n'
+            'kt_kotlinc_options(name="jdk21", x_jdk_release="21")\n'
+            'define_kt_toolchain(name="stock_kotlin", jvm_target="21", kotlinc_options=":jdk21")\n'
+        )
+
     def target(package, name, classes, deps):
         directory = work / package
         directory.mkdir(exist_ok=True)
         build = directory / "BUILD.bazel"
         prefix = f'load("{load}", "{rule}")\npackage(default_visibility=["//visibility:public"])\n'
         options = ", javac_opts=[\"--release\", \"21\"]" if language == "java" and mode not in STOCK_RULES else ""
+        if language == "kotlin" and mode not in STOCK_RULES:
+            options += ', kotlinc_opts=["-Xjdk-release=21"]'
         if mode in UNIFIED_MODES:
             options += ', compile_mode="unified", unified_release=21, unified_outputs=["abi"]'
+        if mode == "elide_unified_ic":
+            options += ', incremental_mode="on"'
         if mode == "elide_hybrid":
             options += ', abi_mode="' + ("separate" if package == "core" else "combined") + '"'
         if mode == "elide_selective":
@@ -221,6 +233,9 @@ def main():
     workload_args.add_argument("--commons-lang", type=Path, help="Benchmark a local Commons Lang source checkout in an isolated copy (Java only)")
     parser.add_argument("--profiles", action="store_true", help="Retain Bazel traces and summarize critical-path and sampled memory counters")
     parser.add_argument("--sources", type=positive, default=20)
+    parser.add_argument("--jobs", type=positive, default=4)
+    parser.add_argument("--unified-workers", type=positive, default=4,
+                        help="Singleplex ElideJvmCompile worker cap")
     parser.add_argument("--fanout", type=positive, default=3)
     parser.add_argument("--rounds", type=positive, default=3)
     parser.add_argument("--warmups", type=positive, default=1)
@@ -240,8 +255,8 @@ def main():
         workload = commons_lang_fixture
         if args.languages != ["java"]:
             parser.error("--commons-lang requires --languages java")
-        if args.scenarios and set(args.scenarios) - (set(commons_lang_fixture.SCENARIOS) | {"full_rebuild"}):
-            parser.error("Commons Lang supports: " + ", ".join((*commons_lang_fixture.SCENARIOS, "full_rebuild")))
+        if args.scenarios and set(args.scenarios) - (set(commons_lang_fixture.SCENARIOS) | {"full_rebuild", "compiler_cold"}):
+            parser.error("Commons Lang supports: " + ", ".join((*commons_lang_fixture.SCENARIOS, "full_rebuild", "compiler_cold")))
         java = shutil.which("java")
         if not java:
             parser.error("Commons Lang runtime checks require java (JDK 21+) on PATH")
@@ -252,12 +267,12 @@ def main():
         workload = kotlin_builder_fixture
         if args.languages != ["kotlin"]:
             parser.error("--kotlin-builder requires --languages kotlin")
-        if args.scenarios and set(args.scenarios) - (set(workload.SCENARIOS) | {"full_rebuild"}):
-            parser.error("KotlinBuilder supports: " + ", ".join((*workload.SCENARIOS, "full_rebuild")))
+        if args.scenarios and set(args.scenarios) - (set(workload.SCENARIOS) | {"full_rebuild", "compiler_cold"}):
+            parser.error("KotlinBuilder supports: " + ", ".join((*workload.SCENARIOS, "full_rebuild", "compiler_cold")))
         production, source_metadata = workload.snapshot(REPO)
         args.scenarios = args.scenarios or list(workload.SCENARIOS)
     else:
-        args.scenarios = args.scenarios or [s for s in SCENARIOS if s != "full_rebuild"]
+        args.scenarios = args.scenarios or [s for s in SCENARIOS if s not in ("full_rebuild", "compiler_cold")]
     if "full_rebuild" in args.scenarios and any(mode in args.modes for mode in ("elide_incremental", "elide_selective")):
         parser.error("full_rebuild measures full compilation; choose modes without native incremental compilation")
     if production is None and args.sources < 3:
@@ -269,19 +284,26 @@ def main():
         parser.error("Bazelisk/Bazel is required")
     report = {"commit": subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=REPO, text=True).strip(),
               "tracked_changes": bool(subprocess.check_output(["git", "status", "--porcelain", "--untracked-files=no"], cwd=REPO, text=True).strip()),
-              "host": platform.platform(), "cpus": os.cpu_count(), "jobs": 4,
+              "host": platform.platform(), "cpus": os.cpu_count(), "jobs": args.jobs,
               "bazel_version": (REPO / ".bazelversion").read_text().strip(),
               "elide_version": re.search(r'^DEFAULT_VERSION = "([^"]+)"', (REPO / "elide/private/versions.bzl").read_text(), re.M).group(1),
               "jvm_rule_versions": dict(re.findall(r'bazel_dep\(name = "(rules_java|rules_kotlin)", version = "([^"]+)"', (REPO / "benchmarks/MODULE.bazel").read_text())),
               "isolated_mode_servers": True,
-              "java_release": 21,
+              "java_release": 21, "kotlin_jdk_release": 21,
               "parameters": {k: str(v) if isinstance(v, Path) else v for k, v in vars(args).items()} | {"output": str(output)}, "results": []}
     if args.elide_local_path:
         local_elide = args.elide_local_path.resolve() / "bin" / ("elide.exe" if os.name == "nt" else "elide")
         report["elide_version"] = subprocess.check_output([local_elide, "--version"], text=True).strip()
+        for binary in (local_elide, *sorted((local_elide.parent.parent / "lib").glob("*jvmtools.*"))):
+            with binary.open("rb") as stream:
+                digest = hashlib.sha256()
+                for chunk in iter(lambda: stream.read(1024 * 1024), b""):
+                    digest.update(chunk)
+            report.setdefault("elide_sha256", {})[binary.name] = digest.hexdigest()
     report["cache_conditions"] = {
         "downloads_and_filesystem": "warm",
         "timed_server": "fresh" if args.cold_server else "warm",
+        "compiler_cold": "all target sources edited; fresh workers; prerequisites already built",
         "clean": "outputs removed; fresh compiler workers",
         "edits": "disk outputs retained; compiler state lost" if args.cold_server else "disk outputs and compiler workers retained",
         "full_rebuild": "comment appended to every Java/Kotlin source; no native IC; workers retained unless cold-server",
@@ -306,13 +328,13 @@ def main():
         elide_repo = "elide_" + {"darwin": "macos"}.get(platform.system().lower(), platform.system().lower()) + "_" + machine
         module += f'\nuse_repo(elide, "{elide_repo}")\n'
         if args.kotlin_builder:
-            module += '\nregister_toolchains("//:stock_kotlin")\n'
             root_module = (REPO / "MODULE.bazel").read_text()
             report["protocol_rule_versions"] = dict(re.findall(r'bazel_dep\(name = "(protobuf)", version = "([^"]+)"', root_module))
             module += "\n" + "\n".join(re.findall(r'^bazel_dep\(name = "protobuf"[^\n]+', root_module, re.M)) + "\n"
         (work / "MODULE.bazel").write_text(module)  # rewritten per mode below
         (work / ".bazelversion").write_text((REPO / ".bazelversion").read_text())
-        common = ["--disk_cache=", "--remote_cache=", "--remote_executor=", "--jobs=4",
+        common = ["--disk_cache=", "--remote_cache=", "--remote_executor=", f"--jobs={args.jobs}",
+                  f"--worker_max_instances=ElideJvmCompile={args.unified_workers}",
                   "--java_runtime_version=remotejdk_21", "--tool_java_runtime_version=remotejdk_21",
                   "--java_language_version=21", "--repo_env=ANDROID_HOME=",
                   "--cxxopt=-std=c++17", "--host_cxxopt=-std=c++17", "--noshow_progress",
@@ -327,7 +349,7 @@ def main():
         try:
             for language in args.languages:
                 for mode in args.modes:
-                    if language == "java" and mode in ("vanilla_abi", "elide_incremental", "elide_selective"):
+                    if language == "java" and mode in ("vanilla_abi", "elide_incremental", "elide_selective", "elide_unified_ic"):
                         continue
                     # Each mode gets a fresh server/worker pool. Baseline builds
                     # and warm-ups remain untimed, so measured builds stay warm.
@@ -344,7 +366,8 @@ def main():
                     if shim_build:
                         root_build.write_text((root_build.read_text() if root_build.exists() else "") + shim_build)
                     # Toolchains registered first win, so the shim goes ahead of everything else.
-                    (work / "MODULE.bazel").write_text(module.replace("register_toolchains(", shim_module + "register_toolchains(", 1))
+                    mode_module = module + ('\nregister_toolchains("//:stock_kotlin")\n' if language == "kotlin" else "")
+                    (work / "MODULE.bazel").write_text(mode_module.replace("register_toolchains(", shim_module + "register_toolchains(", 1))
                     flags = list(common)
                     if args.commons_lang and mode == "vanilla":
                         # Upstream builds with javac, without Bazel's extra Error Prone policy.
@@ -379,16 +402,19 @@ def main():
                             for path, contents in sources.items():
                                 path.write_text(contents)
                             run(["build", *build_targets, *flags], output / "prepare.log")
-                            if scenario == "full_rebuild":
+                            if scenario in ("full_rebuild", "compiler_cold"):
                                 for path, contents in sources.items():
                                     if path.suffix in (".java", ".kt"):
-                                        path.write_text(contents + f"\n// full rebuild {index + 1}\n")
+                                        path.write_text(contents + f"\n// {scenario} {index + 1}\n")
                             elif production is not None:
                                 workload.mutate(sources, scenario, index + 1)
                             else:
                                 mutate(sources, scenario, language, index + 1)
                             if scenario == "clean":
                                 run(["clean"], output / "clean.log")
+                            if scenario == "compiler_cold" and not args.cold_server:
+                                run(["shutdown"], output / "shutdown.log")
+                                run(["build", "--nobuild", *build_targets, *flags], output / "analyze.log")
                             if args.cold_server:
                                 run(["shutdown"], output / "shutdown.log")
                             stem = f"{language}-{mode}-{scenario}-{index}"
@@ -402,7 +428,7 @@ def main():
                                 workload.verify(work, args.fanout, mode, java, output / (stem + ".runtime.log"))
                             actions = list(json_entries(execution))
                             compiled = sorted({entry["targetLabel"] for entry in actions if entry.get("mnemonic") in COMPILERS})
-                            if scenario in ("clean", "full_rebuild"):
+                            if scenario in ("clean", "compiler_cold", "full_rebuild"):
                                 expected = {t if ":" in t else t + ":" + t.rsplit("/", 1)[-1] for t in targets}
                                 if not expected.issubset(compiled):
                                     raise AssertionError(f"{scenario} skipped runtime compilers: {expected - set(compiled)}")
