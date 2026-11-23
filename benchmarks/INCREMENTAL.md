@@ -356,7 +356,7 @@ python3 benchmarks/incremental_matrix.py --kotlin-builder --languages kotlin \
 This preserves the production module's JVM 21 target and module name. Stock Kotlin
 sets `jvm_target="21"` and `x_jdk_release="21"` on its toolchain, and native targets pass
 `-Xjdk-release=21`. Reports with `kotlin_jdk_release` record this matched API surface.
-Use `--jobs`, `--unified-workers`, and `--fanout` to vary scheduler slots, unified worker cap, and client count independently. The verifier checks every class in the production output jar for
+Use `--jobs`, `--unified-workers`, and `--fanout` to vary scheduler slots, unified worker cap (default eight), and client count independently. The verifier checks every class in the production output jar for
 classfile major version 65. Both use a stock `java_binary` launcher with Bazel's
 `remotejdk_21` to exercise the generated consumer graph outside timing. Assertions
 check flag parsing, routing, and plugin-rewrite messages; they do not exercise
