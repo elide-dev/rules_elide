@@ -126,6 +126,12 @@ parallel fan-out scaling, and remote execution need separate experiments.
   JAR. It disables optional dependency reporting to isolate the compiler path.
 - `elide_unified_jdeps` uses the same compiler and also requests a merged dependency
   report. Both modes retain the full declared classpath for invalidation.
+- `elide_unified_ic` enables per-target Kotlin state with implementation and ABI output.
+  Use `--unified-local-path` for the candidate and `--elide-local-path` for baseline modes.
+  `--interleave` rotates the first mode between rounds, with fresh workers and discarded warm-ups for each block.
+  `--worker-memory` records Linux post-build PSS and process-lifetime RSS high-water marks per resident worker.
+- `compiler_cold` changes all target sources after preparing the graph, restarts the compiler workers and warms
+  Bazel analysis before timing. External compiler tools and protobuf outputs remain available.
 - Javadoc and Rote facts stay disabled in these compile-time comparisons.
 
 Use a locally built distribution reporting `unifiedJvmCompile: 1` from
