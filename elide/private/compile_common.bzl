@@ -301,8 +301,6 @@ def _run_unified(ctx, output_jar, kotlin):
         fail("With compile_mode = unified, request abi in unified_outputs. Separate header actions use the legacy compile mode.")
     if ctx.attr.abi_mode == "off" and "abi" in selected:
         fail("abi_mode = off conflicts with unified_outputs containing abi")
-    if kotlin and getattr(ctx.attr, "incremental_mode", "") == "on":
-        fail("Unified JVM compilation uses ordinary persistent workers. Remove incremental_mode = on.")
 
     classpath = compile_classpath(ctx.attr.deps)
     friend_paths, friend_jars = _friend_paths(getattr(ctx.attr, "associates", []))
@@ -325,6 +323,8 @@ def _run_unified(ctx, output_jar, kotlin):
     args = ctx.actions.args()
     args.add("--")
     args.add("--request-version=1")
+    if worker and kotlin and _incremental_enabled(ctx):
+        args.add("--kotlin-incremental=1")
     args.add("--release", ctx.attr.unified_release)
     args.add("--jar", class_jar)
     for flag, output in [("--abi-jar", abi), ("--javadoc-data", docs), ("--rote-facts", facts), ("--classes", classes), ("--jdeps", jdeps)]:
