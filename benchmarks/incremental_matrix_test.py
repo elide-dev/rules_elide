@@ -87,3 +87,13 @@ class BaselineTest(unittest.TestCase):
             fixture(root, "java", "elide_hybrid", 3, 2)
             self.assertIn('abi_mode="separate"', (root / "core/BUILD.bazel").read_text())
             self.assertIn('abi_mode="combined"', (root / "facade/BUILD.bazel").read_text())
+
+    def test_unified_mode_uses_selected_compile_abi_for_both_languages(self):
+        for language in ("java", "kotlin"):
+            with self.subTest(language=language), tempfile.TemporaryDirectory() as directory:
+                root = Path(directory)
+                fixture(root, language, "elide_unified", 3, 2)
+                build = (root / "core/BUILD.bazel").read_text()
+                self.assertIn('compile_mode="unified"', build)
+                self.assertIn('unified_release=21', build)
+                self.assertIn('unified_outputs=["abi"]', build)

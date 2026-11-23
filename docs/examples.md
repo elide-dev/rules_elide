@@ -116,9 +116,14 @@ elide_kotlin_library(
 
 The compile action emits one implementation JAR and the selected optional
 artifacts. With `abi` selected, dependent compile actions receive the ABI JAR
-through `JavaInfo`. `classes`, `javadoc_data` and `rote_facts` are output groups
+through `JavaInfo`. `abi_jar`, `classes`, `javadoc_data` and `rote_facts` are output groups
 for targets that request the corresponding artifacts. Rote facts are experimental
-and require `"rote_facts"` in `unified_outputs`.
+and require `"rote_facts"` in `unified_outputs`. For example,
+`bazel build //:api --output_groups=+abi_jar,+javadoc_data` requests both outputs.
+
+Unified mode uses one `unified_release` for Java and Kotlin. Matching
+`javac_opts` release and `kotlinc_opts` target flags can stay in existing rule
+definitions. Conflicting values produce an analysis error.
 
 Use `--@rules_elide//elide:unified_jvm_compile` to set the default for eligible
 targets, or `compile_mode = "legacy"` to keep a target on its current compiler

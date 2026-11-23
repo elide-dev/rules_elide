@@ -120,6 +120,34 @@ These are native Elide rules, not the rules_kotlin KotlinBuilder adapter.
 Mixed-language modules, processors, resource edits, dependency upgrades,
 parallel fan-out scaling, and remote execution need separate experiments.
 
+### Unified JVM modes
+
+- `elide_unified` selects the unified compile for every target and requests its ABI
+  JAR. It disables optional dependency reporting to isolate the compiler path.
+- `elide_unified_jdeps` uses the same compiler and also requests a merged dependency
+  report. Both modes retain the full declared classpath for invalidation.
+- Javadoc and Rote facts stay disabled in these compile-time comparisons.
+
+Use a locally built distribution reporting `unifiedJvmCompile: 1` from
+`elide javac --capabilities`. Run the stock and Elide modes with that same
+distribution path so both legacy Elide modes and the unified mode use its compiler.
+
+```sh
+python3 benchmarks/incremental_matrix.py \
+  --languages java --commons-lang /path/to/commons-lang \
+  --elide-local-path /path/to/elide-dist \
+  --modes vanilla elide_default elide_unified elide_unified_jdeps \
+  --scenarios clean full_rebuild body --rounds 3 --profiles
+
+python3 benchmarks/incremental_matrix.py \
+  --languages kotlin --kotlin-builder --elide-local-path /path/to/elide-dist \
+  --modes vanilla vanilla_abi elide_default elide_unified elide_unified_jdeps \
+  --scenarios clean full_rebuild body --rounds 3 --profiles
+```
+
+Choose different output directories for each run. These modes are opt-in and
+excluded from the published-runtime default matrix.
+
 ## Run and interpret
 
 ```sh
