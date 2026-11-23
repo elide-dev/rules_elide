@@ -48,3 +48,10 @@ bool_flag(
     name = "unified_incremental",
     build_setting_default = False,
 )
+
+# Track a separate ordered-classpath proof before allowing unified javac input pruning.
+bool_flag(
+    name = "unified_prune_shadowed",
+    build_setting_default = False,
+    visibility = ["//visibility:public"],
+)
