@@ -316,6 +316,28 @@ def _run_unified(ctx, output_jar, kotlin):
     jdeps = ctx.actions.declare_file(class_jar.basename + ".jdeps", sibling = class_jar) if ctx.attr._emit_jdeps[BuildSettingInfo].value else None
 
     lead = ctx.actions.args()
+    inventory = None
+    unused = None
+    if (not kotlin and ctx.attr._unified_prune_shadowed[BuildSettingInfo].value and
+        ctx.attr._prune_unused_inputs[BuildSettingInfo].value and ctx.attr.deps and
+        not ctx.attr.javac_opts and not docs and not facts and
+        not ctx.attr._java_unified_incremental[BuildSettingInfo].value):
+        inventory = ctx.actions.declare_file(class_jar.basename + ".shadowed", sibling = class_jar)
+        unused = ctx.actions.declare_file(class_jar.basename + ".unused", sibling = class_jar)
+        shape = ctx.actions.args()
+        shape.add("--write-shadowed-classpath")
+        shape.add(inventory)
+        shape.add_all(full_cp)
+        shape.use_param_file("@%s", use_always = True)
+        shape.set_param_file_format("multiline")
+        ctx.actions.run(
+            mnemonic = "ElideClasspathInventory",
+            executable = elide.binary,
+            arguments = ["javac", "--unified", "--", shape],
+            inputs = full_cp,
+            tools = elide.compile_tool_files,
+            outputs = [inventory],
+        )
     lead.add_all(["javac", "--unified"])
     worker = ctx.attr._use_workers[BuildSettingInfo].value
     if worker and ctx.attr._classpath_cache[BuildSettingInfo].value:
@@ -329,6 +351,9 @@ def _run_unified(ctx, output_jar, kotlin):
         args.add("--java-incremental=1")
     args.add("--release", ctx.attr.unified_release)
     args.add("--jar", class_jar)
+    if inventory:
+        args.add("--shadowed-classpath", inventory)
+        args.add("--unused-inputs", unused)
     for flag, output in [("--abi-jar", abi), ("--javadoc-data", docs), ("--rote-facts", facts), ("--classes", classes), ("--jdeps", jdeps)]:
         if output:
             args.add_all([output], before_each = flag, expand_directories = False)
@@ -352,9 +377,10 @@ def _run_unified(ctx, output_jar, kotlin):
         mnemonic = "ElideJvmCompile",
         executable = elide.binary,
         arguments = [lead, args],
-        inputs = depset(direct = ctx.files.srcs, transitive = [full_cp]),
+        inputs = depset(direct = ctx.files.srcs + ([inventory] if inventory else []), transitive = [full_cp]),
         tools = elide.compile_tool_files,
-        outputs = [class_jar] + [f for f in [abi, docs, facts, classes, jdeps] if f != None],
+        outputs = [class_jar] + [f for f in [abi, docs, facts, classes, jdeps, unused] if f != None],
+        unused_inputs_list = unused,
         progress_message = "Compiling %{label} (Elide unified JVM)",
         execution_requirements = _WORKER_EXEC_REQUIREMENTS if worker else {},
         env = dict(_ELIDE_BAZEL_ENV, ELIDE_UNIFIED_JVM_PROFILE = "1") if ctx.var.get("elide_unified_jvm_profile") == "1" else _ELIDE_BAZEL_ENV,
@@ -363,7 +389,7 @@ def _run_unified(ctx, output_jar, kotlin):
         _merge_resources(ctx, [class_jar], output_jar)
     return struct(
         abi_jar = abi,
-        reports = [jdeps] if jdeps else [],
+        reports = [f for f in [jdeps, unused] if f != None],
         javadoc_data = [docs] if docs else [],
         rote_facts = [facts] if facts else [],
         classes = [classes] if classes else [],
@@ -1096,6 +1122,9 @@ COMMON_LIBRARY_ATTRS = {
         providers = [BuildSettingInfo],
         doc = "Build setting opting kotlinc compiles into incremental " +
               "compilation with worker-private classes/cache and complete jar output.",
+    ),
+    "_unified_prune_shadowed": attr.label(
+        default = Label("//config/javac:unified_prune_shadowed"),
     ),
     "_java_unified_incremental": attr.label(
         default = Label("//config/javac:unified_incremental"),
