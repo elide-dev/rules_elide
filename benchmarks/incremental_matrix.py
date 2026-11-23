@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Measure edit propagation through a generated core -> facade -> clients -> app graph."""
+import zipfile
 import argparse
 import gzip
 import hashlib
@@ -158,11 +159,14 @@ def fixture(work, language, mode, size, fanout):
     return sources
 
 
-def mixed_core(work, sources):
+def mixed_core(work, sources, mode):
     """Add mutually dependent Java/Kotlin code and run it through a separate consumer."""
     core = work / "core"
     build = core / "BUILD.bazel"
-    build.write_text(build.read_text().replace('srcs=[', 'srcs=["JavaBridge.java", "Mixed.kt", ', 1))
+    stanza = build.read_text().replace('srcs=[', 'srcs=["JavaBridge.java", "Mixed.kt", ', 1)
+    if mode not in STOCK_RULES:
+        stanza = stanza.replace('kotlinc_opts=', 'javac_opts=["--release", "21"], kotlinc_opts=', 1)
+    build.write_text(stanza)
     sources[core / "JavaBridge.java"] = (
         "package core; public class JavaBridge { public static int answer() { return Core1.INSTANCE.magic(); } }\n")
     sources[core / "Mixed.kt"] = "package core\nobject Mixed { fun answer(): Int = JavaBridge.answer() }\n"
@@ -417,7 +421,7 @@ def main():
                     root_build.unlink(missing_ok=True)
                     sources = fixture(work, language, mode, 3 if production is not None else args.sources, args.fanout)
                     if args.mixed:
-                        mixed_core(work, sources)
+                        mixed_core(work, sources, mode)
                     if production is not None:
                         sources = workload.install(work, sources, production, args.fanout)
                     shim_build, shim_module = shim_toolchains(language, f"@{elide_repo}//:elide") if mode == "elide_shim" else ("", "")
@@ -496,6 +500,10 @@ def main():
                             if production is not None:
                                 workload.verify(work, args.fanout, mode, java, output / (stem + ".runtime.log"))
                             if args.mixed:
+                                with zipfile.ZipFile(work / "bazel-bin/core/core.jar") as archive:
+                                    for name in ("core/Mixed.class", "core/JavaBridge.class"):
+                                        if int.from_bytes(archive.read(name)[6:8], "big") != 65:
+                                            raise AssertionError(f"Mixed output does not target Java 21: {name}")
                                 with (output / (stem + ".runtime.log")).open("w") as stream:
                                     subprocess.run([work / "bazel-bin/app/verify"], cwd=work, stdout=stream, stderr=subprocess.STDOUT, check=True)
                             actions = list(json_entries(execution))
