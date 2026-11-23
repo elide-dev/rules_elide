@@ -32,6 +32,11 @@ bool_flag(
     build_setting_default = False,
 )
 
+bool_flag(
+    name = "unified_jvm_compile",
+    build_setting_default = False,
+)
+
 # On by default (Elide 1.6.2+): native compiler dependency metadata and input pruning.
 # Set either to false for older Elide versions.
 bool_flag(

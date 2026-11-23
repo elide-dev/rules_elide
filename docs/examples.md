@@ -98,3 +98,28 @@ The sample `uses_one_dep` target declares two dependencies but uses one. The
 verifier checks that only the spare dependency appears in `.unused`. A second
 experiment creates a temporary workspace and checks actual recompilation after
 unused and used dependency ABI changes, without modifying the checkout.
+
+## Unified JVM compilation
+
+Select the unified compiler per target with a distribution that reports
+`unifiedJvmCompile: 1` from `elide javac --capabilities`.
+
+```starlark
+elide_kotlin_library(
+    name = "api",
+    srcs = ["Api.java", "Api.kt"],
+    compile_mode = "unified",
+    unified_release = 21,
+    unified_outputs = ["abi", "javadoc"],
+)
+```
+
+The compile action emits one implementation JAR and the selected optional
+artifacts. With `abi` selected, dependent compile actions receive the ABI JAR
+through `JavaInfo`. `classes`, `javadoc_data` and `rote_facts` are output groups
+for targets that request the corresponding artifacts. Rote facts are experimental
+and require `"rote_facts"` in `unified_outputs`.
+
+Use `--@rules_elide//elide:unified_jvm_compile` to set the default for eligible
+targets, or `compile_mode = "legacy"` to keep a target on its current compiler
+path. The existing split header mode remains available through legacy compilation.
