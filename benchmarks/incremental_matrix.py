@@ -78,6 +78,25 @@ def profile_summary(path):
     }
 
 
+def worker_memory(output_base):
+    """Linux post-build PSS and per-process lifetime RSS high-water marks."""
+    workers = []
+    for proc in Path("/proc").glob("[0-9]*"):
+        try:
+            if not (proc / "cwd").resolve(strict=True).is_relative_to(output_base):
+                continue
+            args = (proc / "cmdline").read_bytes().split(b"\0")
+            if b"--persistent_worker" not in args:
+                continue
+            pss = re.search(r"^Pss:\s+(\d+) kB$", (proc / "smaps_rollup").read_text(), re.M)
+            peak = re.search(r"^VmHWM:\s+(\d+) kB$", (proc / "status").read_text(), re.M)
+            workers.append({"pid": int(proc.name), "post_build_pss_kib": int(pss[1]) if pss else None,
+                            "lifetime_peak_rss_kib": int(peak[1]) if peak else None})
+        except (OSError, RuntimeError):
+            continue
+    return workers
+
+
 def source(language, package, name, expression="1", extra="", special=1):
     if language == "java":
         return (f"package {package}; public final class {name} {{\n"
@@ -231,6 +250,10 @@ def main():
     workload_args = parser.add_mutually_exclusive_group()
     workload_args.add_argument("--kotlin-builder", action="store_true", help="Benchmark this checkout's production KotlinBuilder module (Kotlin only)")
     workload_args.add_argument("--commons-lang", type=Path, help="Benchmark a local Commons Lang source checkout in an isolated copy (Java only)")
+    parser.add_argument("--worker-memory", action="store_true",
+                        help="Read worker PSS and lifetime peak RSS after timed actions on Linux")
+    parser.add_argument("--interleave", action="store_true",
+                        help="Run one measured trial per mode and cycle mode order between rounds")
     parser.add_argument("--profiles", action="store_true", help="Retain Bazel traces and summarize critical-path and sampled memory counters")
     parser.add_argument("--sources", type=positive, default=20)
     parser.add_argument("--jobs", type=positive, default=4)
@@ -348,7 +371,11 @@ def main():
 
         try:
             for language in args.languages:
-                for mode in args.modes:
+                trials = [(0, mode) for mode in args.modes]
+                if args.interleave:
+                    trials = [(i, mode) for i in range(args.rounds)
+                              for mode in (args.modes[i % len(args.modes):] + args.modes[:i % len(args.modes)])]
+                for trial, mode in trials:
                     if language == "java" and mode in ("vanilla_abi", "elide_incremental", "elide_selective", "elide_unified_ic"):
                         continue
                     # Each mode gets a fresh server/worker pool. Baseline builds
@@ -398,7 +425,8 @@ def main():
                     build_targets = targets + (["//app:verify"] if args.kotlin_builder else [])
                     for scenario in args.scenarios:
                         row = {"language": language, "mode": mode, "scenario": scenario, "samples": []}
-                        for index in range(args.warmups + args.rounds):
+                        for local_index in range(args.warmups + (1 if args.interleave else args.rounds)):
+                            index = local_index + trial * (args.warmups + 1)
                             for path, contents in sources.items():
                                 path.write_text(contents)
                             run(["build", *build_targets, *flags], output / "prepare.log")
@@ -424,6 +452,7 @@ def main():
                             start = time.perf_counter()
                             run(["build", *build_targets, *flags, "--execution_log_json_file=" + str(execution), *profile_flags], output / (stem + ".log"))
                             elapsed = time.perf_counter() - start
+                            memory = worker_memory(work / "cache") if args.worker_memory else None
                             if production is not None:
                                 workload.verify(work, args.fanout, mode, java, output / (stem + ".runtime.log"))
                             actions = list(json_entries(execution))
@@ -440,14 +469,27 @@ def main():
                                 raise AssertionError(f"Implementation edit escaped the library ABI boundary: {compiled}")
                             if args.commons_lang and mode in STOCK_RULES and scenario in ("body", "private_member", "multi_file_body") and compiled != ["//core:core"]:
                                 raise AssertionError(f"Implementation edit escaped the library ABI boundary: {compiled}")
-                            if index >= args.warmups:
+                            if local_index >= args.warmups:
                                 row["samples"].append({"seconds": elapsed, "compile_targets": compiled,
                                                        "abi_targets": sorted({e["targetLabel"] for e in actions if e.get("mnemonic") in {"Turbine", "TurbineDirect", "ElideJavacAbi", "ElideKotlincAbi"}}),
                                                        "actions": dict(Counter(entry.get("mnemonic", "unknown") for entry in actions)),
                                                        "execution_log": execution.name})
+                                row["samples"][-1]["compilers"] = [
+                                    {"target": e["targetLabel"], "runner": e.get("runner"),
+                                     "execution_wall_time": e.get("metrics", {}).get("executionWallTime"),
+                                     "outputs": {o["path"]: o.get("digest", {}).get("sizeBytes")
+                                                 for o in e.get("actualOutputs", [])}}
+                                    for e in actions if e.get("mnemonic") in COMPILERS]
+                                if memory is not None:
+                                    row["samples"][-1]["resident_workers"] = memory
                                 if args.profiles:
                                     row["samples"][-1].update(profile=profile_summary(profile), profile_file=profile.name)
-                        report["results"].append(row)
+                        if trial:
+                            previous = next(r for r in report["results"] if
+                                            (r["language"], r["mode"], r["scenario"]) == (language, mode, scenario))
+                            previous["samples"].extend(row["samples"])
+                        else:
+                            report["results"].append(row)
                         (output / "results.json").write_text(json.dumps(report, indent=2) + "\n")
                         (output / "results.md").write_text(render(report))
                         print(f"{language} {mode} {scenario}: {statistics.mean(s['seconds'] for s in row['samples']):.3f}s; {row['samples'][-1]['compile_targets']}", flush=True)
