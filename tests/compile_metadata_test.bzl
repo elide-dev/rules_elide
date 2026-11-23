@@ -38,11 +38,15 @@ def _unified_metadata_impl(ctx):
     asserts.true(env, "--unified" in action.argv)
     asserts.true(env, "--request-version=1" in action.argv)
     asserts.false(env, "--unused-inputs" in action.argv)
+    asserts.false(env, "--java-arg=--release" in action.argv)
+    asserts.false(env, "--kotlin-arg=-jvm-target=21" in action.argv)
     asserts.equals(env, ctx.attr.facts, "--rote-facts" in action.argv)
     asserts.equals(env, 1 if ctx.attr.facts else 0, len(target[OutputGroupInfo].rote_facts.to_list()))
     asserts.equals(env, 1, len(target[OutputGroupInfo].javadoc_data.to_list()))
     asserts.equals(env, 1, len(target[OutputGroupInfo].jdeps.to_list()))
-    asserts.true(env, target[JavaInfo].compile_jars.to_list()[0].basename.endswith("_abi.jar"))
+    compile_jar = target[JavaInfo].compile_jars.to_list()[0]
+    asserts.true(env, compile_jar.basename.endswith("_abi.jar"))
+    asserts.equals(env, [compile_jar], target[OutputGroupInfo].abi_jar.to_list())
     asserts.false(env, target[JavaInfo].runtime_output_jars[0].basename.endswith("_abi.jar"))
     return analysistest.end(env)
 
@@ -55,6 +59,13 @@ _unified_metadata_test = analysistest.make(
         "@@//elide:use_workers": False,  # buildifier: disable=canonical-repository
     },
 )
+
+def _unified_release_conflict_impl(ctx):
+    env = analysistest.begin(ctx)
+    asserts.expect_failure(env, "--release=17 conflicts with unified_release=21")
+    return analysistest.end(env)
+
+_unified_release_conflict_test = analysistest.make(_unified_release_conflict_impl, expect_failure = True)
 
 def compile_metadata_test_suite(name):
     """Defines native compiler metadata tests.
@@ -74,6 +85,7 @@ def compile_metadata_test_suite(name):
         srcs = [":_unified_java_src"],
         compile_mode = "unified",
         unified_outputs = ["abi", "javadoc"],
+        javac_opts = ["--release", "21"],
         tags = ["manual"],
     )
     elide_kotlin_library(
@@ -81,8 +93,17 @@ def compile_metadata_test_suite(name):
         srcs = [":_unified_java_src", ":_unified_kotlin_src"],
         compile_mode = "unified",
         unified_outputs = ["abi", "classes", "javadoc", "rote_facts"],
+        kotlinc_opts = ["-jvm-target=21"],
         tags = ["manual"],
     )
+    elide_java_library(
+        name = "_unified_conflicting_release",
+        srcs = [":_unified_java_src"],
+        compile_mode = "unified",
+        javac_opts = ["--release=17"],
+        tags = ["manual"],
+    )
+    _unified_release_conflict_test(name = "unified_release_conflict_test", target_under_test = ":_unified_conflicting_release")
     _unified_metadata_test(name = "unified_java_metadata_test", target_under_test = ":_unified_java")
     _unified_metadata_test(name = "unified_mixed_metadata_test", target_under_test = ":_unified_mixed", facts = True)
     native.test_suite(name = name, tests = [
@@ -93,4 +114,5 @@ def compile_metadata_test_suite(name):
         ":plugin_metadata_test",
         ":unified_java_metadata_test",
         ":unified_mixed_metadata_test",
+        ":unified_release_conflict_test",
     ])

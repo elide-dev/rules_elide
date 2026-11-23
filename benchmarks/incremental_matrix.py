@@ -23,11 +23,12 @@ SCENARIOS = (
     "public_module_api", "multi_file_body", "multi_module_body",
     "multi_module_api", "unused_dependency_api", "inline_or_constant",
 )
-MODES = ("vanilla", "vanilla_abi", "elide_shim", "elide_default", "elide", "elide_abi", "elide_pruned", "elide_incremental", "elide_fused", "elide_fused_pruned", "elide_hybrid", "elide_selective", "elide_parallel")
+UNIFIED_MODES = ("elide_unified", "elide_unified_jdeps")
+MODES = ("vanilla", "vanilla_abi", "elide_shim", "elide_default", "elide", "elide_abi", "elide_pruned", "elide_incremental", "elide_fused", "elide_fused_pruned", "elide_hybrid", "elide_selective", "elide_parallel") + UNIFIED_MODES
 # Modes that build stock java_library/kt_jvm_library targets. `elide_shim` compiles them through
 # rules_elide's JavaBuilder/KotlinBuilder toolchains instead of the stock builders.
 STOCK_RULES = ("vanilla", "vanilla_abi", "elide_shim")
-COMPILERS = {"Javac", "KotlinCompile", "ElideJavac", "ElideKotlinc"}
+COMPILERS = {"Javac", "KotlinCompile", "ElideJavac", "ElideKotlinc", "ElideJvmCompile"}
 
 
 def positive(value):
@@ -101,6 +102,8 @@ def fixture(work, language, mode, size, fanout):
         build = directory / "BUILD.bazel"
         prefix = f'load("{load}", "{rule}")\npackage(default_visibility=["//visibility:public"])\n'
         options = ", javac_opts=[\"--release\", \"21\"]" if language == "java" and mode not in STOCK_RULES else ""
+        if mode in UNIFIED_MODES:
+            options += ', compile_mode="unified", unified_release=21, unified_outputs=["abi"]'
         if mode == "elide_hybrid":
             options += ', abi_mode="' + ("separate" if package == "core" else "combined") + '"'
         if mode == "elide_selective":
@@ -180,7 +183,8 @@ def render(report):
              "Warm-ups are discarded. Counts include full source compiler actions only; ABI/header actions are reported separately.", "",
              "| Language | Mode | Edit | Mean (s) | Median (s) | Stddev (s) | Full compile targets per sample |",
              "| --- | --- | --- | ---: | ---: | ---: | --- |"]
-    lines[4:4] = [f"Published Elide toolchain: `{report['elide_version']}` (repository integrity pins).",
+    distribution = "Local Elide distribution" if report["parameters"].get("elide_local_path") else "Published Elide toolchain"
+    lines[4:4] = [f"{distribution}: `{report['elide_version']}`.",
                   f"Fresh Bazel server per timed sample: `{report['parameters'].get('cold_server', False)}`; downloads and filesystem caches warm.", ""]
     if "source_workload" in report:
         workload = report["source_workload"]
@@ -221,7 +225,7 @@ def main():
     parser.add_argument("--rounds", type=positive, default=3)
     parser.add_argument("--warmups", type=positive, default=1)
     parser.add_argument("--languages", nargs="+", choices=["java", "kotlin"], default=["java", "kotlin"])
-    parser.add_argument("--modes", nargs="+", choices=MODES, default=[mode for mode in MODES if mode not in ("elide_hybrid", "elide_selective", "elide_parallel")])
+    parser.add_argument("--modes", nargs="+", choices=MODES, default=[mode for mode in MODES if mode not in (*UNIFIED_MODES, "elide_hybrid", "elide_selective", "elide_parallel")])
     parser.add_argument("--scenarios", nargs="+", choices=SCENARIOS, default=None)
     parser.add_argument("--output", type=Path, default=REPO / "benchmarks/results/incremental")
     parser.add_argument("--distdir", action="append", default=[])
@@ -272,6 +276,9 @@ def main():
               "isolated_mode_servers": True,
               "java_release": 21,
               "parameters": {k: str(v) if isinstance(v, Path) else v for k, v in vars(args).items()} | {"output": str(output)}, "results": []}
+    if args.elide_local_path:
+        local_elide = args.elide_local_path.resolve() / "bin" / ("elide.exe" if os.name == "nt" else "elide")
+        report["elide_version"] = subprocess.check_output([local_elide, "--version"], text=True).strip()
     report["cache_conditions"] = {
         "downloads_and_filesystem": "warm",
         "timed_server": "fresh" if args.cold_server else "warm",
@@ -354,7 +361,7 @@ def main():
                         flags += [
                             f"--@rules_elide//config/{config}:abi_compile_avoidance={str(abi).lower()}",
                             f"--@rules_elide//config/{config}:abi_from_compile={str(fused).lower()}",
-                            f"--@rules_elide//elide:emit_jdeps={str(pruned).lower()}",
+                            f"--@rules_elide//elide:emit_jdeps={str(pruned or mode == 'elide_unified_jdeps').lower()}",
                             f"--@rules_elide//elide:prune_unused_inputs={str(pruned).lower()}",
                         ]
                     if mode == "elide_parallel":

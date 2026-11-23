@@ -166,7 +166,7 @@ def compile_output_groups(compilation):
         compilation: Result of run_javac or run_kotlinc.
 
     Returns:
-        OutputGroupInfo with jdeps and unused_inputs groups.
+        OutputGroupInfo exposing compiler products and reports.
     """
     return OutputGroupInfo(
         jdeps = depset([f for f in compilation.reports if f.extension == "jdeps"]),
@@ -174,6 +174,7 @@ def compile_output_groups(compilation):
         javadoc_data = depset(getattr(compilation, "javadoc_data", [])),
         rote_facts = depset(getattr(compilation, "rote_facts", [])),
         classes = depset(getattr(compilation, "classes", [])),
+        abi_jar = depset([compilation.abi_jar] if compilation.abi_jar else []),
     )
 
 def _run_elide_compile(ctx, mnemonic, subcommand, tool_args, inputs, outputs, progress_message, incremental = False):
@@ -261,6 +262,30 @@ def _unified_enabled(ctx):
     mode = ctx.attr.compile_mode
     return mode == "unified" or (mode == "inherit" and ctx.attr._unified_compile[BuildSettingInfo].value)
 
+def _unified_compiler_opts(ctx, options, release_flags):
+    """Fold explicit release flags that match the unified request's target."""
+    forwarded = []
+    release = str(ctx.attr.unified_release)
+    skip_value = False
+    for index, option in enumerate(options):
+        if skip_value:
+            skip_value = False
+            continue
+        parts = option.split("=", 1)
+        if parts[0] not in release_flags:
+            forwarded.append(option)
+            continue
+        if len(parts) == 2:
+            value = parts[1]
+        else:
+            if index + 1 == len(options):
+                fail("Missing version after " + option)
+            value = options[index + 1]
+            skip_value = True
+        if value != release and not (parts[0] == "-jvm-target" and value == "1.8" and release == "8"):
+            fail("{}={} conflicts with unified_release={}".format(parts[0], value, release))
+    return forwarded
+
 def _run_unified(ctx, output_jar, kotlin):
     elide = ctx.toolchains[TOOLCHAIN_TYPE].elide_info
     selected = ctx.attr.unified_outputs
@@ -309,14 +334,14 @@ def _run_unified(ctx, output_jar, kotlin):
         args.add("--target-label=" + str(ctx.label))
     args.add_all(full_cp, before_each = "--classpath-entry")
     args.add("--java-arg=-proc:none")
-    args.add_all(ctx.attr.javac_opts, format_each = "--java-arg=%s")
+    args.add_all(_unified_compiler_opts(ctx, ctx.attr.javac_opts, ["--release"]), format_each = "--java-arg=%s")
     if has_kotlin:
         if ctx.attr.module_name:
             args.add_all(["--kotlin-arg=-module-name", "--kotlin-arg=" + ctx.attr.module_name])
         if friend_paths:
             args.add("--kotlin-arg=-Xfriend-paths=" + ",".join(friend_paths))
         args.add_all(ctx.attr.builtin_plugins, format_each = "--kotlin-plugin=%s")
-        args.add_all(ctx.attr.kotlinc_opts, format_each = "--kotlin-arg=%s")
+        args.add_all(_unified_compiler_opts(ctx, ctx.attr.kotlinc_opts, ["-jvm-target", "-Xjdk-release"]), format_each = "--kotlin-arg=%s")
     args.add_all(ctx.files.srcs, before_each = "--source")
     if worker:
         args.use_param_file("@%s", use_always = True)
@@ -325,7 +350,8 @@ def _run_unified(ctx, output_jar, kotlin):
         mnemonic = "ElideJvmCompile",
         executable = elide.binary,
         arguments = [lead, args],
-        inputs = depset(direct = ctx.files.srcs, transitive = [full_cp, elide.compile_tool_files]),
+        inputs = depset(direct = ctx.files.srcs, transitive = [full_cp]),
+        tools = elide.compile_tool_files,
         outputs = [class_jar] + [f for f in [abi, docs, facts, classes, jdeps] if f != None],
         progress_message = "Compiling %{label} (Elide unified JVM)",
         execution_requirements = _WORKER_EXEC_REQUIREMENTS if worker else {},
