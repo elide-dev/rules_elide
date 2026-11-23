@@ -13,6 +13,17 @@ Keep clean rebuilds separate from warm edits and first-install/download costs.
 
 ## Worker processes
 
+The rules workspace and benchmarks allow eight singleplex workers for the opt-in
+unified compiler. Bazel reads the consuming workspace’s configuration. To use
+the same default in a downstream workspace, add this to its `.bazelrc`:
+
+```bazelrc
+build --worker_max_instances=ElideJvmCompile=8
+```
+
+The command-line flag overrides this value. Bazel’s `--jobs` limit and the
+number of independent targets determine how many workers can run concurrently.
+
 Elide compiles one request at a time per process. The native rules therefore run
 `elide javac` and `elide kotlinc` as singleplex workers, and Bazel keeps a pool of
 them per compiler: four by default. On a machine with spare cores, raise the pool

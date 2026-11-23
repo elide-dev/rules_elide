@@ -284,8 +284,8 @@ def main():
     parser.add_argument("--profiles", action="store_true", help="Retain Bazel traces and summarize critical-path and sampled memory counters")
     parser.add_argument("--sources", type=positive, default=20)
     parser.add_argument("--jobs", type=positive, default=4)
-    parser.add_argument("--unified-workers", type=positive, default=4,
-                        help="Singleplex ElideJvmCompile worker cap")
+    parser.add_argument("--unified-workers", type=positive, default=8,
+                        help="Singleplex ElideJvmCompile worker cap (default: 8)")
     parser.add_argument("--fanout", type=positive, default=3)
     parser.add_argument("--rounds", type=positive, default=3)
     parser.add_argument("--warmups", type=positive, default=1)
