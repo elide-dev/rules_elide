@@ -42,3 +42,9 @@ bool_flag(
     name = "abi_from_compile",
     build_setting_default = True,
 )
+
+# Reuse private, per-target implementation state for qualified unified worker requests.
+bool_flag(
+    name = "unified_incremental",
+    build_setting_default = False,
+)

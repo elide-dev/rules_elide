@@ -22,7 +22,7 @@ REPO = Path(__file__).resolve().parents[1]
 SCENARIOS = (
     "clean", "compiler_cold", "full_rebuild", "no_op", "comment", "body", "private_member", "internal_module_api",
     "public_module_api", "multi_file_body", "multi_module_body",
-    "multi_module_api", "unused_dependency_api", "inline_or_constant",
+    "multi_module_api", "unused_dependency_api", "inline_or_constant", "client_batch",
 )
 UNIFIED_MODES = ("elide_unified", "elide_unified_jdeps", "elide_unified_ic")
 MODES = ("vanilla", "vanilla_abi", "elide_shim", "elide_default", "elide", "elide_abi", "elide_pruned", "elide_incremental", "elide_fused", "elide_fused_pruned", "elide_hybrid", "elide_selective", "elide_parallel") + UNIFIED_MODES
@@ -133,7 +133,7 @@ def fixture(work, language, mode, size, fanout):
             options += ', kotlinc_opts=["-Xjdk-release=21"]'
         if mode in UNIFIED_MODES:
             options += ', compile_mode="unified", unified_release=21, unified_outputs=["abi"]'
-        if mode == "elide_unified_ic":
+        if mode == "elide_unified_ic" and language == "kotlin":
             options += ', incremental_mode="on"'
         if mode == "elide_hybrid":
             options += ', abi_mode="' + ("separate" if package == "core" else "combined") + '"'
@@ -198,6 +198,7 @@ def mutate(sources, scenario, language, nonce):
         "internal_module_api": [("Core0", "public")],
         "public_module_api": [("Facade", "public")],
         "multi_file_body": [(f"Core{i}", "body") for i in range(3)],
+        "client_batch": [(path.stem, "body") for path in sources if path.parent.name == "clients"],
         "multi_module_body": [("Core0", "body"), ("Facade", "body")],
         "multi_module_api": [("Core0", "public"), ("Facade", "public")],
         "unused_dependency_api": [("Spare", "public")],
@@ -250,6 +251,8 @@ def main():
     workload_args = parser.add_mutually_exclusive_group()
     workload_args.add_argument("--kotlin-builder", action="store_true", help="Benchmark this checkout's production KotlinBuilder module (Kotlin only)")
     workload_args.add_argument("--commons-lang", type=Path, help="Benchmark a local Commons Lang source checkout in an isolated copy (Java only)")
+    parser.add_argument("--phase-times", action="store_true",
+                        help="Emit unified compiler phase times and Kotlin IC iterations into the action logs")
     parser.add_argument("--worker-memory", action="store_true",
                         help="Read worker PSS and lifetime peak RSS after timed actions on Linux")
     parser.add_argument("--interleave", action="store_true",
@@ -297,7 +300,7 @@ def main():
         production, source_metadata = workload.snapshot(REPO)
         args.scenarios = args.scenarios or list(workload.SCENARIOS)
     else:
-        args.scenarios = args.scenarios or [s for s in SCENARIOS if s not in ("full_rebuild", "compiler_cold")]
+        args.scenarios = args.scenarios or [s for s in SCENARIOS if s not in ("full_rebuild", "compiler_cold", "client_batch")]
     if "full_rebuild" in args.scenarios and any(mode in args.modes for mode in ("elide_incremental", "elide_selective")):
         parser.error("full_rebuild measures full compilation; choose modes without native incremental compilation")
     if production is None and args.sources < 3:
@@ -380,7 +383,7 @@ def main():
                     trials = [(i, mode) for i in range(args.rounds)
                               for mode in (args.modes[i % len(args.modes):] + args.modes[:i % len(args.modes)])]
                 for trial, mode in trials:
-                    if language == "java" and mode in ("vanilla_abi", "elide_incremental", "elide_selective", "elide_unified_ic"):
+                    if language == "java" and mode in ("vanilla_abi", "elide_incremental", "elide_selective"):
                         continue
                     # Each mode gets a fresh server/worker pool. Baseline builds
                     # and warm-ups remain untimed, so measured builds stay warm.
@@ -428,6 +431,10 @@ def main():
                         # Separate workers can compile independent graph branches concurrently.
                         flags += ["--noworker_multiplex", "--worker_max_instances=ElideKotlinc=4",
                                   "--worker_max_instances=ElideJavac=4"]
+                    if mode == "elide_unified_ic" and language == "java":
+                        flags.append("--@rules_elide//config/javac:unified_incremental=true")
+                    if args.phase_times and mode in UNIFIED_MODES:
+                        flags.append("--define=elide_unified_jvm_profile=1")
                     if mode == "elide_incremental":
                         flags += ["--@rules_elide//config/kotlinc:incremental=true"]
                     targets = ["//core", "//spare", "//facade", "//app", *[f"//clients:client{i}" for i in range(args.fanout)]]
@@ -470,6 +477,10 @@ def main():
                                 expected = {t if ":" in t else t + ":" + t.rsplit("/", 1)[-1] for t in targets}
                                 if not expected.issubset(compiled):
                                     raise AssertionError(f"{scenario} skipped runtime compilers: {expected - set(compiled)}")
+                            if scenario == "client_batch":
+                                clients = {f"//clients:client{i}" for i in range(args.fanout)}
+                                if not clients.issubset(compiled):
+                                    raise AssertionError(f"Wide build skipped clients: {clients - set(compiled)}")
                             if scenario == "no_op" and compiled:
                                 raise AssertionError(f"No-op recompiled targets: {compiled}")
                             if scenario != "no_op" and not compiled:

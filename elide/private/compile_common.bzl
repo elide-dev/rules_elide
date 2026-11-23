@@ -325,6 +325,8 @@ def _run_unified(ctx, output_jar, kotlin):
     args.add("--request-version=1")
     if worker and kotlin and _incremental_enabled(ctx):
         args.add("--kotlin-incremental=1")
+    if worker and not kotlin and ctx.attr._java_unified_incremental[BuildSettingInfo].value:
+        args.add("--java-incremental=1")
     args.add("--release", ctx.attr.unified_release)
     args.add("--jar", class_jar)
     for flag, output in [("--abi-jar", abi), ("--javadoc-data", docs), ("--rote-facts", facts), ("--classes", classes), ("--jdeps", jdeps)]:
@@ -355,7 +357,7 @@ def _run_unified(ctx, output_jar, kotlin):
         outputs = [class_jar] + [f for f in [abi, docs, facts, classes, jdeps] if f != None],
         progress_message = "Compiling %{label} (Elide unified JVM)",
         execution_requirements = _WORKER_EXEC_REQUIREMENTS if worker else {},
-        env = _ELIDE_BAZEL_ENV,
+        env = dict(_ELIDE_BAZEL_ENV, ELIDE_UNIFIED_JVM_PROFILE = "1") if ctx.var.get("elide_unified_jvm_profile") == "1" else _ELIDE_BAZEL_ENV,
     )
     if packaged:
         _merge_resources(ctx, [class_jar], output_jar)
@@ -1094,6 +1096,10 @@ COMMON_LIBRARY_ATTRS = {
         providers = [BuildSettingInfo],
         doc = "Build setting opting kotlinc compiles into incremental " +
               "compilation with worker-private classes/cache and complete jar output.",
+    ),
+    "_java_unified_incremental": attr.label(
+        default = Label("//config/javac:unified_incremental"),
+        providers = [BuildSettingInfo],
     ),
     "_java_abi_compile_avoidance": attr.label(
         default = Label("//config/javac:abi_compile_avoidance"),
