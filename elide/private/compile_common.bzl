@@ -171,6 +171,9 @@ def compile_output_groups(compilation):
     return OutputGroupInfo(
         jdeps = depset([f for f in compilation.reports if f.extension == "jdeps"]),
         unused_inputs = depset([f for f in compilation.reports if f.extension == "unused"]),
+        javadoc_data = depset(getattr(compilation, "javadoc_data", [])),
+        rote_facts = depset(getattr(compilation, "rote_facts", [])),
+        classes = depset(getattr(compilation, "classes", [])),
     )
 
 def _run_elide_compile(ctx, mnemonic, subcommand, tool_args, inputs, outputs, progress_message, incremental = False):
@@ -254,6 +257,90 @@ def _abi_selection(ctx, enabled_setting, combined_setting):
         return enabled, enabled and combined_setting[BuildSettingInfo].value
     return mode != "off", mode == "combined"
 
+def _unified_enabled(ctx):
+    mode = ctx.attr.compile_mode
+    return mode == "unified" or (mode == "inherit" and ctx.attr._unified_compile[BuildSettingInfo].value)
+
+def _run_unified(ctx, output_jar, kotlin):
+    elide = ctx.toolchains[TOOLCHAIN_TYPE].elide_info
+    selected = ctx.attr.unified_outputs
+    if any([output not in ["abi", "classes", "javadoc", "rote_facts"] for output in selected]):
+        fail("Unknown unified JVM output in " + str(selected))
+    if not ctx.files.srcs:
+        fail("Unified JVM compilation requires sources")
+    if ctx.attr.plugins or _has_exported_processors(ctx.attr.deps):
+        fail("Unified JVM compilation currently requires annotation processing to run as an explicit prerequisite")
+    if "abi" in selected and (ctx.files.resource_jars or getattr(ctx.attr, "associates", [])):
+        fail("Unified ABI JARs currently require a target without resource JARs or Kotlin friend dependencies")
+    if ctx.attr.abi_mode in ["separate", "combined"]:
+        fail("With compile_mode = unified, request abi in unified_outputs. Separate header actions use the legacy compile mode.")
+    if ctx.attr.abi_mode == "off" and "abi" in selected:
+        fail("abi_mode = off conflicts with unified_outputs containing abi")
+    if kotlin and getattr(ctx.attr, "incremental_mode", "") == "on":
+        fail("Unified JVM compilation uses ordinary persistent workers. Remove incremental_mode = on.")
+
+    classpath = compile_classpath(ctx.attr.deps)
+    friend_paths, friend_jars = _friend_paths(getattr(ctx.attr, "associates", []))
+    has_kotlin = kotlin and any([src.extension == "kt" for src in ctx.files.srcs])
+    kotlin_stdlib = elide.kotlin_stdlib_jars if has_kotlin else depset()
+    full_cp = depset(transitive = [classpath, friend_jars, kotlin_stdlib])
+    packaged = _has_packaged_resources(ctx)
+    class_jar = ctx.actions.declare_file(ctx.label.name + "_classes.jar") if packaged else output_jar
+    abi = ctx.actions.declare_file(ctx.label.name + "_abi.jar") if "abi" in selected else None
+    docs = ctx.actions.declare_directory(ctx.label.name + "_javadoc_data") if "javadoc" in selected else None
+    facts = ctx.actions.declare_file(ctx.label.name + "_rote_facts.json") if "rote_facts" in selected else None
+    classes = ctx.actions.declare_directory(ctx.label.name + "_classes") if "classes" in selected else None
+    jdeps = ctx.actions.declare_file(class_jar.basename + ".jdeps", sibling = class_jar) if ctx.attr._emit_jdeps[BuildSettingInfo].value else None
+
+    lead = ctx.actions.args()
+    lead.add_all(["javac", "--unified"])
+    worker = ctx.attr._use_workers[BuildSettingInfo].value
+    if worker and ctx.attr._classpath_cache[BuildSettingInfo].value:
+        lead.add("--classpath-cache")
+    args = ctx.actions.args()
+    args.add("--")
+    args.add("--request-version=1")
+    args.add("--release", ctx.attr.unified_release)
+    args.add("--jar", class_jar)
+    for flag, output in [("--abi-jar", abi), ("--javadoc-data", docs), ("--rote-facts", facts), ("--classes", classes), ("--jdeps", jdeps)]:
+        if output:
+            args.add_all([output], before_each = flag, expand_directories = False)
+    if jdeps:
+        args.add("--target-label=" + str(ctx.label))
+    args.add_all(full_cp, before_each = "--classpath-entry")
+    args.add("--java-arg=-proc:none")
+    args.add_all(ctx.attr.javac_opts, format_each = "--java-arg=%s")
+    if has_kotlin:
+        if ctx.attr.module_name:
+            args.add_all(["--kotlin-arg=-module-name", "--kotlin-arg=" + ctx.attr.module_name])
+        if friend_paths:
+            args.add("--kotlin-arg=-Xfriend-paths=" + ",".join(friend_paths))
+        args.add_all(ctx.attr.builtin_plugins, format_each = "--kotlin-plugin=%s")
+        args.add_all(ctx.attr.kotlinc_opts, format_each = "--kotlin-arg=%s")
+    args.add_all(ctx.files.srcs, before_each = "--source")
+    if worker:
+        args.use_param_file("@%s", use_always = True)
+        args.set_param_file_format("multiline")
+    ctx.actions.run(
+        mnemonic = "ElideJvmCompile",
+        executable = elide.binary,
+        arguments = [lead, args],
+        inputs = depset(direct = ctx.files.srcs, transitive = [full_cp, elide.compile_tool_files]),
+        outputs = [class_jar] + [f for f in [abi, docs, facts, classes, jdeps] if f != None],
+        progress_message = "Compiling %{label} (Elide unified JVM)",
+        execution_requirements = _WORKER_EXEC_REQUIREMENTS if worker else {},
+        env = _ELIDE_BAZEL_ENV,
+    )
+    if packaged:
+        _merge_resources(ctx, [class_jar], output_jar)
+    return struct(
+        abi_jar = abi,
+        reports = [jdeps] if jdeps else [],
+        javadoc_data = [docs] if docs else [],
+        rote_facts = [facts] if facts else [],
+        classes = [classes] if classes else [],
+    )
+
 def run_javac(ctx, output_jar):
     """Runs `elide javac --jar` to compile `.java` sources into `output_jar`.
 
@@ -273,6 +360,10 @@ def run_javac(ctx, output_jar):
     Returns:
         Struct with optional abi_jar and compiler reports.
     """
+    if _unified_enabled(ctx):
+        return _run_unified(ctx, output_jar, kotlin = False)
+    if ctx.attr.unified_outputs:
+        fail("unified_outputs requires unified JVM compilation")
     elide = ctx.toolchains[TOOLCHAIN_TYPE].elide_info
     classpath = compile_classpath(ctx.attr.deps)
     plugin_cp = _plugin_classpath(ctx.attr.plugins) if hasattr(ctx.attr, "plugins") else depset()
@@ -368,6 +459,10 @@ def run_kotlinc(ctx, output_jar):
     Returns:
         Struct containing an optional abi_jar and per-action dependency reports.
     """
+    if _unified_enabled(ctx):
+        return _run_unified(ctx, output_jar, kotlin = True)
+    if ctx.attr.unified_outputs:
+        fail("unified_outputs requires unified JVM compilation")
     elide = ctx.toolchains[TOOLCHAIN_TYPE].elide_info
     classpath = compile_classpath(ctx.attr.deps)
     plugin_cp = _plugin_classpath(ctx.attr.plugins) if hasattr(ctx.attr, "plugins") else depset()
@@ -884,6 +979,22 @@ def build_test_launcher(ctx, output_jar):
 # Common attribute sets used by Java and Kotlin compile rules.
 
 COMMON_LIBRARY_ATTRS = {
+    "compile_mode": attr.string(
+        default = "inherit",
+        values = ["inherit", "legacy", "unified"],
+        doc = "JVM implementation compile mode. Unified requires a toolchain with the unified JVM compile request.",
+    ),
+    "unified_outputs": attr.string_list(
+        doc = "Optional unified compile outputs. Rote facts are experimental and require explicit selection.",
+    ),
+    "unified_release": attr.int(
+        default = 21,
+        doc = "Java platform API and classfile release for unified compilation.",
+    ),
+    "_unified_compile": attr.label(
+        default = Label("//elide:unified_jvm_compile"),
+        providers = [BuildSettingInfo],
+    ),
     "abi_mode": attr.string(
         default = "inherit",
         values = ["inherit", "off", "separate", "combined"],
