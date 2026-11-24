@@ -128,3 +128,18 @@ definitions. Conflicting values produce an analysis error.
 Use `--@rules_elide//elide:unified_jvm_compile` to set the default for eligible
 targets, or `compile_mode = "legacy"` to keep a target on its current compiler
 path. The existing split header mode remains available through legacy compilation.
+
+## Use Elide as a GraalVM Native Image SDK
+
+In a root module that declares both rulesets, expose the GraalVM rules to the
+Elide extension and register the Linux and macOS SDKs supplied by Elide:
+
+```starlark
+inject_repo(elide, "rules_graalvm")
+register_toolchains("@elide_toolchains//graalvm:all")
+```
+
+Build an ordinary `native_image` from `@rules_graalvm//graalvm:defs.bzl`.
+The action receives the Native Image launcher, SVM libraries, and JDK files
+from the matching Elide distribution. The C toolchain is resolved by
+rules_graalvm. Custom distributions must include `lib/svm/bin/native-image`.
