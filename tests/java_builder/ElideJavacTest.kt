@@ -8,12 +8,12 @@ import kotlin.test.assertTrue
 class ElideJavacTest {
     @Test fun plainCompile() {
         val req = Request.parse(listOf(
-            "--output", "out.jar", "--output_deps_proto", "out.jdeps", "--target_label", "//a:b",
+            "--output", "out.jar", "--output_deps_proto", "out.jdeps", "--target_label", "@@repo//a:b",
             "--system", "jdk", "--bootclasspath", "boot.jar", "--classpath", "x.jar", "y.jar",
             "--sources", "A.java", "--javacopts", "-source", "25", "-g", "--",
         ))
         assertEquals(
-            listOf("elide", "javac", "--jar", "out.jar", "--jdeps", "out.jdeps", "--target-label", "//a:b", "--",
+            listOf("elide", "javac", "--jar", "out.jar", "--jdeps", "out.jdeps", "--target-label=@@repo//a:b", "--",
                 "-source", "25", "-g", "-classpath", "x.jar:y.jar", "-proc:none", "A.java"),
             ElideJavac.plan(req, "elide", listOf("ep.jar"), emptyList(), ":"),
         )
