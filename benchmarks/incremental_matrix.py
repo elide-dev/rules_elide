@@ -275,13 +275,14 @@ def main():
     workload_args.add_argument("--mixed", action="store_true", help="Add mutually dependent Java/Kotlin sources to the generated Kotlin core and run a downstream consumer")
     workload_args.add_argument("--kotlin-builder", action="store_true", help="Benchmark this checkout's production KotlinBuilder module (Kotlin only)")
     workload_args.add_argument("--commons-lang", type=Path, help="Benchmark a local Commons Lang source checkout in an isolated copy (Java only)")
+    parser.add_argument("--unified-classpath-pruning", action="store_true", help="Measure compiler-guarded transitive ABI pruning in unified IC mode")
     parser.add_argument("--phase-times", action="store_true",
                         help="Emit unified compiler phase times and Kotlin IC iterations into the action logs")
     parser.add_argument("--worker-memory", action="store_true",
                         help="Read worker PSS and lifetime peak RSS after timed actions on Linux")
     parser.add_argument("--interleave", action="store_true",
                         help="Run one measured trial per mode and cycle mode order between rounds")
-    parser.add_argument("--profiles", action="store_true", help="Retain Bazel traces and summarize critical-path and sampled memory counters")
+    parser.add_argument("--profiles", action="store_true", help="Retain Bazel traces and summarize the critical path; combine with --worker-memory for worker counters")
     parser.add_argument("--sources", type=positive, default=20)
     parser.add_argument("--jobs", type=positive, default=4)
     parser.add_argument("--unified-workers", type=positive, default=8,
@@ -461,6 +462,9 @@ def main():
                                   "--worker_max_instances=ElideJavac=4"]
                     if mode == "elide_unified_ic" and language == "java":
                         flags.append("--@rules_elide//config/javac:unified_incremental=true")
+                    if args.unified_classpath_pruning and mode == "elide_unified_ic":
+                        config = "kotlinc" if language == "kotlin" else "javac"
+                        flags.append(f"--@rules_elide//config/{config}:unified_classpath_pruning=true")
                     if args.phase_times and mode in UNIFIED_MODES:
                         flags.append("--define=elide_unified_jvm_profile=1")
                     if mode == "elide_incremental":
@@ -492,7 +496,9 @@ def main():
                             stem = f"{language}-{mode}-{scenario}-{index}"
                             execution = output / (stem + ".json")
                             profile = output / (stem + ".profile.json.gz")
-                            profile_flags = ["--profile=" + str(profile), "--generate_json_trace_profile", "--experimental_profile_include_target_label", "--experimental_collect_worker_data_in_profiler"] if args.profiles else []
+                            profile_flags = ["--profile=" + str(profile), "--generate_json_trace_profile", "--experimental_profile_include_target_label"] if args.profiles else []
+                            if args.profiles and args.worker_memory:
+                                profile_flags.append("--experimental_collect_worker_data_in_profiler")
                             start = time.perf_counter()
                             run(["build", *build_targets, *flags, "--execution_log_json_file=" + str(execution), *profile_flags], output / (stem + ".log"))
                             elapsed = time.perf_counter() - start

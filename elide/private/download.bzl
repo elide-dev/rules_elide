@@ -36,22 +36,38 @@ filegroup(
 # `elide java`, which loads conf/security/java.security from its home).
 # Excludes: doc/ (HTML docs), lib/svm/ + lib/truffle/ + lib/static/ (native-image),
 #           lib/llvm/ + lib/resources/jextract/ (C tools), Python runtime, Maven.
+_JVM_EXCLUDES = [
+    "conf/components/**",
+    "lib/llvm/**",
+    "lib/resources/jextract/**",
+    "lib/static/**",
+    "lib/svm/**",
+    "lib/truffle/**",
+    "lib/resources/python/**",
+    "lib/maven/**",
+]
+
 filegroup(
     name = "elide_compile_files",
-    srcs = glob(
-        ["bin/**", "conf/**", "lib/**"],
-        exclude = [
-            # Component markers (e.g. Python's) stay with their own filegroups.
-            "conf/components/**",
-            "lib/llvm/**",
-            "lib/resources/jextract/**",
-            "lib/static/**",
-            "lib/svm/**",
-            "lib/truffle/**",
-            "lib/resources/python/**",
-            "lib/maven/**",
-        ],
-    ),
+    srcs = glob(["bin/**", "conf/**", "lib/**"], exclude = _JVM_EXCLUDES),
+)
+
+# Unified workers invoke the native compiler in-process. Keep the platform, runtime
+# libraries and Kotlin compiler plugins. Test runners, the package index and sibling
+# CLI wrappers are independent tools; their upgrades should not restart the pool.
+filegroup(
+    name = "elide_unified_compile_files",
+    srcs = glob(["bin/**", "conf/**", "lib/**"], exclude = _JVM_EXCLUDES + [
+        "bin/google-java-format*", "bin/javap", "bin/javap.exe", "bin/jextract*",
+        "bin/ktfmt*", "bin/kotlinc", "bin/kotlinc.exe",
+        "lib/resources/pkgst/**",
+        "lib/resources/kotlin/*/lib/apiguardian-*.jar",
+        "lib/resources/kotlin/*/lib/jacoco-agent.jar",
+        "lib/resources/kotlin/*/lib/junit-*.jar",
+        "lib/resources/kotlin/*/lib/kotlin-test*.jar",
+        "lib/resources/kotlin/*/lib/kotlinx-coroutines-test-*.jar",
+        "lib/resources/kotlin/*/lib/opentest4j-*.jar",
+    ]),
 )
 
 # C binding generation retains LLVM without burdening every JVM compiler action.

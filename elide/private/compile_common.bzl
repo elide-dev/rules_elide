@@ -315,10 +315,47 @@ def _run_unified(ctx, output_jar, kotlin):
     classes = ctx.actions.declare_directory(ctx.label.name + "_classes") if "classes" in selected else None
     jdeps = ctx.actions.declare_file(class_jar.basename + ".jdeps", sibling = class_jar) if ctx.attr._emit_jdeps[BuildSettingInfo].value else None
 
+    compiler_files = getattr(elide, "unified_compile_tool_files", elide.compile_tool_files)
     lead = ctx.actions.args()
     inventory = None
     unused = None
-    if (not kotlin and ctx.attr._unified_prune_shadowed[BuildSettingInfo].value and
+    guard = None
+    guarded_jars = []
+    guards = []
+    if kotlin:
+        qualified = (ctx.attr._kotlin_unified_pruning[BuildSettingInfo].value and _incremental_enabled(ctx) and
+                     all([src.extension == "kt" for src in ctx.files.srcs]) and not ctx.attr.builtin_plugins and not friend_paths)
+        suffix = ".kotlin-guard"
+    else:
+        qualified = (ctx.attr._java_unified_pruning[BuildSettingInfo].value and not _unified_compiler_opts(ctx, ctx.attr.javac_opts, ["--release"]) and
+                     all([src.extension == "java" and src.basename != "module-info.java" for src in ctx.files.srcs]))
+        suffix = ".java-guard"
+    if qualified and abi and ctx.attr._use_workers[BuildSettingInfo].value and not docs and not facts and not jdeps:
+        guard = ctx.actions.declare_file(abi.basename + suffix, sibling = abi)
+        direct_paths = {jar.path: True for dep in ctx.attr.deps if JavaInfo in dep for jar in dep[JavaInfo].compile_jars.to_list()}
+        indirect = {jar.path + suffix: jar for jar in classpath.to_list() if jar.path not in direct_paths}
+        available = depset(transitive = [
+            dep[ElideInfo].classpath_guards
+            for dep in ctx.attr.deps
+            if ElideInfo in dep and hasattr(dep[ElideInfo], "classpath_guards")
+        ])
+        for upstream in available.to_list():
+            if upstream.path in indirect:
+                guards.append(upstream)
+                guarded_jars.append(indirect[upstream.path])
+        if guarded_jars:
+            unused = ctx.actions.declare_file(class_jar.basename + ".unused", sibling = class_jar)
+        if not kotlin:
+            # Produced separately so the javac worker can reuse an entire implementation/ABI pair.
+            ctx.actions.run(
+                mnemonic = "ElideClasspathInventory",
+                executable = elide.binary,
+                arguments = ["javac", "--unified", "--", "--write-java-classpath-guard", guard.path, abi.path],
+                inputs = [abi],
+                tools = compiler_files,
+                outputs = [guard],
+            )
+    if (not guard and not kotlin and ctx.attr._unified_prune_shadowed[BuildSettingInfo].value and
         ctx.attr._prune_unused_inputs[BuildSettingInfo].value and ctx.attr.deps and
         not ctx.attr.javac_opts and not docs and not facts and
         not ctx.attr._java_unified_incremental[BuildSettingInfo].value):
@@ -335,7 +372,7 @@ def _run_unified(ctx, output_jar, kotlin):
             executable = elide.binary,
             arguments = ["javac", "--unified", "--", shape],
             inputs = full_cp,
-            tools = elide.compile_tool_files,
+            tools = compiler_files,
             outputs = [inventory],
         )
     lead.add_all(["javac", "--unified"])
@@ -354,6 +391,12 @@ def _run_unified(ctx, output_jar, kotlin):
     if inventory:
         args.add("--shadowed-classpath", inventory)
         args.add("--unused-inputs", unused)
+    if guard:
+        if kotlin:
+            args.add("--kotlin-classpath-guard", guard)
+        args.add_all(guarded_jars, before_each = "--kotlin-guarded-jar" if kotlin else "--java-guarded-jar")
+        if unused:
+            args.add("--unused-inputs", unused)
     for flag, output in [("--abi-jar", abi), ("--javadoc-data", docs), ("--rote-facts", facts), ("--classes", classes), ("--jdeps", jdeps)]:
         if output:
             args.add_all([output], before_each = flag, expand_directories = False)
@@ -377,9 +420,9 @@ def _run_unified(ctx, output_jar, kotlin):
         mnemonic = "ElideJvmCompile",
         executable = elide.binary,
         arguments = [lead, args],
-        inputs = depset(direct = ctx.files.srcs + ([inventory] if inventory else []), transitive = [full_cp]),
-        tools = elide.compile_tool_files,
-        outputs = [class_jar] + [f for f in [abi, docs, facts, classes, jdeps, unused] if f != None],
+        inputs = depset(direct = ctx.files.srcs + guards + ([inventory] if inventory else []), transitive = [full_cp]),
+        tools = compiler_files,
+        outputs = [class_jar] + [f for f in [abi, docs, facts, classes, jdeps, unused, guard if kotlin else None] if f != None],
         unused_inputs_list = unused,
         progress_message = "Compiling %{label} (Elide unified JVM)",
         execution_requirements = _WORKER_EXEC_REQUIREMENTS if worker else {},
@@ -389,6 +432,7 @@ def _run_unified(ctx, output_jar, kotlin):
         _merge_resources(ctx, [class_jar], output_jar)
     return struct(
         abi_jar = abi,
+        classpath_guard = guard,
         reports = [f for f in [jdeps, unused] if f != None],
         javadoc_data = [docs] if docs else [],
         rote_facts = [facts] if facts else [],
@@ -781,7 +825,7 @@ def pack_source_jar(ctx):
     )
     return source_jar
 
-def make_elide_info(ctx):
+def make_elide_info(ctx, guard = None):
     """Builds the ElideInfo emitted by elide compile rules.
 
     Propagates `exported_compiler_plugins` from `exports + exported_compiler_plugins`
@@ -789,12 +833,18 @@ def make_elide_info(ctx):
 
     Args:
         ctx: rule context.
+        guard: Optional guard for the target ABI jar.
 
     Returns:
         ElideInfo with propagated exported_compiler_plugins.
     """
     return ElideInfo(
         manifest = None,
+        classpath_guards = depset([guard] if guard else [], transitive = [
+            dep[ElideInfo].classpath_guards
+            for dep in ctx.attr.deps + ctx.attr.exports
+            if ElideInfo in dep and hasattr(dep[ElideInfo], "classpath_guards")
+        ]),
         exported_compiler_plugins = collect_exported_plugins(
             ctx.attr.exports + ctx.attr.exported_compiler_plugins,
         ),
@@ -1125,6 +1175,12 @@ COMMON_LIBRARY_ATTRS = {
     ),
     "_unified_prune_shadowed": attr.label(
         default = Label("//config/javac:unified_prune_shadowed"),
+    ),
+    "_kotlin_unified_pruning": attr.label(
+        default = Label("//config/kotlinc:unified_classpath_pruning"),
+    ),
+    "_java_unified_pruning": attr.label(
+        default = Label("//config/javac:unified_classpath_pruning"),
     ),
     "_java_unified_incremental": attr.label(
         default = Label("//config/javac:unified_incremental"),

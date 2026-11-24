@@ -126,6 +126,11 @@ parallel fan-out scaling, and remote execution need separate experiments.
 - `elide_unified_jdeps` uses the same compiler and also requests a merged dependency
   report. Both modes retain the full declared classpath for invalidation.
 - `elide_unified_ic` enables per-target Kotlin or Java state with implementation and ABI output.
+  With a runtime that supports compiler classpath guards, pass `--unified-classpath-pruning` to enable
+  `//config/kotlinc:unified_classpath_pruning` or `//config/javac:unified_classpath_pruning` in this mode.
+  A Kotlin consumer retains the ABI jars represented in its compiler lookup snapshot. A processor-free Java
+  consumer retains jars in packages consulted by javac. Bazel separately tracks namespace changes in both cases.
+  Direct dependencies and inputs without a matching guard remain tracked.
   Use `--phase-times` in a separate probe to capture per-phase durations and selective compile counts.
   The generated `client_batch` scenario edits every client in one request to measure independent work across the worker pool.
   Use `--unified-local-path` for the candidate and `--elide-local-path` for baseline modes.
