@@ -383,7 +383,10 @@ def _run_unified(ctx, output_jar, kotlin):
     args = ctx.actions.args()
     args.add("--")
     args.add("--request-version=1")
-    if worker and kotlin and _incremental_enabled(ctx):
+
+    # A singleton always recompiles its complete source on an edit. Use the lighter full
+    # compiler unless this target participates in compiler-observed classpath pruning.
+    if worker and kotlin and _incremental_enabled(ctx) and (len(ctx.files.srcs) > 1 or guard):
         args.add("--kotlin-incremental=1")
     if worker and not kotlin and ctx.attr._java_unified_incremental[BuildSettingInfo].value:
         args.add("--java-incremental=1")
