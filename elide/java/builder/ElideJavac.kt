@@ -16,6 +16,40 @@ object ElideJavac {
         return rest to ("-Xplugin:ErrorProne" + ep.joinToString("") { " $it" })
     }
 
+    // JavaBuilder receives toolchain defaults before target javacopts. Its ReleaseOptionNormalizer
+    // lets a later --release replace -source/-target, and vice versa. javac itself rejects both.
+    private fun languageOptions(options: List<String>): List<String> {
+        if (options.none { it == "--release" || it.startsWith("--release=") }) return options
+        val rest = mutableListOf<String>()
+        var source: String? = null
+        var target: String? = null
+        var release: String? = null
+        val args = options.iterator()
+        while (args.hasNext()) {
+            val opt = args.next()
+            when {
+                opt == "--release" || opt.startsWith("--release=") -> {
+                    release = if (opt == "--release") {
+                        if (!args.hasNext()) return options
+                        args.next()
+                    } else opt.substringAfter('=')
+                    source = null
+                    target = null
+                }
+                opt == "-source" || opt == "-target" -> {
+                    if (!args.hasNext()) return options
+                    if (opt == "-source") source = args.next() else target = args.next()
+                    release = null
+                }
+                else -> rest += opt
+            }
+        }
+        release?.let { rest += listOf("--release", it) }
+        source?.let { rest += listOf("-source", it) }
+        target?.let { rest += listOf("-target", it) }
+        return rest
+    }
+
     /**
      * Builds the command. [errorProneJars] supplies Error Prone itself (rules_java bundles it in
      * JavaBuilder_deploy.jar); [extraSources] are `.java` files unpacked from `--source_jars`.
@@ -36,8 +70,10 @@ object ElideJavac {
         cmd += "--"
         val plugins = Router.needsErrorProne(req)
         val (opts, plugin) = if (plugins) errorProneArgs(req.javacopts) else req.javacopts to null
-        cmd += opts
+        val effectiveOpts = languageOptions(opts)
+        cmd += effectiveOpts
         when {
+            "--release" in effectiveOpts -> Unit // javac selects its own system API for the release.
             // Without [passSystem] the compile uses the class library of the JDK embedded in Elide, which
             // skips the per-compile cost of opening the toolchain's system image (elide-dev/runtime#2986).
             req.system != null -> if (passSystem) cmd += listOf("--system", req.system)

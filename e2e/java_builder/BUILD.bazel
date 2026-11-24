@@ -64,6 +64,7 @@ java_plugin(
 java_library(
     name = "app_lib",
     srcs = ["src/app/App.java"],
+    javacopts = ["--release", "17"],
     plugins = [":greeting"],
     deps = [
         ":greet",

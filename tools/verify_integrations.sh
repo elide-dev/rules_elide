@@ -65,6 +65,8 @@ if [[ "$suite" == java_builder || "$suite" == all ]]; then
       echo "Unexpected //:app output: $actual" >&2
       exit 1
     fi
+    # Without reduced-classpath retries, conflicting release options fail directly in Elide.
+    bazel build //:app_lib "$@" --experimental_java_classpath=off
     echo "JavaBuilder shim: elide javac route, reproducible jars, and runtime output verified."
   )
 fi
