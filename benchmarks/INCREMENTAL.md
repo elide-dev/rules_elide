@@ -130,7 +130,8 @@ parallel fan-out scaling, and remote execution need separate experiments.
   `//config/kotlinc:unified_classpath_pruning` or `//config/javac:unified_classpath_pruning` in this mode.
   A Kotlin consumer retains the ABI jars represented in its compiler lookup snapshot. A processor-free Java
   consumer retains jars in packages consulted by javac. Bazel separately tracks namespace changes in both cases.
-  Direct dependencies and inputs without a matching guard remain tracked.
+  Direct dependencies and inputs without a matching guard remain tracked. Single-source Kotlin targets use
+  full unified compilation when classpath pruning is off.
   Use `--phase-times` in a separate probe to capture per-phase durations and selective compile counts.
   The generated `client_batch` scenario edits every client in one request to measure independent work across the worker pool.
   Use `--unified-local-path` for the candidate and `--elide-local-path` for baseline modes.
