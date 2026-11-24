@@ -66,7 +66,7 @@ object ElideJavac {
     ): List<String> {
         val cmd = mutableListOf(elide, "javac", "--jar", req.output)
         req.depsProto?.let { cmd += listOf("--jdeps", it) }
-        req.targetLabel?.let { cmd += listOf("--target-label", it) }
+        req.targetLabel?.let { cmd += "--target-label=$it" }
         cmd += "--"
         val plugins = Router.needsErrorProne(req)
         val (opts, plugin) = if (plugins) errorProneArgs(req.javacopts) else req.javacopts to null
