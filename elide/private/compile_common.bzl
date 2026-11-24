@@ -345,16 +345,17 @@ def _run_unified(ctx, output_jar, kotlin):
                 guarded_jars.append(indirect[upstream.path])
         if guarded_jars:
             unused = ctx.actions.declare_file(class_jar.basename + ".unused", sibling = class_jar)
-        if not kotlin:
-            # Produced separately so the javac worker can reuse an entire implementation/ABI pair.
-            ctx.actions.run(
-                mnemonic = "ElideClasspathInventory",
-                executable = elide.binary,
-                arguments = ["javac", "--unified", "--", "--write-java-classpath-guard", guard.path, abi.path],
-                inputs = [abi],
-                tools = compiler_files,
-                outputs = [guard],
-            )
+
+        # Consumers track the ABI inventory independently. A body edit with a stable ABI
+        # can reuse its inventory, and targets with no indirect consumers never compute one.
+        ctx.actions.run(
+            mnemonic = "ElideClasspathInventory",
+            executable = elide.binary,
+            arguments = ["javac", "--unified", "--", "--write-kotlin-classpath-guard" if kotlin else "--write-java-classpath-guard", guard.path, abi.path],
+            inputs = [abi],
+            tools = compiler_files,
+            outputs = [guard],
+        )
     if (not guard and not kotlin and ctx.attr._unified_prune_shadowed[BuildSettingInfo].value and
         ctx.attr._prune_unused_inputs[BuildSettingInfo].value and ctx.attr.deps and
         not ctx.attr.javac_opts and not docs and not facts and
@@ -392,8 +393,6 @@ def _run_unified(ctx, output_jar, kotlin):
         args.add("--shadowed-classpath", inventory)
         args.add("--unused-inputs", unused)
     if guard:
-        if kotlin:
-            args.add("--kotlin-classpath-guard", guard)
         args.add_all(guarded_jars, before_each = "--kotlin-guarded-jar" if kotlin else "--java-guarded-jar")
         if unused:
             args.add("--unused-inputs", unused)
@@ -422,7 +421,7 @@ def _run_unified(ctx, output_jar, kotlin):
         arguments = [lead, args],
         inputs = depset(direct = ctx.files.srcs + guards + ([inventory] if inventory else []), transitive = [full_cp]),
         tools = compiler_files,
-        outputs = [class_jar] + [f for f in [abi, docs, facts, classes, jdeps, unused, guard if kotlin else None] if f != None],
+        outputs = [class_jar] + [f for f in [abi, docs, facts, classes, jdeps, unused] if f != None],
         unused_inputs_list = unused,
         progress_message = "Compiling %{label} (Elide unified JVM)",
         execution_requirements = _WORKER_EXEC_REQUIREMENTS if worker else {},
