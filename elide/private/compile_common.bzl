@@ -1085,22 +1085,6 @@ def build_test_launcher(ctx, output_jar):
 # Common attribute sets used by Java and Kotlin compile rules.
 
 COMMON_LIBRARY_ATTRS = {
-    "compile_mode": attr.string(
-        default = "inherit",
-        values = ["inherit", "legacy", "unified"],
-        doc = "JVM implementation compile mode. Unified requires a toolchain with the unified JVM compile request.",
-    ),
-    "unified_outputs": attr.string_list(
-        doc = "Optional unified compile outputs. Rote facts are experimental and require explicit selection.",
-    ),
-    "unified_release": attr.int(
-        default = 21,
-        doc = "Java platform API and classfile release for unified compilation.",
-    ),
-    "_unified_compile": attr.label(
-        default = Label("//elide:unified_jvm_compile"),
-        providers = [BuildSettingInfo],
-    ),
     "abi_mode": attr.string(
         default = "inherit",
         values = ["inherit", "off", "separate", "combined"],
@@ -1109,6 +1093,11 @@ COMMON_LIBRARY_ATTRS = {
               "combined requests full and header jars in one action. Explicit modes override " +
               "build settings. Existing processor, resource, mixed-source, plugin, friend, " +
               "and incremental-compiler safety fallbacks still apply.",
+    ),
+    "compile_mode": attr.string(
+        default = "inherit",
+        values = ["inherit", "legacy", "unified"],
+        doc = "JVM implementation compile mode. Unified requires a toolchain with the unified JVM compile request.",
     ),
     "data": attr.label_list(
         doc = "Files made available to this target's runfiles at action time.",
@@ -1151,6 +1140,13 @@ COMMON_LIBRARY_ATTRS = {
         doc = "Runtime-only dependencies (excluded from compile classpath).",
         providers = [[JavaInfo]],
     ),
+    "unified_outputs": attr.string_list(
+        doc = "Optional unified compile outputs. Rote facts are experimental and require explicit selection.",
+    ),
+    "unified_release": attr.int(
+        default = 21,
+        doc = "Java platform API and classfile release for unified compilation.",
+    ),
     "_abi_compile_avoidance": attr.label(
         default = Label("//config/kotlinc:abi_compile_avoidance"),
         providers = [BuildSettingInfo],
@@ -1175,24 +1171,21 @@ COMMON_LIBRARY_ATTRS = {
         doc = "Build setting opting kotlinc compiles into incremental " +
               "compilation with worker-private classes/cache and complete jar output.",
     ),
-    "_unified_prune_shadowed": attr.label(
-        default = Label("//config/javac:unified_prune_shadowed"),
-    ),
-    "_kotlin_unified_pruning": attr.label(
-        default = Label("//config/kotlinc:unified_classpath_pruning"),
-    ),
-    "_java_unified_pruning": attr.label(
-        default = Label("//config/javac:unified_classpath_pruning"),
-    ),
-    "_java_unified_incremental": attr.label(
-        default = Label("//config/javac:unified_incremental"),
-        providers = [BuildSettingInfo],
-    ),
     "_java_abi_compile_avoidance": attr.label(
         default = Label("//config/javac:abi_compile_avoidance"),
         providers = [BuildSettingInfo],
     ),
     "_java_abi_from_compile": attr.label(default = Label("//config/javac:abi_from_compile"), providers = [BuildSettingInfo]),
+    "_java_unified_incremental": attr.label(
+        default = Label("//config/javac:unified_incremental"),
+        providers = [BuildSettingInfo],
+    ),
+    "_java_unified_pruning": attr.label(
+        default = Label("//config/javac:unified_classpath_pruning"),
+    ),
+    "_kotlin_unified_pruning": attr.label(
+        default = Label("//config/kotlinc:unified_classpath_pruning"),
+    ),
     "_multiplex_workers": attr.label(
         default = Label("//elide:multiplex_workers"),
         providers = [BuildSettingInfo],
@@ -1202,6 +1195,13 @@ COMMON_LIBRARY_ATTRS = {
     "_prune_unused_inputs": attr.label(
         default = Label("//elide:prune_unused_inputs"),
         providers = [BuildSettingInfo],
+    ),
+    "_unified_compile": attr.label(
+        default = Label("//elide:unified_jvm_compile"),
+        providers = [BuildSettingInfo],
+    ),
+    "_unified_prune_shadowed": attr.label(
+        default = Label("//config/javac:unified_prune_shadowed"),
     ),
     "_use_workers": attr.label(
         default = Label("//elide:use_workers"),

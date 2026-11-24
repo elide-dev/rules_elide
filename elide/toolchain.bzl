@@ -63,11 +63,6 @@ elide_toolchain = rule(
             allow_files = True,
             cfg = "exec",
         ),
-        "unified_compile_tool_files": attr.label_list(
-            doc = "Distribution inputs for the in-process unified JVM compiler. Defaults to compile_tool_files.",
-            allow_files = True,
-            cfg = "exec",
-        ),
         "jextract_tool_files": attr.label_list(
             doc = "Additional inputs for C binding generation, including LLVM. " +
                   "Combined with compile_tool_files; downloaded toolchains use elide_jextract_files.",
@@ -88,6 +83,11 @@ elide_toolchain = rule(
         "tool_files": attr.label_list(
             doc = "Inputs for native-image actions (includes lib/svm, include/). " +
                   "Should reference the elide_native_image_files filegroup.",
+            allow_files = True,
+            cfg = "exec",
+        ),
+        "unified_compile_tool_files": attr.label_list(
+            doc = "Distribution inputs for the in-process unified JVM compiler. Defaults to compile_tool_files.",
             allow_files = True,
             cfg = "exec",
         ),

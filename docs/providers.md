@@ -9,7 +9,7 @@ Public providers for rules_elide.
 <pre>
 load("@rules_elide//elide:providers.bzl", "ElideInfo")
 
-ElideInfo(<a href="#ElideInfo-exported_compiler_plugins">exported_compiler_plugins</a>, <a href="#ElideInfo-manifest">manifest</a>)
+ElideInfo(<a href="#ElideInfo-classpath_guards">classpath_guards</a>, <a href="#ElideInfo-exported_compiler_plugins">exported_compiler_plugins</a>, <a href="#ElideInfo-manifest">manifest</a>)
 </pre>
 
 Elide-specific metadata emitted by rules_elide build rules.
@@ -18,6 +18,7 @@ Elide-specific metadata emitted by rules_elide build rules.
 
 | Name  | Description |
 | :------------- | :------------- |
+| <a id="ElideInfo-classpath_guards"></a>classpath_guards |  depset[File]. Compiler classpath guards for transitive ABI jars.    |
 | <a id="ElideInfo-exported_compiler_plugins"></a>exported_compiler_plugins |  depset[Target]. Compiler plugins propagated to direct rdeps. Mirrors java_plugin's exported_plugins.    |
 | <a id="ElideInfo-manifest"></a>manifest |  File or None. Optional elide.pkl-style project manifest.    |
 
@@ -30,7 +31,8 @@ Elide-specific metadata emitted by rules_elide build rules.
 load("@rules_elide//elide:providers.bzl", "ElideToolchainInfo")
 
 ElideToolchainInfo(<a href="#ElideToolchainInfo-binary">binary</a>, <a href="#ElideToolchainInfo-cc_compiler">cc_compiler</a>, <a href="#ElideToolchainInfo-cc_tool_files">cc_tool_files</a>, <a href="#ElideToolchainInfo-compile_tool_files">compile_tool_files</a>, <a href="#ElideToolchainInfo-jextract_tool_files">jextract_tool_files</a>,
-                   <a href="#ElideToolchainInfo-kotlin_stdlib_jars">kotlin_stdlib_jars</a>, <a href="#ElideToolchainInfo-python_tool_files">python_tool_files</a>, <a href="#ElideToolchainInfo-tool_files">tool_files</a>, <a href="#ElideToolchainInfo-version">version</a>)
+                   <a href="#ElideToolchainInfo-kotlin_stdlib_jars">kotlin_stdlib_jars</a>, <a href="#ElideToolchainInfo-python_tool_files">python_tool_files</a>, <a href="#ElideToolchainInfo-tool_files">tool_files</a>, <a href="#ElideToolchainInfo-unified_compile_tool_files">unified_compile_tool_files</a>,
+                   <a href="#ElideToolchainInfo-version">version</a>)
 </pre>
 
 Resolved Elide toolchain information.
@@ -47,4 +49,5 @@ Resolved Elide toolchain information.
 | <a id="ElideToolchainInfo-kotlin_stdlib_jars"></a>kotlin_stdlib_jars |  depset[File]. Kotlin stdlib jar(s) bundled with this Elide release.    |
 | <a id="ElideToolchainInfo-python_tool_files"></a>python_tool_files |  depset[File]. Python runtime inputs, including resources and component markers.    |
 | <a id="ElideToolchainInfo-tool_files"></a>tool_files |  depset[File]. Inputs for native-image actions (includes lib/svm, include/).    |
+| <a id="ElideToolchainInfo-unified_compile_tool_files"></a>unified_compile_tool_files |  depset[File]. Distribution inputs for the unified JVM compiler.    |
 | <a id="ElideToolchainInfo-version"></a>version |  string. Semantic version of the elide binary.    |
