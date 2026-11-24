@@ -8,6 +8,7 @@ ElideToolchainInfo = provider(
         "binary": "File. The elide binary executable.",
         "cc_compiler": "File or None. Bundled LLVM clang driver for C compile/link actions, if the distribution has one.",
         "cc_tool_files": "depset[File]. Inputs for C compile/link actions: clang, lld, resource headers, runtimes, and sysroot.",
+        "unified_compile_tool_files": "depset[File]. Distribution inputs for the unified JVM compiler.",
         "compile_tool_files": "depset[File]. Inputs for JVM compile actions (javac, kotlinc, jar). " +
                               "Excludes LLVM and native-image-only subtrees (lib/llvm, lib/static, lib/svm, lib/truffle, doc).",
         "jextract_tool_files": "depset[File]. JVM tools plus LLVM inputs needed for C binding generation.",
@@ -23,6 +24,7 @@ ElideInfo = provider(
     fields = {
         "exported_compiler_plugins": "depset[Target]. Compiler plugins propagated " +
                                      "to direct rdeps. Mirrors java_plugin's exported_plugins.",
+        "classpath_guards": "depset[File]. Compiler classpath guards for transitive ABI jars.",
         "manifest": "File or None. Optional elide.pkl-style project manifest.",
     },
 )

@@ -20,6 +20,7 @@ elide_toolchain(
     cc_compiler = ["@{repo}//:elide_cc_compiler"],
     cc_tool_files = ["@{repo}//:elide_cc_files"],
     compile_tool_files = ["@{repo}//:elide_compile_files"],
+    unified_compile_tool_files = ["@{repo}//:elide_unified_compile_files"],
     jextract_tool_files = ["@{repo}//:elide_jextract_files"],
     kotlin_stdlib = ["@{repo}//:kotlin_stdlib_jars"],
     python_tool_files = ["@{repo}//:elide_python_files"],

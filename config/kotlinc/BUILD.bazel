@@ -61,3 +61,9 @@ bool_flag(
     name = "abi_from_compile",
     build_setting_default = True,
 )
+
+# Requires the matching native unified compiler. External and unguarded jars stay declared.
+bool_flag(
+    name = "unified_classpath_pruning",
+    build_setting_default = False,
+)

@@ -38,7 +38,7 @@ def _elide_java_library_impl(ctx):
     source_jar = pack_source_jar(ctx)
     return [
         make_java_info(ctx, output_jar, source_jar = source_jar, compile_jar_override = compilation.abi_jar, reports = compilation.reports),
-        make_elide_info(ctx),
+        make_elide_info(ctx, getattr(compilation, "classpath_guard", None)),
         compile_output_groups(compilation),
         DefaultInfo(files = depset([output_jar])),
     ]
@@ -63,7 +63,7 @@ def _elide_java_binary_impl(ctx):
     launcher, runfiles = build_launcher(ctx, output_jar)
     return [
         make_java_info(ctx, output_jar, source_jar = source_jar, compile_jar_override = compilation.abi_jar, reports = compilation.reports),
-        make_elide_info(ctx),
+        make_elide_info(ctx, getattr(compilation, "classpath_guard", None)),
         compile_output_groups(compilation),
         DefaultInfo(executable = launcher, runfiles = runfiles, files = depset([launcher])),
     ]
@@ -86,7 +86,7 @@ def _elide_java_test_impl(ctx):
     launcher, runfiles = build_test_launcher(ctx, output_jar)
     return [
         make_java_info(ctx, output_jar, source_jar = source_jar, compile_jar_override = compilation.abi_jar, reports = compilation.reports),
-        make_elide_info(ctx),
+        make_elide_info(ctx, getattr(compilation, "classpath_guard", None)),
         compile_output_groups(compilation),
         DefaultInfo(executable = launcher, runfiles = runfiles, files = depset([launcher])),
     ]

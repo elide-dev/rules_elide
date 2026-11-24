@@ -55,3 +55,9 @@ bool_flag(
     build_setting_default = False,
     visibility = ["//visibility:public"],
 )
+
+# Guard transitive entries with namespace inventories and javac file-manager observations.
+bool_flag(
+    name = "unified_classpath_pruning",
+    build_setting_default = False,
+)
