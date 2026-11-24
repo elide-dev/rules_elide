@@ -44,8 +44,28 @@ toolchain(
 
 """
 
+_NATIVE_IMAGE_TEMPLATE = """\
+graalvm_sdk(
+    name = "{name}_sdk",
+    gvm_files = "@{repo}//:elide_native_image_files",
+    native_image_bin = "@{repo}//:lib/svm/bin/native-image",
+)
+
+toolchain(
+    name = "{name}",
+    exec_compatible_with = ["{os_constraint}", "{cpu_constraint}"],
+    target_compatible_with = ["{os_constraint}", "{cpu_constraint}"],
+    toolchain = ":{name}_sdk",
+    toolchain_type = "@rules_graalvm//graalvm/toolchain",
+)
+
+"""
+
 def _elide_toolchains_hub_impl(ctx):
     parts = [_BUILD_HEADER]
+
+    # Keep the optional rules_graalvm load out of the default hub package.
+    native_images = ['load("@rules_graalvm//internal:toolchain.bzl", "graalvm_sdk")\n\npackage(default_visibility = ["//visibility:public"])\n\n']
 
     # Register a toolchain only for platforms that actually have a repo. Defaults
     # to all PLATFORMS (the pinned `install` path materializes all four); the
@@ -62,7 +82,15 @@ def _elide_toolchains_hub_impl(ctx):
             cpu_constraint = CPU_CONSTRAINTS[cpu],
             bin_ext = ".exe" if os == "windows" else "",
         ))
+        if os in ["linux", "macos"]:
+            native_images.append(_NATIVE_IMAGE_TEMPLATE.format(
+                name = p,
+                repo = ctx.attr.repo_prefix + "_" + p,
+                os_constraint = OS_CONSTRAINTS[os],
+                cpu_constraint = CPU_CONSTRAINTS[cpu],
+            ))
     ctx.file("BUILD.bazel", "".join(parts))
+    ctx.file("graalvm/BUILD.bazel", "".join(native_images))
 
 elide_toolchains_hub = repository_rule(
     implementation = _elide_toolchains_hub_impl,
