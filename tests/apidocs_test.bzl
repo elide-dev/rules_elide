@@ -53,6 +53,7 @@ def _apidocs_test_impl(ctx):
             asserts.false(env, name in inputs, "unexpected input " + name)
         asserts.true(env, [a for a in argv if a.endswith("/ApiDocs.java")] != [], "the action program is missing")
         asserts.true(env, argv[0].endswith("/bin/java"), "javadoc must run on the selected JDK: " + argv[0])
+
         # The registered Elide toolchain's binary (the stub or a downloaded release), declared as an input.
         runtime = action.env.get("APIDOCS_JS_RUNTIME", "")
         asserts.true(env, runtime.split("/")[-1] in ["elide", "_test_stub_elide_bin"], "the JS runtime is not an Elide binary: " + runtime)
