@@ -1,0 +1,28 @@
+module(name = "rules_elide_apidocs_e2e")
+
+bazel_dep(name = "rules_elide", version = "0.0.0")
+local_path_override(
+    module_name = "rules_elide",
+    path = "../..",
+)
+
+bazel_dep(name = "rules_java", version = "9.9.0")
+
+elide = use_extension("@rules_elide//elide:extensions.bzl", "elide")
+elide.install(version = "1.6.2")
+use_repo(elide, "elide_toolchains")
+
+register_toolchains("@elide_toolchains//:all")
+
+http_archive = use_repo_rule("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+
+# elide-dev/doclet has no release yet, so build it from a pinned commit. This is the head of the
+# open PR stack elide-dev/doclet#8 -> #9 -> #10 -> #11 (`--problems`, Markdown comments,
+# `-link`/`-linkoffline`/`-tag`); move the pin to doclet main once that stack merges.
+http_archive(
+    name = "elide_doclet",
+    build_file = "//:doclet.BUILD.bazel",
+    integrity = "sha256-3RxFNKLh0/3Nw8zcRCkka2gCa8nRXkUHZRXuzSW+h/E=",
+    strip_prefix = "doclet-9bf3916dbad3c2d3f5f5fa0b697d3ef4cac28cbe",
+    urls = ["https://github.com/elide-dev/doclet/archive/9bf3916dbad3c2d3f5f5fa0b697d3ef4cac28cbe.tar.gz"],
+)

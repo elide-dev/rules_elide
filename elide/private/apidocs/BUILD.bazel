@@ -1,0 +1,5 @@
+# The elide_apidocs action program, run as a single-file source program on the selected JDK.
+exports_files(
+    ["ApiDocs.java"],
+    visibility = ["//visibility:public"],
+)

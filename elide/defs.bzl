@@ -7,6 +7,10 @@ Downstream users should load all symbols from this file. Internal paths under
 """
 
 load(
+    "//elide/rules:apidocs.bzl",
+    _elide_apidocs = "elide_apidocs",
+)
+load(
     "//elide/rules:cc.bzl",
     _elide_cc_binary = "elide_cc_binary",
 )
@@ -52,6 +56,7 @@ load(":toolchain.bzl", _elide_toolchain = "elide_toolchain")
 
 ElideInfo = _ElideInfo
 ElideToolchainInfo = _ElideToolchainInfo
+elide_apidocs = _elide_apidocs
 elide_cc_binary = _elide_cc_binary
 elide_format = _elide_format
 elide_java_binary = _elide_java_binary

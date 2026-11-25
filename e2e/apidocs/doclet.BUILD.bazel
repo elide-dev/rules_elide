@@ -1,0 +1,15 @@
+# Builds elide-dev/doclet from source, as `elide build` does: one jar with the doclet
+# (src/main/java and the JDK 25 src/apidocs/java source set) and the renderer resources.
+load("@rules_java//java:defs.bzl", "java_library")
+
+java_library(
+    name = "doclet",
+    srcs = glob([
+        "doclet/src/main/java/**/*.java",
+        "doclet/src/apidocs/java/**/*.java",
+    ]),
+    javacopts = ["-XepDisableAllChecks"],
+    resource_strip_prefix = "doclet/src/main/resources",
+    resources = glob(["doclet/src/main/resources/**"]),
+    visibility = ["//visibility:public"],
+)

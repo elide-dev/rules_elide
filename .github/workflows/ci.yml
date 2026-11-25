@@ -182,6 +182,8 @@ jobs:
         run: ./tools/verify_integrations.sh jvm
       - name: Python runtime adapter
         run: ./tools/verify_integrations.sh python
+      - name: API reference (elide_apidocs with elide-dev/doclet)
+        run: ./tools/verify_integrations.sh apidocs
 
   kotlin-builder:
     name: kotlin-builder e2e (rules_kotlin toolchain swap)

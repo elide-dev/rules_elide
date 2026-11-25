@@ -88,6 +88,7 @@ bzl_library(
     deps = [
         ":providers",
         ":toolchain",
+        "//elide/rules:apidocs",
         "//elide/rules:cc",
         "//elide/rules:format",
         "//elide/rules:java",

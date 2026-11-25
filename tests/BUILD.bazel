@@ -2,6 +2,7 @@ load("@bazel_skylib//rules:native_binary.bzl", "native_binary")
 load("@bazel_skylib//rules:write_file.bzl", "write_file")
 load("//elide:toolchain.bzl", "elide_toolchain")
 load(":abi_mode_test.bzl", "abi_mode_test_suite")
+load(":apidocs_test.bzl", "apidocs_test_suite")
 load(":cc_rule_test.bzl", "cc_rule_test_suite")
 load(":common_test.bzl", "common_test_suite")
 load(":compile_metadata_test.bzl", "compile_metadata_test_suite")
@@ -102,6 +103,8 @@ toolchain(
 cc_rule_test_suite(name = "cc_rule_tests")
 
 jvm_tools_test_suite(name = "jvm_tools_tests")
+
+apidocs_test_suite(name = "apidocs_tests")
 
 compile_metadata_test_suite(name = "compile_metadata_tests")
 

@@ -4,7 +4,7 @@ set -euo pipefail
 repo="$(cd "$(dirname "$0")/.." && pwd)"
 suite="${1:-all}"
 if [[ $# -gt 0 ]]; then shift; fi
-case "$suite" in jvm|java_builder|kotlin|python|cc|all) ;; *) echo "Usage: $0 [jvm|java_builder|kotlin|python|cc|all] [Bazel build options...]" >&2; exit 2 ;; esac
+case "$suite" in jvm|java_builder|kotlin|python|apidocs|cc|all) ;; *) echo "Usage: $0 [jvm|java_builder|kotlin|python|apidocs|cc|all] [Bazel build options...]" >&2; exit 2 ;; esac
 if [[ "$suite" == jvm || "$suite" == all ]]; then
   (
     cd "$repo/e2e/integration"
@@ -99,6 +99,15 @@ if [[ "$suite" == python || "$suite" == all ]]; then
       exit 1
     fi
     echo "Bazel correctly rejects failing Python tests."
+  )
+fi
+if [[ "$suite" == apidocs || "$suite" == all ]]; then
+  (
+    cd "$repo/e2e/apidocs"
+    # Builds elide-dev/doclet from a pinned commit, then documents the fixtures with it, rendering
+    # through the Elide toolchain binary. The verifier reads the sites and archives directly.
+    bazel build //... --remote_download_outputs=all "$@"
+    python3 verify_apidocs.py
   )
 fi
 # The cc suite needs the Linux x86-64 distribution; run it under `all` only there.

@@ -23,6 +23,7 @@ flowchart LR
 | Toolchain | `elide/toolchain.bzl`, `providers.bzl` | Expose the binary and distinct compile/native-image/Python file sets |
 | Java/Kotlin rules | `elide/rules/java.bzl`, `kotlin.bzl`, `elide/private/compile_common.bzl` | Declare actions and classpaths; return JavaInfo; handle workers, ABI jars, resources, and reports |
 | JVM tools and processing | `elide/rules/jvm_tools.bzl`, `processing.bzl` | Declare tool inputs and outputs for docs, archives, inspection, bindings, KAPT, and KSP |
+| API reference | `elide/rules/apidocs.bzl`, `elide/private/apidocs/ApiDocs.java` | Run one javadoc over `JavaInfo` source jars with a custom doclet on the selected JDK, rendering through the Elide binary |
 | KotlinBuilder adapter | `elide/kotlin/toolchain.bzl`, `elide/kotlin/builder/` | Parse rules_kotlin requests; preserve worker protocol; route supported requests to native APIs or legacy fallback |
 | Python adapter | `elide/python/toolchain.bzl`, `launcher.sh.tpl` | Register a target-platform Python runtime with runfiles and controlled interpreter startup |
 | Public API/docs | `elide/defs.bzl`, `docs/BUILD.bazel` | Keep exports and generated references synchronized |
