@@ -1,0 +1,82 @@
+load("@rules_elide//elide:defs.bzl", "elide_apidocs", "elide_java_library")
+load("@rules_java//java:defs.bzl", "java_library", "java_plugin")
+
+package(default_visibility = ["//visibility:public"])
+
+# --- A small library with a Markdown comment and an {@inheritDoc} of Object.toString. ---
+
+elide_java_library(
+    name = "fixture",
+    srcs = glob(["src/fixture/**/*.java"]),
+)
+
+elide_apidocs(
+    name = "fixture_docs",
+    doclet = "@elide_doclet//:doclet",
+    exclude_packages = ["fixture.internal"],
+    # JDK types link to the JDK reference from a checked-in element-list, without network access.
+    offline_links = {"https://docs.oracle.com/en/java/javase/25/docs/api/": "jdk/element-list"},
+    packages = ["fixture"],
+    source_ref = "fixture-ref",
+    theme = "theme.json",
+    title = "Fixture API",
+    version = "1.2.3",
+    deps = [":fixture"],
+)
+
+# --- Public API that returns an annotation-processor-generated class. ---
+
+java_library(
+    name = "indexed",
+    srcs = ["src/annotation/Indexed.java"],
+)
+
+java_library(
+    name = "index_processor_lib",
+    srcs = ["src/processor/IndexProcessor.java"],
+)
+
+# generates_api: the generated class is part of Catalogue's public API.
+java_plugin(
+    name = "index_processor",
+    generates_api = True,
+    processor_class = "processor.IndexProcessor",
+    deps = [":index_processor_lib"],
+)
+
+java_library(
+    name = "catalogue",
+    srcs = ["src/catalogue/Catalogue.java"],
+    plugins = [":index_processor"],
+    deps = [":indexed"],
+)
+
+# Documents the generated CatalogueIndex too (the default, as `mx javadoc` does).
+elide_apidocs(
+    name = "catalogue_docs",
+    doclet = "@elide_doclet//:doclet",
+    packages = ["catalogue"],
+    title = "Catalogue",
+    deps = [":catalogue"],
+)
+
+# The same library through elide javac: its source jar holds only the handwritten source, like
+# libraries whose generated classes exist only in class jars. CatalogueIndex then resolves from the
+# compile classpath, which is what documenting the GraalVM Truffle API needs.
+elide_java_library(
+    name = "catalogue_elide",
+    srcs = ["src/catalogue/Catalogue.java"],
+    javac_opts = [
+        "-processor",
+        "processor.IndexProcessor",
+    ],
+    plugins = [":index_processor_lib"],
+    deps = [":indexed"],
+)
+
+elide_apidocs(
+    name = "catalogue_classpath_docs",
+    doclet = "@elide_doclet//:doclet",
+    title = "Catalogue",
+    deps = [":catalogue_elide"],
+)

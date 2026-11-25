@@ -3,6 +3,7 @@ load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
 package(default_visibility = ["//visibility:public"])
 
 exports_files([
+    "apidocs.bzl",
     "cc.bzl",
     "format.bzl",
     "java.bzl",
@@ -36,6 +37,15 @@ bzl_library(
     deps = [
         "//elide/private:compile_common",
         "@bazel_skylib//rules:common_settings",
+        "@rules_java//java/common",
+    ],
+)
+
+bzl_library(
+    name = "apidocs",
+    srcs = ["apidocs.bzl"],
+    deps = [
+        "//elide/private:compile_common",
         "@rules_java//java/common",
     ],
 )

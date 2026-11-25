@@ -1,4 +1,5 @@
 benchmarks
+e2e/apidocs
 e2e/cc
 e2e/integration
 e2e/java_builder

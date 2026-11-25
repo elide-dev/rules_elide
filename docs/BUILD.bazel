@@ -57,6 +57,13 @@ stardoc(
 )
 
 stardoc(
+    name = "apidocs_doc",
+    out = "apidocs.md",
+    input = "//elide/rules:apidocs.bzl",
+    deps = ["//elide/rules:apidocs"] + _DOC_DEPS,
+)
+
+stardoc(
     name = "cc_doc",
     out = "cc.md",
     input = "//elide/rules:cc.bzl",
@@ -73,6 +80,7 @@ stardoc(
 filegroup(
     name = "all_docs",
     srcs = [
+        ":apidocs_doc",
         ":cc_doc",
         ":defs_doc",
         ":extensions_doc",

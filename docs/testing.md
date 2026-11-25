@@ -15,6 +15,8 @@ is not the same as checking the generated artifacts.
 | Python adapter | Runtime identity/version, launcher and stdlib/helper input closure | `tests/python_toolchain_test.bzl` |
 | Kotlin/Java interoperability | Stock Java compile and runtime consumers inherit Kotlin stdlib through JavaInfo, including transitive exports, across worker and ABI modes | `e2e/integration/verify_kotlin_interop.py` |
 | JVM execution | Javadoc HTML, fixed archive timestamps, binding symbols, bytecode/dependency text, unused-vs-used reports in worker and one-shot modes | `e2e/integration/verify_jvm_tools.py` |
+| API reference | Javadoc on the selected JDK, Elide toolchain binary as the doclet's JS runtime, no PATH, declared doclet/theme/link inputs, optional doclet options omitted for other doclets, invalid inputs | `tests/apidocs_test.bzl` |
+| API reference execution | elide-dev/doclet built from a pinned commit; site pages, `api.json`, Markdown comments, `{@inheritDoc}` of a JDK method, offline JDK links, excluded packages, theme, archive contents and fixed metadata (including PAX long paths), generated classes documented from source jars and resolved from the classpath | `e2e/apidocs/verify_apidocs.py` |
 | ABI strategy selection | Per-target overrides of enabled/disabled global settings, compile/runtime jar separation, and eligibility fallbacks in both languages | `tests/abi_mode_test.bzl` |
 | Combined ABI emission | Header digests, runtime outputs, body/API/constant/inline/resource edits, worker and one-shot modes, pruning, per-target combined mode with global ABI flags disabled, and Java classpath-cache reuse across consumer edits and invalidation across dependency edits | `e2e/integration/verify_fused_abi.py` |
 | Pruning correctness | Changing unused dependency ABI skips consumer compilation; changing used dependency ABI rebuilds it | `e2e/integration/verify_pruning.py` |
@@ -24,7 +26,7 @@ is not the same as checking the generated artifacts.
 | Python execution | Transitive imports, data, runtime identity, module mode, arguments, child exit codes, expected Bazel test failure, environment isolation, Python-version selection | `e2e/python_overlay/` |
 
 Run `tools/verify_integrations.sh all` from the repository root for the supported
-real-runtime fixtures, or choose `jvm`, `kotlin`, `python`, or `cc`. See
+real-runtime fixtures, or choose `jvm`, `java_builder`, `kotlin`, `python`, `apidocs`, or `cc`. See
 [CONTRIBUTING.md](../CONTRIBUTING.md) for the faster root test commands.
 
 ## Runtime upgrade verification
@@ -63,7 +65,8 @@ Pull requests, including ones stacked on another pull request's branch, get
 analysis tests on Linux with Bazel 8/9, smoke analysis, lint, and generated-doc
 freshness. They also run the real-toolchain jobs: KotlinBuilder and JavaBuilder
 unit/protocol execution, the JavaBuilder shim fixture, the JVM output/pruning
-checks, full native KAPT/KSP fixtures, and Python integration. Those jobs use
+checks, full native KAPT/KSP fixtures, Python integration, and the API reference
+fixture. Those jobs use
 the same `tools/verify_integrations.sh` runner as local development. Real
 processor and Python adapter fixtures currently select Linux x86_64 explicitly.
 
@@ -80,8 +83,11 @@ because they only touch the changelog and version files.
 
 - Native-image execution remains outside the passing integration runner.
 - The Elide-themed Javadoc doclet is missing from the published 1.6.2 archive;
-  only the standard theme has real execution coverage. Custom doclets need a
-  dedicated execution fixture.
+  only the standard `elide_javadoc` theme has real execution coverage. Custom
+  doclets are covered through `elide_apidocs` with elide-dev/doclet, built from a
+  pinned, unreleased commit; other doclets have analysis coverage only.
+- `elide_apidocs` has run under BuildBuddy RBE manually, not in the RBE CI job,
+  and CI runs its execution fixture on Linux x86_64 only.
 - Python native wheels, coverage, precompiled bytecode, zip executables, macOS
   runtime execution, and manifest-only/Windows layouts are not validated.
 - RBE coverage does not establish that every new tool or the Python runtime

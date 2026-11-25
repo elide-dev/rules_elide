@@ -91,6 +91,7 @@ bazel run //:app
 | `elide_native_image`  | Native AOT binary from JavaInfo deps (via `elide native-image`)   | [docs/native_image.md](docs/native_image.md) |
 | `elide_cc_binary`     | Hermetic C executable built with Elide's bundled clang/lld/sysroot (Linux) | [docs/c.md](docs/c.md) |
 | `elide_format`        | In-place format `.java` (google-java-format) or `.kt` (ktfmt)     | [docs/format.md](docs/format.md) |
+| `elide_apidocs`       | API reference site and `.tar.gz` from JavaInfo targets with a custom doclet (elide-dev/doclet by default), rendered by Elide | [docs/api_reference.md](docs/api_reference.md) |
 | `register_elide_python_toolchain` | Opt-in Python 3.13 runtime for ordinary rules_python targets | [docs/python.md](docs/python.md) |
 | `elide_toolchain`     | Wrap an elide binary as a Bazel toolchain                         | [docs/toolchain.md](docs/toolchain.md) |
 | `register_elide_kotlin_toolchain` | Drop-in `rules_kotlin` toolchain swap — `kt_jvm_*` targets compile via Elide with no BUILD changes | [docs/kotlin_builder.md](docs/kotlin_builder.md) |
@@ -207,6 +208,7 @@ Load these rules from `@rules_elide//elide:defs.bzl`:
 | Rule | Output |
 | --- | --- |
 | `elide_javadoc` | HTML directory and optional reproducible `-javadoc.jar`; supports dependency classpaths, doclets, and themes |
+| `elide_apidocs` | API reference site and reproducible `.tar.gz` from the source jars of `JavaInfo` targets, using javadoc from the selected JDK and a custom doclet rendered by the Elide binary ([guide](docs/api_reference.md)) |
 | `elide_jar` | Reproducible archive with fixed timestamps, path stripping, and optional manifest/main class |
 | `elide_jdeps` | Text dependency report for jars/classes |
 | `elide_javap` | Text bytecode/API inspection report for named classes |
@@ -215,6 +217,7 @@ Load these rules from `@rules_elide//elide:defs.bzl`:
 
 ```starlark
 elide_javadoc(name = "api_docs", srcs = glob(["src/**/*.java"]), deps = [":api"])
+elide_apidocs(name = "api_reference", deps = [":api"], doclet = "@elide_doclet//:doclet", packages = ["example"])
 elide_javap(name = "api_bytecode", deps = [":api"], classes = ["example.Api"], opts = ["-c"])
 elide_jextract(name = "bindings", srcs = ["include/api.h"], hdrs = ["include/types.h"], package = "example.nativeapi")
 ```

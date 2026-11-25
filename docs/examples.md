@@ -19,6 +19,19 @@ Outputs live under `e2e/integration/bazel-bin/`: `javadoc_html/`,
 Use `jar = False` on `elide_javadoc` when only HTML is needed. Use the default
 theme with Elide 1.6.2.
 
+## Publish an API reference site with elide-dev/doclet
+
+The [API reference sample](../e2e/apidocs/BUILD.bazel) builds the doclet from a
+pinned commit and documents a small library, plus a library whose public API
+returns an annotation-processor-generated class:
+
+```sh
+(cd e2e/apidocs && bazel build //...)
+```
+
+Each target writes `<name>_site/` (open `index.html`) and `<name>.tar.gz`, ready
+to upload. See the [API reference guide](api_reference.md).
+
 ## Generate Java bindings for a C API
 
 The same workspace declares both `sample/api.h` and its included `types.h`:
