@@ -57,4 +57,4 @@ case "${1:-}" in
   ""|-*) ;;
   *) set -- -- "$@" ;;
 esac
-exec "$elide" --no-env --allow-env --no-properties -X "python.Executable=$0" python -s -B "$@"
+exec "$elide" --no-env --allow-env --no-properties -X "polyglot.python.Executable=$self" python -s -B "$@"

@@ -53,6 +53,7 @@ class LauncherTest(unittest.TestCase):
                     capture_output=True, text=True, check=True,
                 )
                 self.assertIn("PYTHONPATH=\n", result.stdout)
+                self.assertIn(f"-X polyglot.python.Executable={direct.resolve()}", result.stdout)
 
     def test_script_receives_parameter_file_and_option_arguments(self):
         for bash in BASHES:
