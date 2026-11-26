@@ -32,7 +32,7 @@ class LauncherTest(unittest.TestCase):
         fake.chmod(0o755)
         script = TEMPLATE.read_text().replace("@@RUNFILES@@", "init.bash").replace("@@ELIDE@@", "fake_elide")
         self.launcher = self.tmp / "launcher.sh"
-        self.launcher.write_text(script)
+        self.launcher.write_text(script.replace("@@LAUNCHER_PATH@@", "bin/python.sh").replace("@@ELIDE_PATH@@", "runfiles/fake_elide"))
         self.launcher.chmod(0o755)
         self.rf = rf
 
@@ -40,6 +40,19 @@ class LauncherTest(unittest.TestCase):
         base = {"PATH": os.environ["PATH"], "RUNFILES_DIR": str(self.rf), "TEST_TMPDIR": "/tmp/t"}
         base.update(env)
         return subprocess.run([bash, str(self.launcher), "-c", "pass"], env=base, capture_output=True, text=True, check=False)
+
+    def test_interpreter_invoked_directly_from_action_inputs(self):
+        direct = self.tmp / "bin/python.sh"
+        direct.parent.mkdir()
+        shutil.copy2(self.launcher, direct)
+        for bash in BASHES:
+            with self.subTest(bash=bash):
+                result = subprocess.run(
+                    [bash, "bin/python.sh", "-c", "pass"], cwd=self.tmp,
+                    env={"PATH": os.environ["PATH"], "PYTHONPATH": "/host/site"},
+                    capture_output=True, text=True, check=True,
+                )
+                self.assertIn("PYTHONPATH=\n", result.stdout)
 
     def test_empty_pythonpath_does_not_fail(self):
         for bash in BASHES:

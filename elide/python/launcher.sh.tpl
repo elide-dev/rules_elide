@@ -1,14 +1,24 @@
 #!/usr/bin/env bash
 set -uo pipefail
 f='@@RUNFILES@@'
-source "${RUNFILES_DIR:-/dev/null}/$f" 2>/dev/null ||
-  source "$(grep -sm1 "^$f " "${RUNFILES_MANIFEST_FILE:-/dev/null}" | cut -f2- -d' ')" 2>/dev/null ||
-  source "$0.runfiles/$f" 2>/dev/null ||
-  source "$(grep -sm1 "^$f " "$0.runfiles_manifest" | cut -f2- -d' ')" 2>/dev/null ||
-  { echo >&2 "Cannot locate Bazel runfiles for Elide Python"; exit 1; }
+# Toolchain consumers can invoke PyRuntimeInfo.interpreter directly from the
+# execution root with only PyRuntimeInfo.files. No runfiles tree exists there.
+self="$0"
+[[ "$self" = /* ]] || self="$PWD/$self"
+launcher_path='@@LAUNCHER_PATH@@'
+if [[ "$self" = */"$launcher_path" ]]; then
+  root="${self%/"$launcher_path"}"
+  elide="$root/"'@@ELIDE_PATH@@'
+else
+  source "${RUNFILES_DIR:-/dev/null}/$f" 2>/dev/null ||
+    source "$(grep -sm1 "^$f " "${RUNFILES_MANIFEST_FILE:-/dev/null}" | cut -f2- -d' ')" 2>/dev/null ||
+    source "$0.runfiles/$f" 2>/dev/null ||
+    source "$(grep -sm1 "^$f " "$0.runfiles_manifest" | cut -f2- -d' ')" 2>/dev/null ||
+    { echo >&2 "Cannot locate Bazel runfiles for Elide Python"; exit 1; }
+  runfiles_export_envvars
+  elide="$(rlocation '@@ELIDE@@')"
+fi
 set -e
-runfiles_export_envvars
-elide="$(rlocation '@@ELIDE@@')"
 # Keep Bazel's PYTHONPATH (transitive imports); discard ambient runtime selection.
 # Elide 1.6.2 honors PYTHONSAFEPATH but reports sys.flags.safe_path=False.
 # rules_python then deletes the first stdlib path. Let its bootstrap remove
