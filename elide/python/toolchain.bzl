@@ -23,7 +23,12 @@ def _launcher_impl(ctx):
         output = launcher,
         # Template delimiters, not canonical repository labels.
         # buildifier: disable=canonical-repository
-        substitutions = {"@@ELIDE@@": _key(ctx, ctx.file.elide), "@@RUNFILES@@": _key(ctx, helper)},
+        substitutions = {
+            "@@ELIDE@@": _key(ctx, ctx.file.elide),
+            "@@ELIDE_PATH@@": ctx.file.elide.path,
+            "@@LAUNCHER_PATH@@": launcher.path,
+            "@@RUNFILES@@": _key(ctx, helper),
+        },
         is_executable = True,
     )
     return [DefaultInfo(

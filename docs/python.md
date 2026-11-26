@@ -51,6 +51,10 @@ in `MODULE.bazel`. The overlay component marker is checked during analysis.
 
 ## Behavior and boundaries
 
+Tools invoking `PyRuntimeInfo.interpreter` directly in a Bazel action can supply
+`PyRuntimeInfo.files` as inputs. The launcher locates the executable relative to
+the execution root in that configuration.
+
 The launcher carries the distribution in runfiles, disables user site packages
 and bytecode writes, clears ambient virtualenv/runtime selection, and retains only
 runfiles paths from `PYTHONPATH`. It points `sys.executable` at the launcher so
