@@ -54,6 +54,16 @@ class LauncherTest(unittest.TestCase):
                 )
                 self.assertIn("PYTHONPATH=\n", result.stdout)
 
+    def test_script_receives_parameter_file_and_option_arguments(self):
+        for bash in BASHES:
+            with self.subTest(bash=bash):
+                result = subprocess.run(
+                    [bash, str(self.launcher), "link.py", "@link.params", "--option"],
+                    env={"PATH": os.environ["PATH"], "RUNFILES_DIR": str(self.rf)},
+                    capture_output=True, text=True, check=True,
+                )
+                self.assertIn("python -s -B -- link.py @link.params --option", result.stdout)
+
     def test_empty_pythonpath_does_not_fail(self):
         for bash in BASHES:
             with self.subTest(bash=bash):

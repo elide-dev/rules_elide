@@ -51,4 +51,10 @@ export PYTHONNOUSERSITE=1 PYTHONDONTWRITEBYTECODE=1 ELIDE_BAZEL=1
 # --allow-env keeps Bazel's test contract (TEST_TMPDIR, XML_OUTPUT_FILE,
 # TEST_UNDECLARED_OUTPUTS_DIR, --test_env, PATH) visible to Python. Runtime
 # selection variables that would change the interpreter are unset above.
+# Elide expands @response-files in its own arguments. A script's arguments
+# belong to that script, including Bazel parameter-file references.
+case "${1:-}" in
+  ""|-*) ;;
+  *) set -- -- "$@" ;;
+esac
 exec "$elide" --no-env --allow-env --no-properties -X "python.Executable=$0" python -s -B "$@"
